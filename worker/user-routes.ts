@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { UserEntity, ChatBoardEntity } from "./entities";
 import { ok, bad, notFound, isStr, Index } from './core-utils';
-import type { User, QuitProfile } from "@shared/types";
+import type { User, QuitProfile, JournalEntry } from "@shared/types";
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.get('/api/health', (c) => c.json({ success: true, status: 'ok' }));
   // AUTH / USER MANAGEMENT
@@ -14,10 +14,10 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     let user = await userEntity.getState();
     // Initialize if new
     if (!user.id) {
-      user = { 
-        id: cleanEmail, 
-        email: cleanEmail, 
-        createdAt: Date.now() 
+      user = {
+        id: cleanEmail,
+        email: cleanEmail,
+        createdAt: Date.now()
       };
       await userEntity.save(user);
       // Add to index
@@ -45,6 +45,15 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     }
     await userEntity.patch({ profile });
     return ok(c, await userEntity.getState());
+  });
+  app.post('/api/user/:id/journal', async (c) => {
+    const id = c.req.param('id');
+    const { entry } = (await c.req.json()) as { entry: JournalEntry };
+    if (!entry || !entry.id || !entry.trigger) return bad(c, 'Valid journal entry required');
+    const userEntity = new UserEntity(c.env, id);
+    if (!await userEntity.exists()) return notFound(c, 'User not found');
+    const updatedUser = await userEntity.addJournalEntry(entry);
+    return ok(c, updatedUser);
   });
   // --- LEGACY / TEMPLATE ROUTES (Kept for compatibility if needed) ---
   // CHATS

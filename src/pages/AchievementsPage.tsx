@@ -64,16 +64,19 @@ export function AchievementsPage() {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
-  if (!user?.profile) return null;
-  const quitDate = new Date(user.profile.quitDate);
+  // Safe calculation of stats even if user is not fully loaded yet
+  // This prevents conditional hook execution errors
+  const quitDate = user?.profile ? new Date(user.profile.quitDate) : new Date();
   const secondsElapsed = differenceInSeconds(now, quitDate);
   const weeksElapsed = secondsElapsed / (60 * 60 * 24 * 7);
-  const moneySaved = weeksElapsed * user.profile.unitsPerWeek * user.profile.costPerUnit;
-  const podsAvoided = Math.floor(weeksElapsed * user.profile.unitsPerWeek);
+  const moneySaved = user?.profile ? weeksElapsed * user.profile.unitsPerWeek * user.profile.costPerUnit : 0;
+  const podsAvoided = user?.profile ? Math.floor(weeksElapsed * user.profile.unitsPerWeek) : 0;
   const stats = { secondsFree: secondsElapsed, moneySaved, podsAvoided };
   // Calculate unlocked count for confetti trigger
   const unlockedCount = ACHIEVEMENTS.filter(a => a.condition(stats)).length;
   useEffect(() => {
+    // Only trigger if we have a valid user profile
+    if (!user?.profile) return;
     // Simple confetti trigger on load if user has achievements
     // In a real app, we'd track 'newly unlocked' specifically
     if (unlockedCount > 0 && !shownConfetti) {
@@ -87,7 +90,9 @@ export function AchievementsPage() {
         setShownConfetti(true);
       }
     }
-  }, [unlockedCount, shownConfetti]);
+  }, [unlockedCount, shownConfetti, user]);
+  // Now we can safely return null if no user
+  if (!user?.profile) return null;
   return (
     <div className="p-4 space-y-6 pt-8 md:pt-12 pb-24">
       <header className="mb-8 flex justify-between items-end">

@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { LogOut, Save, User as UserIcon } from 'lucide-react';
-import type { User, QuitProfile } from '@shared/types';
+import type { User } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
 const profileSchema = z.object({
   quitDate: z.string().min(1, "Quit date is required"),

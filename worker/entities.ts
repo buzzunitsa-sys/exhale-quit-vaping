@@ -1,15 +1,20 @@
 import { IndexedEntity } from "./core-utils";
-import type { User, Chat, ChatMessage } from "@shared/types";
+import type { User, Chat, ChatMessage, JournalEntry } from "@shared/types";
 // USER ENTITY: one DO instance per user (using email as ID)
 export class UserEntity extends IndexedEntity<User> {
   static readonly entityName = "user";
   static readonly indexName = "users";
-  static readonly initialState: User = { 
-    id: "", 
-    email: "", 
-    createdAt: 0 
+  static readonly initialState: User = {
+    id: "",
+    email: "",
+    createdAt: 0
   };
-  // Removed seed data to prevent type conflicts and clean slate
+  async addJournalEntry(entry: JournalEntry): Promise<User> {
+    return this.mutate(s => ({
+      ...s,
+      journal: [entry, ...(s.journal || [])] // Prepend new entry
+    }));
+  }
 }
 // CHAT BOARD ENTITY: Kept for template compatibility
 export type ChatBoardState = Chat & { messages: ChatMessage[] };

@@ -6,8 +6,6 @@ import { createRoot } from 'react-dom/client'
 import {
   createBrowserRouter,
   RouterProvider,
-  Navigate,
-  Outlet
 } from "react-router-dom";
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
@@ -17,16 +15,8 @@ import { DashboardPage } from '@/pages/DashboardPage'
 import { HealthPage } from '@/pages/HealthPage'
 import { AchievementsPage } from '@/pages/AchievementsPage'
 import { ProfilePage } from '@/pages/ProfilePage'
-import { MobileLayout } from '@/components/layout/MobileLayout'
-import { useAppStore } from '@/lib/store'
-// Protected Route Wrapper
-const ProtectedRoute = () => {
-  const user = useAppStore(s => s.user);
-  if (!user?.profile) {
-    return <Navigate to="/" replace />;
-  }
-  return <MobileLayout><Outlet /></MobileLayout>;
-};
+import { JournalPage } from '@/pages/JournalPage'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
 const router = createBrowserRouter([
   {
     path: "/",
@@ -48,6 +38,10 @@ const router = createBrowserRouter([
       {
         path: "/achievements",
         element: <AchievementsPage />,
+      },
+      {
+        path: "/journal",
+        element: <JournalPage />,
       },
       {
         path: "/profile",

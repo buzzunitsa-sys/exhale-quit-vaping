@@ -10,14 +10,22 @@ export interface QuitProfile {
   currency: string;
   motivation?: string;
 }
+export interface JournalEntry {
+  id: string;
+  timestamp: number;
+  intensity: number; // 1-10
+  trigger: string; // e.g., "Stress", "Boredom", "Social"
+  note?: string;
+}
 export interface User {
   id: string; // email
   email: string;
   name?: string;
   profile?: QuitProfile;
+  journal?: JournalEntry[];
   createdAt: number;
 }
-// Keeping Chat types for compatibility with existing template structure if needed, 
+// Keeping Chat types for compatibility with existing template structure if needed,
 // though we aren't using them for the main features yet.
 export interface Chat {
   id: string;

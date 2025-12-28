@@ -133,7 +133,9 @@ function ProfileWizard({ onSubmit }: { onSubmit: (data: ProfileForm) => void }) 
     resolver: zodResolver(profileSchema),
     defaultValues: {
       quitDate: new Date().toISOString().slice(0, 16), // Local datetime-local format
-      currency: 'USD'
+      currency: 'USD',
+      costPerUnit: 0,
+      unitsPerWeek: 0
     }
   });
   return (
