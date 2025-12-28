@@ -3,7 +3,7 @@ export function useInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
-  const [showIOSInstructions, setShowIOSInstructions] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
   useEffect(() => {
     // Check if standalone
     const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
@@ -29,16 +29,17 @@ export function useInstallPrompt() {
       if (choiceResult.outcome === 'accepted') {
         setDeferredPrompt(null);
       }
-    } else if (isIOS) {
-      setShowIOSInstructions(true);
+    } else {
+      // Fallback for iOS or when prompt is not available/already dismissed
+      setShowInstructions(true);
     }
-  }, [deferredPrompt, isIOS]);
+  }, [deferredPrompt]);
   return {
-    isInstallable: !!deferredPrompt || (isIOS && !isStandalone),
+    isInstallable: !!deferredPrompt || !isStandalone, // More permissive: allow showing button if not standalone
     promptInstall,
     isIOS,
     isStandalone,
-    showIOSInstructions,
-    setShowIOSInstructions
+    showInstructions,
+    setShowInstructions
   };
 }

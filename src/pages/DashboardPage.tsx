@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useAppStore } from '@/lib/store';
 import { format, isSameDay, differenceInSeconds } from 'date-fns';
-import { Crown, Settings2, Download } from 'lucide-react';
+import { Crown, Settings2, Download, Share, PlusSquare, MoreVertical } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DateStrip } from '@/components/ui/date-strip';
 import { DailyTracker } from '@/components/ui/daily-tracker';
@@ -24,13 +24,19 @@ import { getUserRank } from '@/lib/ranks';
 import { useInstallPrompt } from '@/hooks/use-install-prompt';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Share, PlusSquare } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export function DashboardPage() {
   const user = useAppStore(s => s.user);
   const setUser = useAppStore(s => s.setUser);
   const [now, setNow] = useState(new Date());
   const { vibrate } = useHaptic();
-  const { isInstallable, promptInstall, showIOSInstructions, setShowIOSInstructions } = useInstallPrompt();
+  const { 
+    isStandalone, 
+    promptInstall, 
+    showInstructions, 
+    setShowInstructions,
+    isIOS 
+  } = useInstallPrompt();
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
@@ -149,7 +155,7 @@ export function DashboardPage() {
             </div>
           </div>
           <div className="flex gap-3">
-            {isInstallable && (
+            {!isStandalone && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -161,7 +167,7 @@ export function DashboardPage() {
               </Button>
             )}
             <ShareButton 
-              secondsFree={secondsElapsed} 
+              secondsFree={secondsElapsed}
               moneySaved={totalMoneySaved}
               currency={user.profile.currency}
             />
@@ -191,20 +197,23 @@ export function DashboardPage() {
         {/* Daily Pledge Button */}
         <DailyPledge />
         {/* Daily Tracker (Puff Count) */}
-        <DailyTracker 
-          puffsToday={puffsToday}
-          costWasted={costWastedToday}
-          nicotineUsed={nicotineUsedToday}
-          projectedSavings={projectedDailySavings}
-          currency={user.profile.currency}
-          dailyLimit={user.profile.dailyLimit}
-          onQuickLog={handleQuickLog}
-        />
+        {/* Added mb-8 to ensure the absolute positioned Quick Log button doesn't overlap with next content */}
+        <div className="mb-8">
+          <DailyTracker 
+            puffsToday={puffsToday}
+            costWasted={costWastedToday}
+            nicotineUsed={nicotineUsedToday}
+            projectedSavings={projectedDailySavings}
+            currency={user.profile.currency}
+            dailyLimit={user.profile.dailyLimit}
+            onQuickLog={handleQuickLog}
+          />
+        </div>
         {/* Quote Carousel */}
         <QuoteCarousel />
         {/* Time Since Last Puff */}
         <TimeSinceLastPuff 
-          journal={user.journal || []} 
+          journal={user.journal || []}
           quitDate={user.profile.quitDate}
         />
         {/* Breathing Card */}
@@ -218,7 +227,7 @@ export function DashboardPage() {
         {/* Savings Goal Card (if configured) */}
         {user.profile.savingsGoal && user.profile.savingsGoal.cost > 0 && (
           <SavingsGoalCard 
-            savedAmount={totalMoneySaved} 
+            savedAmount={totalMoneySaved}
             goal={user.profile.savingsGoal}
             currency={user.profile.currency}
           />
@@ -226,35 +235,55 @@ export function DashboardPage() {
         {/* Savings Chart */}
         <div className="w-full h-[250px] rounded-3xl min-w-0 overflow-hidden">
           <SavingsChart 
-            currentSavings={totalMoneySaved} 
+            currentSavings={totalMoneySaved}
             dailySavings={dailyBaselineCost}
             currency={user.profile.currency}
           />
         </div>
       </div>
-      {/* iOS Install Instructions Dialog */}
-      <Dialog open={showIOSInstructions} onOpenChange={setShowIOSInstructions}>
+      {/* Install Instructions Dialog */}
+      <Dialog open={showInstructions} onOpenChange={setShowInstructions}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Install on iOS</DialogTitle>
+            <DialogTitle>How to Install Exhale</DialogTitle>
             <DialogDescription>
-              Follow these steps to add Exhale to your home screen:
+              Follow these steps to add the app to your home screen.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div className="flex items-center gap-3">
-              <div className="bg-secondary p-2 rounded-md">
-                <Share className="w-5 h-5" />
+          <Tabs defaultValue={isIOS ? "ios" : "android"} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="ios">iOS (Safari)</TabsTrigger>
+              <TabsTrigger value="android">Android / Chrome</TabsTrigger>
+            </TabsList>
+            <TabsContent value="ios" className="space-y-4 pt-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-secondary p-2 rounded-md shrink-0">
+                  <Share className="w-5 h-5" />
+                </div>
+                <p className="text-sm">1. Tap the <strong>Share</strong> button in your browser menu bar.</p>
               </div>
-              <p className="text-sm">1. Tap the <strong>Share</strong> button in your browser menu.</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="bg-secondary p-2 rounded-md">
-                <PlusSquare className="w-5 h-5" />
+              <div className="flex items-center gap-3">
+                <div className="bg-secondary p-2 rounded-md shrink-0">
+                  <PlusSquare className="w-5 h-5" />
+                </div>
+                <p className="text-sm">2. Scroll down and tap <strong>Add to Home Screen</strong>.</p>
               </div>
-              <p className="text-sm">2. Scroll down and tap <strong>Add to Home Screen</strong>.</p>
-            </div>
-          </div>
+            </TabsContent>
+            <TabsContent value="android" className="space-y-4 pt-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-secondary p-2 rounded-md shrink-0">
+                  <MoreVertical className="w-5 h-5" />
+                </div>
+                <p className="text-sm">1. Tap the <strong>Menu</strong> (three dots) button in Chrome.</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="bg-secondary p-2 rounded-md shrink-0">
+                  <Download className="w-5 h-5" />
+                </div>
+                <p className="text-sm">2. Tap <strong>Install App</strong> or <strong>Add to Home screen</strong>.</p>
+              </div>
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
     </div>

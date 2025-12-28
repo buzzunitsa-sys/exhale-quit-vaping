@@ -1,19 +1,20 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, Share, PlusSquare } from 'lucide-react';
+import { Download, Share, PlusSquare, Menu, MoreVertical } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useInstallPrompt } from '@/hooks/use-install-prompt';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export function InstallPWA() {
-  const { 
-    isInstallable, 
-    isStandalone, 
-    promptInstall, 
-    showIOSInstructions, 
-    setShowIOSInstructions 
+  const {
+    isStandalone,
+    promptInstall,
+    showInstructions,
+    setShowInstructions,
+    isIOS
   } = useInstallPrompt();
-  // If already installed or not installable, hide component
-  if (isStandalone || !isInstallable) return null;
+  // If already installed/standalone, hide component
+  if (isStandalone) return null;
   return (
     <>
       <Card className="border border-border/50 shadow-sm bg-card transition-colors duration-300">
@@ -25,35 +26,55 @@ export function InstallPWA() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Install Exhale on your home screen for quick access and a better experience.
+            Install Exhale on your home screen for quick access, full screen experience, and offline support.
           </p>
           <Button onClick={promptInstall} className="w-full bg-sky-500 hover:bg-sky-600 text-white">
             Add to Home Screen
           </Button>
         </CardContent>
       </Card>
-      <Dialog open={showIOSInstructions} onOpenChange={setShowIOSInstructions}>
+      <Dialog open={showInstructions} onOpenChange={setShowInstructions}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Install on iOS</DialogTitle>
+            <DialogTitle>How to Install Exhale</DialogTitle>
             <DialogDescription>
-              Follow these steps to add Exhale to your home screen:
+              Follow these steps to add the app to your home screen.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div className="flex items-center gap-3">
-              <div className="bg-secondary p-2 rounded-md">
-                <Share className="w-5 h-5" />
+          <Tabs defaultValue={isIOS ? "ios" : "android"} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="ios">iOS (Safari)</TabsTrigger>
+              <TabsTrigger value="android">Android / Chrome</TabsTrigger>
+            </TabsList>
+            <TabsContent value="ios" className="space-y-4 pt-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-secondary p-2 rounded-md shrink-0">
+                  <Share className="w-5 h-5" />
+                </div>
+                <p className="text-sm">1. Tap the <strong>Share</strong> button in your browser menu bar.</p>
               </div>
-              <p className="text-sm">1. Tap the <strong>Share</strong> button in your browser menu.</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="bg-secondary p-2 rounded-md">
-                <PlusSquare className="w-5 h-5" />
+              <div className="flex items-center gap-3">
+                <div className="bg-secondary p-2 rounded-md shrink-0">
+                  <PlusSquare className="w-5 h-5" />
+                </div>
+                <p className="text-sm">2. Scroll down and tap <strong>Add to Home Screen</strong>.</p>
               </div>
-              <p className="text-sm">2. Scroll down and tap <strong>Add to Home Screen</strong>.</p>
-            </div>
-          </div>
+            </TabsContent>
+            <TabsContent value="android" className="space-y-4 pt-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-secondary p-2 rounded-md shrink-0">
+                  <MoreVertical className="w-5 h-5" />
+                </div>
+                <p className="text-sm">1. Tap the <strong>Menu</strong> (three dots) button in Chrome.</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="bg-secondary p-2 rounded-md shrink-0">
+                  <Download className="w-5 h-5" />
+                </div>
+                <p className="text-sm">2. Tap <strong>Install App</strong> or <strong>Add to Home screen</strong>.</p>
+              </div>
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
     </>

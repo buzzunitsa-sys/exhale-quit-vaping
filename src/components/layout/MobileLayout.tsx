@@ -9,6 +9,7 @@ import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import type { User, JournalEntry } from '@shared/types';
 import { useHaptic } from '@/hooks/use-haptic';
+import { Button } from '@/components/ui/button';
 interface MobileLayoutProps {
   children?: React.ReactNode;
   className?: string;
@@ -64,6 +65,19 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
             <NavItem to="/achievements" icon={<Crown className="w-5 h-5" />} label="Achievements" onClick={() => vibrate('light')} />
             <NavItem to="/profile" icon={<Settings2 className="w-5 h-5" />} label="Settings" onClick={() => vibrate('light')} />
           </nav>
+          {/* Desktop Log Button */}
+          <div className="pt-6 border-t border-border">
+            <Button 
+              onClick={() => {
+                vibrate('medium');
+                setIsLogOpen(true);
+              }}
+              className="w-full bg-gradient-to-r from-sky-500 to-violet-600 hover:opacity-90 text-white shadow-lg shadow-violet-500/20"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Log Craving
+            </Button>
+          </div>
         </aside>
       )}
       {/* Mobile Bottom Nav (Reference Style) */}
@@ -83,7 +97,7 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
             </NavLink>
             {/* Center: FAB (Log Craving) */}
             <div className="absolute left-1/2 -translate-x-1/2 -top-6">
-              <button 
+              <button
                 onClick={() => {
                   vibrate('medium');
                   setIsLogOpen(true);
@@ -124,8 +138,8 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
 }
 function NavItem({ icon, label, to, onClick }: { icon: React.ReactNode, label: string, to: string, onClick?: () => void }) {
   return (
-    <NavLink 
-      to={to} 
+    <NavLink
+      to={to}
       onClick={onClick}
       className={({ isActive }) => cn(
         "flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-200 group",
