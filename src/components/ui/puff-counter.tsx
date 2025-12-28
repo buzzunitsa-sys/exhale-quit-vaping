@@ -1,13 +1,15 @@
 import React from 'react';
-import { Edit2, AlertTriangle } from 'lucide-react';
+import { Edit2, AlertTriangle, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 interface PuffCounterProps {
   puffs: number; // Avoided
   nicotine: number; // Avoided
   limit?: number;
   puffsTaken?: number; // Actual slips today
+  onQuickAdd?: () => void;
 }
-export function PuffCounter({ puffs, nicotine, limit = 0, puffsTaken = 0 }: PuffCounterProps) {
+export function PuffCounter({ puffs, nicotine, limit = 0, puffsTaken = 0, onQuickAdd }: PuffCounterProps) {
   // Calculate progress based on some arbitrary max for visualization if limit is 0
   const progress = limit > 0 ? Math.min((puffs / limit) * 100, 100) : 5;
   return (
@@ -48,6 +50,18 @@ export function PuffCounter({ puffs, nicotine, limit = 0, puffsTaken = 0 }: Puff
           </div>
         </div>
       </div>
+      {onQuickAdd && (
+        <div className="mt-6 pt-4 border-t border-border flex justify-center">
+             <Button
+                onClick={onQuickAdd}
+                variant="outline"
+                className="w-full border-red-200 hover:bg-red-50 hover:text-red-600 dark:border-red-900/30 dark:hover:bg-red-900/20 dark:text-red-400 text-red-500 gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Quick Log (+1 Puff)
+              </Button>
+        </div>
+      )}
     </div>
   );
 }

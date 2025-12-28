@@ -10,8 +10,12 @@ import { HourlyChart } from '@/components/ui/hourly-chart';
 import { SavingsChart } from '@/components/SavingsChart';
 import { ShareButton } from '@/components/ui/share-button';
 import { useHaptic } from '@/hooks/use-haptic';
+import { api } from '@/lib/api-client';
+import { toast } from 'sonner';
+import type { User, JournalEntry } from '@shared/types';
 export function DashboardPage() {
   const user = useAppStore(s => s.user);
+  const setUser = useAppStore(s => s.setUser);
   const [now, setNow] = useState(new Date());
   const { vibrate } = useHaptic();
   useEffect(() => {
@@ -26,6 +30,28 @@ export function DashboardPage() {
       .filter(entry => isSameDay(entry.timestamp, now))
       .reduce((sum, entry) => sum + (entry.puffs || 0), 0);
   }, [user?.journal, now]);
+  const handleQuickLog = async () => {
+    if (!user) return;
+    const newEntry: JournalEntry = {
+      id: crypto.randomUUID(),
+      timestamp: Date.now(),
+      intensity: 5,
+      trigger: "Quick Log",
+      puffs: 1
+    };
+    try {
+      const updatedUser = await api<User>(`/api/user/${user.id}/journal`, {
+        method: 'POST',
+        body: JSON.stringify({ entry: newEntry }),
+      });
+      setUser(updatedUser);
+      vibrate('success');
+      toast.success("Puff logged. Keep tracking!");
+    } catch (err) {
+      vibrate('error');
+      toast.error("Failed to log puff");
+    }
+  };
   if (!user?.profile) return null;
   const quitDate = new Date(user.profile.quitDate);
   const secondsElapsed = differenceInSeconds(now, quitDate);
@@ -56,15 +82,15 @@ export function DashboardPage() {
               moneySaved={moneySaved}
               currency={user.profile.currency}
             />
-            <Link 
-              to="/achievements" 
+            <Link
+              to="/achievements"
               onClick={() => vibrate('light')}
               className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
             >
               <Crown className="w-6 h-6 text-yellow-300 fill-yellow-300" />
             </Link>
-            <Link 
-              to="/profile" 
+            <Link
+              to="/profile"
               onClick={() => vibrate('light')}
               className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
             >
@@ -80,11 +106,12 @@ export function DashboardPage() {
       {/* Main Content - Overlapping Header */}
       <div className="px-4 -mt-12 space-y-4 relative z-10">
         <TimerDisplay secondsElapsed={secondsElapsed} />
-        <PuffCounter 
-          puffs={puffsAvoided} 
-          nicotine={nicotineAvoided} 
-          limit={0} 
+        <PuffCounter
+          puffs={puffsAvoided}
+          nicotine={nicotineAvoided}
+          limit={0}
           puffsTaken={puffsTakenToday}
+          onQuickAdd={handleQuickLog}
         />
         <div className="w-full overflow-hidden rounded-3xl">
           <SavingsChart

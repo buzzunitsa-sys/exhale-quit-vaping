@@ -54,54 +54,57 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
           </p>
         </div>
         <div className="h-[200px] w-full min-h-[200px] min-w-0">
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-            <AreaChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
-              <defs>
-                <linearGradient id="colorSavings" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
-              <XAxis 
-                dataKey="date" 
-                tick={{ fontSize: 10, fill: '#94a3b8' }}
-                axisLine={false}
-                tickLine={false}
-                interval={6}
-              />
-              <YAxis 
-                hide 
-                domain={['auto', 'auto']}
-              />
-              <Tooltip 
-                cursor={{ stroke: '#10b981', strokeWidth: 1, strokeDasharray: '3 3' }}
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    const d = payload[0].payload;
-                    return (
-                      <div className="bg-popover text-popover-foreground text-xs p-2 rounded-lg shadow-xl border border-border">
-                        <p className="font-bold mb-1">{d.fullDate}</p>
-                        <p>Savings: <span className="font-bold text-emerald-400">
-                          {currency === 'USD' ? '$' : currency + ' '}
-                          {d.savings.toFixed(2)}
-                        </span></p>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              <Area 
-                type="monotone" 
-                dataKey="savings" 
-                stroke="#10b981" 
-                strokeWidth={2} 
-                fillOpacity={1} 
-                fill="url(#colorSavings)" 
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          {/* Explicit wrapper div for ResponsiveContainer to prevent width(-1) errors */}
+          <div style={{ width: '100%', height: 200 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
+                <defs>
+                  <linearGradient id="colorSavings" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 10, fill: '#94a3b8' }}
+                  axisLine={false}
+                  tickLine={false}
+                  interval={6}
+                />
+                <YAxis
+                  hide
+                  domain={['auto', 'auto']}
+                />
+                <Tooltip
+                  cursor={{ stroke: '#10b981', strokeWidth: 1, strokeDasharray: '3 3' }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const d = payload[0].payload;
+                      return (
+                        <div className="bg-popover text-popover-foreground text-xs p-2 rounded-lg shadow-xl border border-border">
+                          <p className="font-bold mb-1">{d.fullDate}</p>
+                          <p>Savings: <span className="font-bold text-emerald-400">
+                            {currency === 'USD' ? '$' : currency + ' '}
+                            {d.savings.toFixed(2)}
+                          </span></p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="savings"
+                  stroke="#10b981"
+                  strokeWidth={2}
+                  fillOpacity={1}
+                  fill="url(#colorSavings)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </CardContent>
     </Card>

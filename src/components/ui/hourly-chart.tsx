@@ -38,42 +38,45 @@ export function HourlyChart({ entries = [] }: HourlyChartProps) {
         )}
       </div>
       <div className="h-[200px] w-full min-h-[200px] min-w-0 relative">
-        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-          <BarChart data={data} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
-            <XAxis
-                dataKey="hour"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 10, fill: '#cbd5e1' }}
-                interval={3} // Show every 4th label to avoid clutter
-                tickFormatter={(hour) => hour === 0 ? '12am' : hour === 12 ? '12pm' : hour > 12 ? `${hour - 12}pm` : `${hour}am`}
-                dy={10}
-            />
-            <Tooltip
-              cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-              content={({ active, payload }) => {
-                if (active && payload && payload.length) {
-                  const d = payload[0].payload;
-                  return (
-                    <div className="bg-slate-950 border-slate-800 text-slate-200 text-xs p-2 rounded-lg shadow-xl border">
-                      <p className="font-bold mb-1">{d.label}</p>
-                      <p>Cravings: <span className="font-bold text-sky-400">{d.val}</span></p>
-                    </div>
-                  );
-                }
-                return null;
-              }}
-            />
-            <Bar dataKey="val" radius={[4, 4, 4, 4]} barSize={8}>
-              {data.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={entry.val > 0 ? '#38bdf8' : 'rgba(255,255,255,0.05)'}
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        {/* Explicit wrapper div for ResponsiveContainer to prevent width(-1) errors */}
+        <div style={{ width: '100%', height: 200 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
+              <XAxis
+                  dataKey="hour"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 10, fill: '#cbd5e1' }}
+                  interval={3} // Show every 4th label to avoid clutter
+                  tickFormatter={(hour) => hour === 0 ? '12am' : hour === 12 ? '12pm' : hour > 12 ? `${hour - 12}pm` : `${hour}am`}
+                  dy={10}
+              />
+              <Tooltip
+                cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    const d = payload[0].payload;
+                    return (
+                      <div className="bg-slate-950 border-slate-800 text-slate-200 text-xs p-2 rounded-lg shadow-xl border">
+                        <p className="font-bold mb-1">{d.label}</p>
+                        <p>Cravings: <span className="font-bold text-sky-400">{d.val}</span></p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Bar dataKey="val" radius={[4, 4, 4, 4]} barSize={8}>
+                {data.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.val > 0 ? '#38bdf8' : 'rgba(255,255,255,0.05)'}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
       {!hasData && (
         <p className="text-center text-xs text-slate-400 mt-2">
