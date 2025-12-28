@@ -59,89 +59,89 @@ export function ProfilePage() {
   };
   if (!user) return null;
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
-      <PageHeader 
-        title="Profile & Settings" 
+    <div className="min-h-screen bg-slate-50 dark:bg-background pb-24 transition-colors duration-300">
+      <PageHeader
+        title="Profile & Settings"
         subtitle="Manage your quit plan and account preferences."
       />
       <div className="px-4 space-y-6 relative z-10">
         {/* Appearance Section */}
-        <Card className="border-none shadow-sm bg-white dark:bg-slate-900">
+        <Card className="border border-border/50 shadow-sm bg-card transition-colors duration-300">
           <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                  <Palette className="w-5 h-5 text-bling-purple" />
+              <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+                  <Palette className="w-5 h-5 text-violet-500" />
                   Appearance
               </CardTitle>
           </CardHeader>
           <CardContent className="flex items-center justify-between">
               <div className="space-y-1">
-                  <Label className="text-base">Theme Mode</Label>
+                  <Label className="text-base text-foreground">Theme Mode</Label>
                   <p className="text-sm text-muted-foreground">Switch between light and dark mode</p>
               </div>
-              <ThemeToggle className="static bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700" />
+              <ThemeToggle className="static bg-secondary hover:bg-secondary/80 text-foreground" />
           </CardContent>
         </Card>
         {/* Account Details */}
-        <Card className="border-none shadow-sm bg-white dark:bg-slate-900">
+        <Card className="border border-border/50 shadow-sm bg-card transition-colors duration-300">
           <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                  <UserIcon className="w-5 h-5 text-bling-cyan" />
+              <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+                  <UserIcon className="w-5 h-5 text-sky-500" />
                   Account Details
               </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
               <div className="grid gap-1">
                   <Label className="text-muted-foreground">Email</Label>
-                  <div className="font-medium">{user.email}</div>
+                  <div className="font-medium text-foreground">{user.email}</div>
               </div>
               <div className="grid gap-1">
                   <Label className="text-muted-foreground">Member Since</Label>
-                  <div className="font-medium">{new Date(user.createdAt).toLocaleDateString()}</div>
+                  <div className="font-medium text-foreground">{new Date(user.createdAt).toLocaleDateString()}</div>
               </div>
           </CardContent>
         </Card>
         {/* Quit Plan Settings */}
-        <Card className="border-none shadow-sm bg-white dark:bg-slate-900">
+        <Card className="border border-border/50 shadow-sm bg-card transition-colors duration-300">
           <CardHeader>
-              <CardTitle className="text-lg">Quit Plan Settings</CardTitle>
+              <CardTitle className="text-lg text-foreground">Quit Plan Settings</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="quitDate">Quit Date</Label>
+                <Label htmlFor="quitDate" className="text-foreground">Quit Date</Label>
                 <Input
                   id="quitDate"
                   type="datetime-local"
                   {...register('quitDate')}
-                  className="focus-visible:ring-bling-purple"
+                  className="bg-background border-input text-foreground focus-visible:ring-violet-500"
                 />
                 {errors.quitDate && <p className="text-sm text-red-500">{errors.quitDate.message}</p>}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="cost">Cost per Unit</Label>
+                  <Label htmlFor="cost" className="text-foreground">Cost per Unit</Label>
                   <Input
                     id="cost"
                     type="number"
                     step="0.01"
                     {...register('costPerUnit')}
-                    className="focus-visible:ring-bling-purple"
+                    className="bg-background border-input text-foreground focus-visible:ring-violet-500"
                   />
                   {errors.costPerUnit && <p className="text-sm text-red-500">{errors.costPerUnit.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="usage">Units per Week</Label>
+                  <Label htmlFor="usage" className="text-foreground">Units per Week</Label>
                   <Input
                     id="usage"
                     type="number"
                     step="0.1"
                     {...register('unitsPerWeek')}
-                    className="focus-visible:ring-bling-purple"
+                    className="bg-background border-input text-foreground focus-visible:ring-violet-500"
                   />
                   {errors.unitsPerWeek && <p className="text-sm text-red-500">{errors.unitsPerWeek.message}</p>}
                 </div>
               </div>
-              <Button type="submit" className="w-full bg-gradient-to-r from-bling-cyan to-bling-purple hover:opacity-90 transition-opacity text-white" disabled={isSubmitting}>
+              <Button type="submit" className="w-full bg-gradient-to-r from-sky-500 to-violet-600 hover:opacity-90 transition-opacity text-white" disabled={isSubmitting}>
                 <Save className="w-4 h-4 mr-2" />
                 {isSubmitting ? "Saving..." : "Save Changes"}
               </Button>
@@ -153,7 +153,7 @@ export function ProfilePage() {
           Log Out
         </Button>
         <div className="text-center pt-4 pb-8">
-          <p className="text-xs text-muted-foreground">Built with ❤️ by Aurelia</p>
+          <p className="text-xs text-muted-foreground">Built with ❤️ by Aurelia | Your AI Co-founder</p>
         </div>
       </div>
     </div>

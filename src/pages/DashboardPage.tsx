@@ -8,6 +8,7 @@ import { DateStrip } from '@/components/ui/date-strip';
 import { PuffCounter } from '@/components/ui/puff-counter';
 import { HourlyChart } from '@/components/ui/hourly-chart';
 import { SavingsChart } from '@/components/SavingsChart';
+import { ShareButton } from '@/components/ui/share-button';
 export function DashboardPage() {
   const user = useAppStore(s => s.user);
   const [now, setNow] = useState(new Date());
@@ -31,19 +32,24 @@ export function DashboardPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background pb-32 transition-colors duration-300">
       {/* Header Section with Gradient - Blue Dominant with Purple Hint */}
-      <div className="bg-gradient-to-br from-sky-500 via-blue-600 to-violet-600 rounded-b-[40px] pt-8 pb-20 px-6 text-white shadow-lg shadow-violet-200/50 dark:shadow-none">
+      <div className="bg-gradient-to-br from-sky-500 via-blue-600 to-violet-600 rounded-b-[40px] pt-8 pb-20 px-6 text-white shadow-lg shadow-violet-200/50 dark:shadow-none relative z-0">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h1 className="text-4xl font-bold mb-1">Hello</h1>
-            <p className="text-sky-100 font-medium uppercase tracking-wide text-sm">
+            <h1 className="text-4xl font-bold mb-1 tracking-tight">Hello</h1>
+            <p className="text-sky-100 font-medium uppercase tracking-wide text-sm opacity-90">
               {format(now, 'EEEE, MMMM d')}
             </p>
           </div>
-          <div className="flex gap-4">
-            <Link to="/achievements" className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm">
+          <div className="flex gap-3">
+            <ShareButton 
+              secondsFree={secondsElapsed} 
+              moneySaved={moneySaved} 
+              currency={user.profile.currency}
+            />
+            <Link to="/achievements" className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center">
               <Crown className="w-6 h-6 text-yellow-300 fill-yellow-300" />
             </Link>
-            <Link to="/profile" className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm">
+            <Link to="/profile" className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center">
               <Settings2 className="w-6 h-6 text-white" />
             </Link>
           </div>
@@ -57,12 +63,16 @@ export function DashboardPage() {
       <div className="px-4 -mt-12 space-y-4 relative z-10">
         <TimerDisplay secondsElapsed={secondsElapsed} />
         <PuffCounter puffs={puffsAvoided} nicotine={nicotineAvoided} limit={0} />
-        <SavingsChart 
-          currentSavings={moneySaved} 
-          dailySavings={dailySavings}
-          currency={user.profile.currency}
-        />
-        <HourlyChart entries={user.journal} />
+        <div className="w-full overflow-hidden rounded-3xl">
+          <SavingsChart
+            currentSavings={moneySaved}
+            dailySavings={dailySavings}
+            currency={user.profile.currency}
+          />
+        </div>
+        <div className="w-full overflow-hidden rounded-3xl">
+          <HourlyChart entries={user.journal} />
+        </div>
       </div>
     </div>
   );

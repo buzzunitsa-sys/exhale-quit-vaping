@@ -33,16 +33,16 @@ export function JournalPage() {
   if (!user) return null;
   const entries = user.journal || [];
   return (
-    <div className="p-4 space-y-6 pt-8 md:pt-12 pb-32">
+    <div className="min-h-screen bg-slate-50 dark:bg-background p-4 space-y-6 pt-8 md:pt-12 pb-32 transition-colors duration-300">
       <header className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Journal</h2>
-        <p className="text-slate-500">Track cravings and identify triggers.</p>
+        <h2 className="text-2xl font-bold text-foreground">Journal</h2>
+        <p className="text-muted-foreground">Track cravings and identify triggers.</p>
       </header>
       {/* Inline Form for Desktop / Quick Access */}
-      <Card className="border-none shadow-sm bg-white dark:bg-slate-900 overflow-hidden">
+      <Card className="border border-border/50 shadow-sm bg-card overflow-hidden transition-colors duration-300">
         <CardContent className="p-0">
-          <div className="bg-slate-50 dark:bg-slate-800/50 p-4 border-b">
-            <h3 className="font-semibold text-sm text-slate-700 dark:text-slate-300">New Entry</h3>
+          <div className="bg-secondary/50 p-4 border-b border-border/50">
+            <h3 className="font-semibold text-sm text-foreground">New Entry</h3>
           </div>
           <div className="p-4">
             <JournalForm onSubmit={handleAddEntry} />
@@ -60,8 +60,8 @@ export function JournalPage() {
       )}
       {entries.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center space-y-4 opacity-60">
-          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center">
-            <BookOpen className="w-8 h-8 text-slate-400" />
+          <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center">
+            <BookOpen className="w-8 h-8 text-muted-foreground" />
           </div>
           <p className="text-muted-foreground">No entries yet.</p>
         </div>
@@ -74,14 +74,14 @@ export function JournalPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Card className="border-none shadow-sm bg-white dark:bg-slate-900">
+              <Card className="border border-border/50 shadow-sm bg-card transition-colors duration-300">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex items-center gap-2">
                       <span className={`px-2 py-1 rounded-md text-xs font-medium ${
-                        entry.intensity > 7 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                        entry.intensity > 4 ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                        'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                        entry.intensity > 7 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 
+                        entry.intensity > 4 ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' : 
+                        'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
                       }`}>
                         Intensity: {entry.intensity}/10
                       </span>
@@ -89,12 +89,12 @@ export function JournalPage() {
                         {format(entry.timestamp, 'MMM d, h:mm a')}
                       </span>
                     </div>
-                    <div className="text-xs font-medium text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">
+                    <div className="text-xs font-medium text-muted-foreground bg-secondary px-2 py-1 rounded-full">
                       {entry.trigger}
                     </div>
                   </div>
                   {entry.note && (
-                    <p className="text-sm text-slate-700 dark:text-slate-300 mt-2 leading-relaxed">
+                    <p className="text-sm text-foreground mt-2 leading-relaxed">
                       {entry.note}
                     </p>
                   )}
