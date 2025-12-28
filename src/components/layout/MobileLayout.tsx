@@ -1,20 +1,47 @@
-import React from 'react';
-import { Home, Activity, Trophy, User as UserIcon, BookOpen } from 'lucide-react';
+import React, { useState } from 'react';
+import { Calendar, BarChart3, Plus, Crown, Settings2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/lib/store';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { JournalForm } from '@/components/JournalForm';
+import { api } from '@/lib/api-client';
+import { toast } from 'sonner';
+import type { User, JournalEntry } from '@shared/types';
 interface MobileLayoutProps {
   children?: React.ReactNode;
   className?: string;
 }
 export function MobileLayout({ children, className }: MobileLayoutProps) {
   const user = useAppStore(s => s.user);
+  const setUser = useAppStore(s => s.setUser);
+  const [isLogOpen, setIsLogOpen] = useState(false);
+  const location = useLocation();
   // Only show nav if user is logged in
   const showNav = !!user?.profile;
+  const handleAddEntry = async (entry: Omit<JournalEntry, 'id' | 'timestamp'>) => {
+    if (!user) return;
+    const newEntry: JournalEntry = {
+      id: crypto.randomUUID(),
+      timestamp: Date.now(),
+      ...entry
+    };
+    try {
+      const updatedUser = await api<User>(`/api/user/${user.id}/journal`, {
+        method: 'POST',
+        body: JSON.stringify({ entry: newEntry }),
+      });
+      setUser(updatedUser);
+      setIsLogOpen(false);
+      toast.success("Craving logged. Stay strong!");
+    } catch (err) {
+      toast.error("Failed to log entry");
+    }
+  };
   return (
     <div className="min-h-[100dvh] bg-slate-50 dark:bg-slate-950 flex flex-col">
-      <main className={cn("flex-1 pb-20 md:pb-0 md:pl-64", className)}>
-        <div className="max-w-md mx-auto md:max-w-7xl w-full h-full">
+      <main className={cn("flex-1 pb-24 md:pb-0 md:pl-64", className)}>
+        <div className="w-full h-full">
             {children || <Outlet />}
         </div>
       </main>
@@ -22,35 +49,65 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
       {showNav && (
         <aside className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 border-r bg-card flex-col p-6 z-50">
           <div className="flex items-center gap-2 mb-8">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-bling-cyan to-bling-purple flex items-center justify-center shadow-lg shadow-bling-purple/20">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-400 to-cyan-300 flex items-center justify-center shadow-lg shadow-sky-400/20">
               <span className="text-white font-bold">E</span>
             </div>
-            <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-bling-cyan to-bling-purple">Exhale</span>
+            <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-cyan-300">Exhale</span>
           </div>
           <nav className="space-y-2 flex-1">
-            <NavItem to="/dashboard" icon={<Home className="w-5 h-5" />} label="Dashboard" />
-            <NavItem to="/health" icon={<Activity className="w-5 h-5" />} label="Health" />
-            <NavItem to="/journal" icon={<BookOpen className="w-5 h-5" />} label="Journal" />
-            <NavItem to="/achievements" icon={<Trophy className="w-5 h-5" />} label="Achievements" />
-            <NavItem to="/profile" icon={<UserIcon className="w-5 h-5" />} label="Profile" />
+            <NavItem to="/dashboard" icon={<Calendar className="w-5 h-5" />} label="Dashboard" />
+            <NavItem to="/journal" icon={<Calendar className="w-5 h-5" />} label="Journal" />
+            <NavItem to="/health" icon={<BarChart3 className="w-5 h-5" />} label="Stats" />
+            <NavItem to="/achievements" icon={<Crown className="w-5 h-5" />} label="Achievements" />
+            <NavItem to="/profile" icon={<Settings2 className="w-5 h-5" />} label="Settings" />
           </nav>
-          <div className="mt-auto pt-6 border-t">
-             <p className="text-xs text-muted-foreground text-center">Built with ❤️ by Aurelia</p>
-          </div>
         </aside>
       )}
-      {/* Mobile Bottom Nav (Hidden on Desktop) */}
+      {/* Mobile Bottom Nav (Reference Style) */}
       {showNav && (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-lg border-t z-50 pb-safe">
-          <div className="flex items-center justify-around h-16 px-2">
-            <MobileNavItem to="/dashboard" icon={<Home className="w-6 h-6" />} label="Home" />
-            <MobileNavItem to="/health" icon={<Activity className="w-6 h-6" />} label="Health" />
-            <MobileNavItem to="/journal" icon={<BookOpen className="w-6 h-6" />} label="Journal" />
-            <MobileNavItem to="/achievements" icon={<Trophy className="w-6 h-6" />} label="Awards" />
-            <MobileNavItem to="/profile" icon={<UserIcon className="w-6 h-6" />} label="Profile" />
-          </div>
-        </nav>
+        <div className="md:hidden fixed bottom-6 left-4 right-4 z-50">
+          <nav className="bg-white rounded-full shadow-lg shadow-slate-200/50 border border-slate-100 h-16 px-6 flex items-center justify-between relative">
+            {/* Left: Dashboard/Calendar */}
+            <NavLink 
+              to="/dashboard" 
+              className={({ isActive }) => cn(
+                "p-2 rounded-full transition-colors",
+                isActive ? "text-sky-500" : "text-slate-400 hover:text-slate-600"
+              )}
+            >
+              <Calendar className="w-6 h-6" />
+            </NavLink>
+            {/* Center: FAB */}
+            <div className="absolute left-1/2 -translate-x-1/2 -top-6">
+              <button 
+                onClick={() => setIsLogOpen(true)}
+                className="w-14 h-14 rounded-full bg-sky-400 hover:bg-sky-500 text-white shadow-lg shadow-sky-400/30 flex items-center justify-center transition-transform active:scale-95"
+              >
+                <Plus className="w-8 h-8" />
+              </button>
+            </div>
+            {/* Right: Stats */}
+            <NavLink 
+              to="/health" 
+              className={({ isActive }) => cn(
+                "p-2 rounded-full transition-colors",
+                isActive ? "text-sky-500" : "text-slate-400 hover:text-slate-600"
+              )}
+            >
+              <BarChart3 className="w-6 h-6" />
+            </NavLink>
+          </nav>
+        </div>
       )}
+      {/* Log Craving Dialog */}
+      <Dialog open={isLogOpen} onOpenChange={setIsLogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Log a Craving</DialogTitle>
+          </DialogHeader>
+          <JournalForm onSubmit={handleAddEntry} onCancel={() => setIsLogOpen(false)} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -61,57 +118,12 @@ function NavItem({ icon, label, to }: { icon: React.ReactNode, label: string, to
       className={({ isActive }) => cn(
         "flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-200 group",
         isActive
-          ? "bg-gradient-to-r from-bling-cyan/10 to-bling-purple/10 font-medium"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          ? "bg-sky-50 text-sky-600 font-medium"
+          : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
       )}
     >
-      {({ isActive }) => (
-        <>
-          <span className={cn(
-            "transition-colors duration-200",
-            isActive ? "text-bling-purple" : "text-muted-foreground group-hover:text-foreground"
-          )}>
-            {icon}
-          </span>
-          <span className={cn(
-            isActive ? "text-transparent bg-clip-text bg-gradient-to-r from-bling-cyan to-bling-purple font-bold" : ""
-          )}>
-            {label}
-          </span>
-        </>
-      )}
-    </NavLink>
-  );
-}
-function MobileNavItem({ icon, label, to }: { icon: React.ReactNode, label: string, to: string }) {
-  return (
-    <NavLink
-      to={to}
-      className={({ isActive }) => cn(
-        "flex flex-col items-center justify-center w-full h-full gap-1 transition-all duration-200",
-        isActive
-          ? "scale-105"
-          : "text-muted-foreground hover:text-foreground"
-      )}
-    >
-      {({ isActive }) => (
-        <>
-          <span className={cn(
-            "transition-colors duration-200",
-            isActive ? "text-bling-purple drop-shadow-sm" : "text-muted-foreground"
-          )}>
-            {icon}
-          </span>
-          <span className={cn(
-            "text-[10px] font-medium transition-all duration-200",
-            isActive 
-              ? "text-transparent bg-clip-text bg-gradient-to-r from-bling-cyan to-bling-purple font-bold" 
-              : "text-muted-foreground"
-          )}>
-            {label}
-          </span>
-        </>
-      )}
+      {icon}
+      <span>{label}</span>
     </NavLink>
   );
 }
