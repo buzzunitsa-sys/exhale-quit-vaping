@@ -12,7 +12,7 @@ interface SavingsGoalCardProps {
 export function SavingsGoalCard({ savedAmount, goal, currency }: SavingsGoalCardProps) {
   const progress = Math.min(100, Math.max(0, (savedAmount / goal.cost) * 100));
   const isCompleted = progress >= 100;
-  const remaining = Math.max(0, goal.cost - savedAmount);
+  // const remaining = Math.max(0, goal.cost - savedAmount); // Unused but kept for logic reference
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -65,14 +65,14 @@ export function SavingsGoalCard({ savedAmount, goal, currency }: SavingsGoalCard
             <div>
               <p className="text-indigo-100 text-xs mb-0.5">Saved</p>
               <p className="font-bold text-lg">
-                {currency === 'USD' ? '$' : currency}
+                {currency === 'USD' ? '$' : currency + ' '}
                 {savedAmount.toFixed(2)}
               </p>
             </div>
             <div className="text-right">
               <p className="text-indigo-100 text-xs mb-0.5">Goal</p>
               <p className="font-bold text-lg opacity-90">
-                {currency === 'USD' ? '$' : currency}
+                {currency === 'USD' ? '$' : currency + ' '}
                 {goal.cost.toFixed(2)}
               </p>
             </div>

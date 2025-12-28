@@ -16,6 +16,7 @@ import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import type { User, JournalEntry } from '@shared/types';
 import { getWeeklyConsistency } from '@/lib/stats-utils';
+import { getUserRank } from '@/lib/ranks';
 export function DashboardPage() {
   const user = useAppStore(s => s.user);
   const setUser = useAppStore(s => s.setUser);
@@ -33,7 +34,8 @@ export function DashboardPage() {
     projectedDailySavings,
     totalMoneySaved,
     dailyBaselineCost,
-    weeklyConsistency
+    weeklyConsistency,
+    secondsElapsed
   } = useMemo(() => {
     if (!user?.profile) {
       return {
@@ -43,7 +45,8 @@ export function DashboardPage() {
         projectedDailySavings: 0,
         totalMoneySaved: 0,
         dailyBaselineCost: 0,
-        weeklyConsistency: []
+        weeklyConsistency: [],
+        secondsElapsed: 0
       };
     }
     const journal = user.journal || [];
@@ -92,7 +95,8 @@ export function DashboardPage() {
       projectedDailySavings,
       totalMoneySaved,
       dailyBaselineCost,
-      weeklyConsistency
+      weeklyConsistency,
+      secondsElapsed
     };
   }, [user?.journal, user?.profile, now]);
   const handleQuickLog = async () => {
@@ -120,6 +124,10 @@ export function DashboardPage() {
     }
   };
   if (!user?.profile) return null;
+  // Calculate Rank
+  const hoursFree = secondsElapsed / 3600;
+  const { current: currentRank } = getUserRank(hoursFree);
+  const RankIcon = currentRank.icon;
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background pb-32 transition-colors duration-300">
       {/* Header Section with Gradient */}
@@ -130,10 +138,17 @@ export function DashboardPage() {
             <p className="text-sky-100 font-medium uppercase tracking-wide text-sm opacity-90">
               {format(now, 'EEEE, MMMM d')}
             </p>
+            {/* Rank Badge */}
+            <div className="mt-4 inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
+              <RankIcon className="w-4 h-4 text-yellow-300 fill-yellow-300" />
+              <span className="text-xs font-bold text-white tracking-wide uppercase">
+                {currentRank.title}
+              </span>
+            </div>
           </div>
           <div className="flex gap-3">
             <ShareButton
-              secondsFree={0} // Not using time free for share context anymore in this view
+              secondsFree={secondsElapsed}
               moneySaved={totalMoneySaved}
               currency={user.profile.currency}
             />
