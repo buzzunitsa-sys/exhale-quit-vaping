@@ -15,6 +15,19 @@ export class UserEntity extends IndexedEntity<User> {
       journal: [entry, ...(s.journal || [])] // Prepend new entry
     }));
   }
+  async updateJournalEntry(entryId: string, updates: Partial<JournalEntry>): Promise<User> {
+    return this.mutate(s => {
+      const journal = s.journal || [];
+      const index = journal.findIndex(e => e.id === entryId);
+      if (index === -1) return s; // Entry not found, return current state
+      const updatedJournal = [...journal];
+      updatedJournal[index] = { ...updatedJournal[index], ...updates };
+      return {
+        ...s,
+        journal: updatedJournal
+      };
+    });
+  }
   async removeJournalEntry(entryId: string): Promise<User> {
     return this.mutate(s => ({
       ...s,

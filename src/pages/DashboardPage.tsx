@@ -19,7 +19,7 @@ import { useHaptic } from '@/hooks/use-haptic';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import type { User, JournalEntry } from '@shared/types';
-import { getWeeklyConsistency } from '@/lib/stats-utils';
+import { getWeeklyConsistency, getLastPuffTime } from '@/lib/stats-utils';
 import { getUserRank } from '@/lib/ranks';
 import { useInstallPrompt } from '@/hooks/use-install-prompt';
 import { Button } from '@/components/ui/button';
@@ -31,12 +31,12 @@ export function DashboardPage() {
   const isGuest = useAppStore(s => s.isGuest);
   const [now, setNow] = useState(new Date());
   const { vibrate } = useHaptic();
-  const { 
-    isStandalone, 
-    promptInstall, 
-    showInstructions, 
+  const {
+    isStandalone,
+    promptInstall,
+    showInstructions,
     setShowInstructions,
-    isIOS 
+    isIOS
   } = useInstallPrompt();
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -51,7 +51,8 @@ export function DashboardPage() {
     totalMoneySaved,
     dailyBaselineCost,
     weeklyConsistency,
-    secondsElapsed
+    secondsElapsed,
+    secondsFreeForRank
   } = useMemo(() => {
     if (!user?.profile) {
       return {
@@ -62,7 +63,8 @@ export function DashboardPage() {
         totalMoneySaved: 0,
         dailyBaselineCost: 0,
         weeklyConsistency: [],
-        secondsElapsed: 0
+        secondsElapsed: 0,
+        secondsFreeForRank: 0
       };
     }
     const journal = user.journal || [];
@@ -88,7 +90,7 @@ export function DashboardPage() {
     const nicotineUsedToday = puffsToday * nicotinePerPuff;
     const dailyBaselineCost = (unitsPerWeek * costPerUnit) / 7;
     const projectedDailySavings = Math.max(0, dailyBaselineCost - costWastedToday);
-    // Total Lifetime Savings Calculation
+    // Total Lifetime Savings Calculation (Based on original quit date)
     const quitDate = new Date(user.profile.quitDate);
     const secondsElapsed = Math.max(0, differenceInSeconds(now, quitDate));
     const weeksElapsed = secondsElapsed / (60 * 60 * 24 * 7);
@@ -96,6 +98,9 @@ export function DashboardPage() {
     const totalPuffsAllTime = journal.reduce((sum, entry) => sum + (entry.puffs || 0), 0);
     const totalCostWastedAllTime = totalPuffsAllTime * costPerPuff;
     const totalMoneySaved = Math.max(0, theoreticalMaxSavings - totalCostWastedAllTime);
+    // Rank Calculation (Based on last puff)
+    const lastPuffTime = getLastPuffTime(journal, user.profile.quitDate);
+    const secondsFreeForRank = Math.max(0, differenceInSeconds(now, lastPuffTime));
     // Weekly Consistency Data
     const weeklyConsistency = getWeeklyConsistency(journal, user.profile.dailyLimit || 0, user.createdAt);
     return {
@@ -106,7 +111,8 @@ export function DashboardPage() {
       totalMoneySaved,
       dailyBaselineCost,
       weeklyConsistency,
-      secondsElapsed
+      secondsElapsed,
+      secondsFreeForRank
     };
   }, [user?.journal, user?.profile, now, user?.createdAt]);
   const handleQuickLog = async () => {
@@ -137,7 +143,7 @@ export function DashboardPage() {
     }
   };
   if (!user?.profile) return null;
-  const hoursFree = secondsElapsed / 3600;
+  const hoursFree = secondsFreeForRank / 3600;
   const { current: currentRank } = getUserRank(hoursFree);
   const RankIcon = currentRank.icon;
   return (
@@ -161,9 +167,9 @@ export function DashboardPage() {
           </div>
           <div className="flex gap-3">
             {!isStandalone && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={promptInstall}
                 className="bg-white/20 hover:bg-white/30 text-white rounded-xl backdrop-blur-sm transition-all duration-200"
                 title="Install App"
@@ -172,7 +178,7 @@ export function DashboardPage() {
               </Button>
             )}
             <ShareButton 
-              secondsFree={secondsElapsed}
+              secondsFree={secondsFreeForRank} 
               moneySaved={totalMoneySaved}
               currency={user.profile.currency}
             />
@@ -241,7 +247,7 @@ export function DashboardPage() {
         <div className="w-full h-[250px] rounded-3xl min-w-0 overflow-hidden">
           <SavingsChart 
             currentSavings={totalMoneySaved} 
-            dailySavings={dailyBaselineCost} 
+            dailySavings={dailyBaselineCost}
             currency={user.profile.currency}
           />
         </div>

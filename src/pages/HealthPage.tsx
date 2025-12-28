@@ -6,11 +6,13 @@ import { RecoveryTimeline } from '@/components/RecoveryTimeline';
 import { TriggerChart } from '@/components/TriggerChart';
 import { RecentHistory } from '@/components/RecentHistory';
 import { HistoryCalendar } from '@/components/HistoryCalendar';
+import { JournalForm } from '@/components/JournalForm';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/lib/store';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
-import type { User } from '@shared/types';
+import type { User, JournalEntry } from '@shared/types';
 import {
   getChartData,
   getSummaryStats,
@@ -23,6 +25,7 @@ type ViewMode = 'stats' | 'recovery' | 'history';
 export function HealthPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('stats');
   const [activeTab, setActiveTab] = useState<TimeRange>('WEEKLY');
+  const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
   const user = useAppStore(s => s.user);
   const setUser = useAppStore(s => s.setUser);
   const isGuest = useAppStore(s => s.isGuest);
@@ -61,6 +64,33 @@ export function HealthPage() {
           toast.error("Failed to delete entry");
         }
       }
+    }
+  };
+  const handleEditEntry = (entry: JournalEntry) => {
+    setEditingEntry(entry);
+  };
+  const handleUpdateEntry = async (data: { intensity: number; trigger: string; note: string; puffs?: number }) => {
+    if (!user || !editingEntry) return;
+    if (isGuest) {
+      // Local update for guest
+      const updatedJournal = (user.journal || []).map(e => 
+        e.id === editingEntry.id ? { ...e, ...data } : e
+      );
+      setUser({ ...user, journal: updatedJournal });
+      toast.success("Entry updated (Demo Mode)");
+      setEditingEntry(null);
+      return;
+    }
+    try {
+      const updatedUser = await api<User>(`/api/user/${user.id}/journal/${editingEntry.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+      setUser(updatedUser);
+      toast.success("Entry updated successfully");
+      setEditingEntry(null);
+    } catch (err) {
+      toast.error("Failed to update entry");
     }
   };
   return (
@@ -161,7 +191,11 @@ export function HealthPage() {
               <StatsSummary stats={summaryStats} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <TriggerChart data={triggerData} />
-                <RecentHistory entries={journal} onDelete={handleDeleteEntry} />
+                <RecentHistory 
+                  entries={journal} 
+                  onDelete={handleDeleteEntry}
+                  onEdit={handleEditEntry}
+                />
               </div>
             </motion.div>
           ) : viewMode === 'history' ? (
@@ -175,10 +209,14 @@ export function HealthPage() {
             >
               <HistoryCalendar 
                 entries={journal} 
-                dailyLimit={user?.profile?.dailyLimit} 
-                createdAt={user?.createdAt || Date.now()} 
+                dailyLimit={user?.profile?.dailyLimit}
+                createdAt={user?.createdAt || Date.now()}
               />
-              <RecentHistory entries={journal} onDelete={handleDeleteEntry} />
+              <RecentHistory 
+                entries={journal} 
+                onDelete={handleDeleteEntry}
+                onEdit={handleEditEntry}
+              />
             </motion.div>
           ) : (
             <motion.div
@@ -193,6 +231,24 @@ export function HealthPage() {
           )}
         </AnimatePresence>
       </div>
+      {/* Edit Dialog */}
+      <Dialog open={!!editingEntry} onOpenChange={(open) => !open && setEditingEntry(null)}>
+        <DialogContent className="sm:max-w-md bg-card border-border" aria-describedby="edit-entry-desc">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Edit Entry</DialogTitle>
+            <DialogDescription id="edit-entry-desc">
+              Update the details of your journal entry.
+            </DialogDescription>
+          </DialogHeader>
+          {editingEntry && (
+            <JournalForm 
+              initialData={editingEntry}
+              onSubmit={handleUpdateEntry} 
+              onCancel={() => setEditingEntry(null)} 
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

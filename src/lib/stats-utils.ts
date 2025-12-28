@@ -46,6 +46,24 @@ export interface TriggerDataPoint {
   [key: string]: any;
 }
 /**
+ * Calculates the timestamp of the last puff taken.
+ * If no puffs have been taken since the quit date, returns the quit date timestamp.
+ * This ensures the "Time Free" counter resets accurately on slips.
+ */
+export function getLastPuffTime(journal: JournalEntry[], quitDateStr: string): number {
+  const quitDateTs = new Date(quitDateStr).getTime();
+  // Find all entries with actual puffs (slips)
+  const slips = journal.filter(e => (e.puffs || 0) > 0);
+  if (slips.length === 0) {
+    return quitDateTs;
+  }
+  // Find the most recent slip
+  const lastSlipTs = Math.max(...slips.map(e => e.timestamp));
+  // If the last slip was BEFORE the quit date (e.g. historical data), ignore it
+  // Otherwise, use the slip time as the new "start" time for the counter
+  return Math.max(quitDateTs, lastSlipTs);
+}
+/**
  * Filters journal entries based on the selected time range.
  * DAILY: Last 7 days
  * WEEKLY: Last 8 weeks

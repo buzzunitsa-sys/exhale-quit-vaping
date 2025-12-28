@@ -55,6 +55,16 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const updatedUser = await userEntity.addJournalEntry(entry);
     return ok(c, updatedUser);
   });
+  app.put('/api/user/:id/journal/:entryId', async (c) => {
+    const id = c.req.param('id');
+    const entryId = c.req.param('entryId');
+    const updates = await c.req.json<Partial<JournalEntry>>();
+    if (!updates || Object.keys(updates).length === 0) return bad(c, 'No updates provided');
+    const userEntity = new UserEntity(c.env, id);
+    if (!await userEntity.exists()) return notFound(c, 'User not found');
+    const updatedUser = await userEntity.updateJournalEntry(entryId, updates);
+    return ok(c, updatedUser);
+  });
   app.delete('/api/user/:id/journal/:entryId', async (c) => {
     const id = c.req.param('id');
     const entryId = c.req.param('entryId');

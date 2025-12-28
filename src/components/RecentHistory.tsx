@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { History, Trash2 } from 'lucide-react';
+import { History, Trash2, Pencil } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { JournalEntry } from '@shared/types';
@@ -8,8 +8,9 @@ import { cn } from '@/lib/utils';
 interface RecentHistoryProps {
   entries: JournalEntry[];
   onDelete?: (id: string) => void;
+  onEdit?: (entry: JournalEntry) => void;
 }
-export function RecentHistory({ entries, onDelete }: RecentHistoryProps) {
+export function RecentHistory({ entries, onDelete, onEdit }: RecentHistoryProps) {
   const recentEntries = useMemo(() => {
     return [...entries]
       .sort((a, b) => b.timestamp - a.timestamp)
@@ -44,8 +45,8 @@ export function RecentHistory({ entries, onDelete }: RecentHistoryProps) {
             const isHighIntensity = entry.intensity >= 7;
             const isMediumIntensity = entry.intensity >= 4 && entry.intensity < 7;
             return (
-              <div
-                key={entry.id}
+              <div 
+                key={entry.id} 
                 className="group flex items-center justify-between py-3 px-6 hover:bg-secondary/50 transition-colors border-b border-border/30 last:border-0"
               >
                 <div className="flex items-center gap-4 overflow-hidden">
@@ -71,8 +72,8 @@ export function RecentHistory({ entries, onDelete }: RecentHistoryProps) {
                   </div>
                 </div>
                 {/* Time & Actions */}
-                <div className="flex items-center gap-3 flex-shrink-0 ml-4">
-                  <div className="text-right">
+                <div className="flex items-center gap-1 flex-shrink-0 ml-4">
+                  <div className="text-right mr-2">
                     <p className="text-xs text-muted-foreground font-medium">
                       {formatDistanceToNow(entry.timestamp, { addSuffix: true })}
                     </p>
@@ -82,6 +83,17 @@ export function RecentHistory({ entries, onDelete }: RecentHistoryProps) {
                       </p>
                     )}
                   </div>
+                  {onEdit && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onEdit(entry)}
+                      className="h-8 w-8 text-muted-foreground hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/20 opacity-0 group-hover:opacity-100 transition-opacity md:opacity-0 opacity-100"
+                      title="Edit Entry"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                  )}
                   {onDelete && (
                     <Button
                       variant="ghost"
