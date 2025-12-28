@@ -25,14 +25,14 @@ export function HourlyChart({ entries = [] }: HourlyChartProps) {
   }, [entries]);
   const hasData = entries.length > 0;
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-sm">
+    <div className="bg-card border border-border/50 rounded-3xl p-6 shadow-sm transition-colors duration-300">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="font-semibold text-slate-800 text-lg flex items-center gap-2">
+        <h3 className="font-semibold text-foreground text-lg flex items-center gap-2">
           <Clock className="w-5 h-5 text-sky-500" />
           Hourly Overview
         </h3>
         {!hasData && (
-          <span className="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-full">
+          <span className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded-full">
             No data yet
           </span>
         )}
@@ -50,12 +50,12 @@ export function HourlyChart({ entries = [] }: HourlyChartProps) {
                 dy={10}
             />
             <Tooltip 
-              cursor={{ fill: '#f1f5f9' }}
+              cursor={{ fill: 'var(--muted)' }}
               content={({ active, payload }) => {
                 if (active && payload && payload.length) {
                   const d = payload[0].payload;
                   return (
-                    <div className="bg-slate-900 text-white text-xs p-2 rounded-lg shadow-xl border border-slate-700">
+                    <div className="bg-popover text-popover-foreground text-xs p-2 rounded-lg shadow-xl border border-border">
                       <p className="font-bold mb-1">{d.label}</p>
                       <p>Cravings: <span className="font-bold text-sky-400">{d.val}</span></p>
                     </div>
@@ -68,7 +68,7 @@ export function HourlyChart({ entries = [] }: HourlyChartProps) {
               {data.map((entry, index) => (
                 <Cell 
                   key={`cell-${index}`} 
-                  fill={entry.val > 0 ? '#38bdf8' : '#f1f5f9'} 
+                  fill={entry.val > 0 ? '#38bdf8' : 'var(--secondary)'} 
                 />
               ))}
             </Bar>
@@ -76,7 +76,7 @@ export function HourlyChart({ entries = [] }: HourlyChartProps) {
         </ResponsiveContainer>
       </div>
       {!hasData && (
-        <p className="text-center text-xs text-slate-400 mt-2">
+        <p className="text-center text-xs text-muted-foreground mt-2">
           Log your cravings to see patterns here.
         </p>
       )}

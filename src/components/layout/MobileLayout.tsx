@@ -39,7 +39,7 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
     }
   };
   return (
-    <div className="min-h-[100dvh] bg-slate-50 dark:bg-slate-950 flex flex-col">
+    <div className="min-h-[100dvh] bg-slate-50 dark:bg-background flex flex-col transition-colors duration-300">
       <main className={cn("flex-1 pb-24 md:pb-0 md:pl-64", className)}>
         <div className="w-full h-full">
             {children || <Outlet />}
@@ -47,7 +47,7 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
       </main>
       {/* Desktop Sidebar (Hidden on Mobile) */}
       {showNav && (
-        <aside className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 border-r bg-card flex-col p-6 z-50">
+        <aside className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 border-r border-border bg-card flex-col p-6 z-50">
           <div className="flex items-center gap-2 mb-8">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-400 to-violet-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
               <span className="text-white font-bold">E</span>
@@ -66,20 +66,20 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
       {/* Mobile Bottom Nav (Reference Style) */}
       {showNav && (
         <div className="md:hidden fixed bottom-6 left-4 right-4 z-50">
-          <nav className="bg-white rounded-full shadow-lg shadow-slate-200/50 border border-slate-100 h-16 px-6 flex items-center justify-between relative">
+          <nav className="bg-white/80 backdrop-blur-md dark:bg-card/90 rounded-full shadow-lg shadow-slate-200/50 dark:shadow-violet-900/10 border border-border h-16 px-6 flex items-center justify-between relative transition-all duration-300">
             {/* Left: Dashboard/Calendar */}
-            <NavLink
-              to="/dashboard"
+            <NavLink 
+              to="/dashboard" 
               className={({ isActive }) => cn(
                 "p-2 rounded-full transition-colors",
-                isActive ? "text-violet-600" : "text-slate-400 hover:text-slate-600"
+                isActive ? "text-violet-600 dark:text-violet-400" : "text-muted-foreground hover:text-foreground"
               )}
             >
               <Calendar className="w-6 h-6" />
             </NavLink>
             {/* Center: FAB */}
             <div className="absolute left-1/2 -translate-x-1/2 -top-6">
-              <button
+              <button 
                 onClick={() => setIsLogOpen(true)}
                 className="w-14 h-14 rounded-full bg-gradient-to-r from-sky-500 to-violet-600 hover:opacity-90 text-white shadow-lg shadow-violet-500/30 flex items-center justify-center transition-transform active:scale-95"
               >
@@ -87,11 +87,11 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
               </button>
             </div>
             {/* Right: Stats */}
-            <NavLink
-              to="/health"
+            <NavLink 
+              to="/health" 
               className={({ isActive }) => cn(
                 "p-2 rounded-full transition-colors",
-                isActive ? "text-violet-600" : "text-slate-400 hover:text-slate-600"
+                isActive ? "text-violet-600 dark:text-violet-400" : "text-muted-foreground hover:text-foreground"
               )}
             >
               <BarChart3 className="w-6 h-6" />
@@ -101,9 +101,9 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
       )}
       {/* Log Craving Dialog */}
       <Dialog open={isLogOpen} onOpenChange={setIsLogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-card border-border">
           <DialogHeader>
-            <DialogTitle>Log a Craving</DialogTitle>
+            <DialogTitle className="text-foreground">Log a Craving</DialogTitle>
           </DialogHeader>
           <JournalForm onSubmit={handleAddEntry} onCancel={() => setIsLogOpen(false)} />
         </DialogContent>
@@ -113,13 +113,13 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
 }
 function NavItem({ icon, label, to }: { icon: React.ReactNode, label: string, to: string }) {
   return (
-    <NavLink
-      to={to}
+    <NavLink 
+      to={to} 
       className={({ isActive }) => cn(
         "flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-200 group",
-        isActive
-          ? "bg-violet-50 text-violet-600 font-medium"
-          : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+        isActive 
+          ? "bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 font-medium" 
+          : "text-muted-foreground hover:bg-secondary hover:text-foreground"
       )}
     >
       {icon}

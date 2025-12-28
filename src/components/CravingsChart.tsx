@@ -31,9 +31,9 @@ export function CravingsChart({ entries }: CravingsChartProps) {
   }, [entries]);
   if (entries.length === 0) return null;
   return (
-    <Card className="border-none shadow-sm bg-white dark:bg-slate-900">
+    <Card className="bg-card border border-border/50 shadow-sm transition-colors duration-300">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg flex items-center gap-2">
+        <CardTitle className="text-lg flex items-center gap-2 text-foreground">
           <Activity className="w-5 h-5 text-emerald-500" />
           Recent Cravings Intensity
         </CardTitle>
@@ -44,7 +44,7 @@ export function CravingsChart({ entries }: CravingsChartProps) {
             <BarChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
               <XAxis 
                 dataKey="date" 
-                tick={{ fontSize: 10, fill: '#94a3b8' }} 
+                tick={{ fontSize: 10, fill: '#94a3b8' }}
                 axisLine={false}
                 tickLine={false}
                 interval={0}
@@ -59,10 +59,10 @@ export function CravingsChart({ entries }: CravingsChartProps) {
                   if (active && payload && payload.length) {
                     const d = payload[0].payload;
                     return (
-                      <div className="bg-slate-900 text-white text-xs p-2 rounded-lg shadow-xl border border-slate-700">
+                      <div className="bg-popover text-popover-foreground text-xs p-2 rounded-lg shadow-xl border border-border">
                         <p className="font-bold mb-1">{d.fullDate}</p>
                         <p>Intensity: <span className="font-bold text-emerald-400">{d.intensity}/10</span></p>
-                        <p className="text-slate-400">Trigger: {d.trigger}</p>
+                        <p className="text-muted-foreground">Trigger: {d.trigger}</p>
                       </div>
                     );
                   }

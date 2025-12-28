@@ -29,9 +29,9 @@ export function DashboardPage() {
   const moneySaved = weeksElapsed * user.profile.unitsPerWeek * user.profile.costPerUnit;
   const dailySavings = (user.profile.unitsPerWeek * user.profile.costPerUnit) / 7;
   return (
-    <div className="min-h-screen bg-slate-50 pb-32">
+    <div className="min-h-screen bg-slate-50 dark:bg-background pb-32 transition-colors duration-300">
       {/* Header Section with Gradient - Blue Dominant with Purple Hint */}
-      <div className="bg-gradient-to-br from-sky-500 via-blue-600 to-violet-600 rounded-b-[40px] pt-8 pb-20 px-6 text-white shadow-lg shadow-violet-200/50">
+      <div className="bg-gradient-to-br from-sky-500 via-blue-600 to-violet-600 rounded-b-[40px] pt-8 pb-20 px-6 text-white shadow-lg shadow-violet-200/50 dark:shadow-none">
         <div className="flex justify-between items-start mb-6">
           <div>
             <h1 className="text-4xl font-bold mb-1">Hello</h1>
@@ -59,8 +59,8 @@ export function DashboardPage() {
         <PuffCounter puffs={puffsAvoided} nicotine={nicotineAvoided} limit={0} />
         <SavingsChart 
           currentSavings={moneySaved} 
-          dailySavings={dailySavings} 
-          currency={user.profile.currency} 
+          dailySavings={dailySavings}
+          currency={user.profile.currency}
         />
         <HourlyChart entries={user.journal} />
       </div>

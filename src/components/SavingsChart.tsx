@@ -33,10 +33,10 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
   }, [currentSavings, dailySavings]);
   const projectedTotal = data[data.length - 1].savings;
   return (
-    <Card className="border-none shadow-sm bg-white dark:bg-slate-900">
+    <Card className="bg-card border border-border/50 shadow-sm transition-colors duration-300">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-lg flex items-center gap-2">
+          <CardTitle className="text-lg flex items-center gap-2 text-foreground">
             <TrendingUp className="w-5 h-5 text-emerald-500" />
             Savings Projection
           </CardTitle>
@@ -48,7 +48,7 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
       <CardContent>
         <div className="mb-4">
           <p className="text-sm text-muted-foreground">Projected Total</p>
-          <p className="text-2xl font-bold text-slate-900 dark:text-white">
+          <p className="text-2xl font-bold text-foreground">
             {currency === 'USD' ? '$' : currency + ' '}
             {projectedTotal.toFixed(2)}
           </p>
@@ -62,10 +62,10 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
                   <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.5} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
               <XAxis 
                 dataKey="date" 
-                tick={{ fontSize: 10, fill: '#94a3b8' }} 
+                tick={{ fontSize: 10, fill: '#94a3b8' }}
                 axisLine={false}
                 tickLine={false}
                 interval={6}
@@ -80,7 +80,7 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
                   if (active && payload && payload.length) {
                     const d = payload[0].payload;
                     return (
-                      <div className="bg-slate-900 text-white text-xs p-2 rounded-lg shadow-xl border border-slate-700">
+                      <div className="bg-popover text-popover-foreground text-xs p-2 rounded-lg shadow-xl border border-border">
                         <p className="font-bold mb-1">{d.fullDate}</p>
                         <p>Savings: <span className="font-bold text-emerald-400">
                           {currency === 'USD' ? '$' : currency + ' '}
