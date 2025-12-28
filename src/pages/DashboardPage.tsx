@@ -1,13 +1,11 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useAppStore } from '@/lib/store';
-import { differenceInSeconds, format, isSameDay } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
 import { Crown, Settings2, Wind } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { TimerDisplay } from '@/components/ui/timer-display';
 import { DateStrip } from '@/components/ui/date-strip';
-import { PuffCounter } from '@/components/ui/puff-counter';
+import { DailyTracker } from '@/components/ui/daily-tracker';
 import { HourlyChart } from '@/components/ui/hourly-chart';
-import { SavingsChart } from '@/components/SavingsChart';
 import { ShareButton } from '@/components/ui/share-button';
 import { useHaptic } from '@/hooks/use-haptic';
 import { api } from '@/lib/api-client';
@@ -22,21 +20,39 @@ export function DashboardPage() {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
-  // Calculate slips for today
-  const puffsTakenToday = useMemo(() => {
-    if (!user?.journal) return 0;
-    return user.journal
-      .filter(entry => isSameDay(entry.timestamp, now))
-      .reduce((sum, entry) => sum + (entry.puffs || 0), 0);
-  }, [user?.journal, now]);
+  // Calculate stats for today
+  const { puffsToday, costWasted, nicotineUsed, projectedSavings } = useMemo(() => {
+    if (!user?.profile || !user?.journal) {
+      return { puffsToday: 0, costWasted: 0, nicotineUsed: 0, projectedSavings: 0 };
+    }
+    const todayEntries = user.journal.filter(entry => isSameDay(entry.timestamp, now));
+    const puffsToday = todayEntries.reduce((sum, entry) => sum + (entry.puffs || 0), 0);
+    // Cost calculations
+    // Default to 200 puffs per unit if not set (standard pod estimate)
+    const puffsPerUnit = user.profile.puffsPerUnit || 200; 
+    const costPerPuff = user.profile.costPerUnit / puffsPerUnit;
+    const costWasted = puffsToday * costPerPuff;
+    // Nicotine calculations (approx 50mg per pod/unit usually, or 5% strength)
+    // This is an estimation: 50mg per unit / puffs per unit
+    const nicotinePerUnit = 50; // mg (standard 5% pod)
+    const nicotinePerPuff = nicotinePerUnit / puffsPerUnit;
+    const nicotineUsed = puffsToday * nicotinePerPuff;
+    // Projected Savings
+    // Baseline daily cost = (units per week * cost per unit) / 7
+    const dailyBaselineCost = (user.profile.unitsPerWeek * user.profile.costPerUnit) / 7;
+    const projectedSavings = Math.max(0, dailyBaselineCost - costWasted);
+    return { puffsToday, costWasted, nicotineUsed, projectedSavings };
+  }, [user?.journal, user?.profile, now]);
   const handleQuickLog = async () => {
     if (!user) return;
+    // Quick log adds 1 puff
     const newEntry: JournalEntry = {
       id: crypto.randomUUID(),
       timestamp: Date.now(),
       intensity: 5,
       trigger: "Quick Log",
-      puffs: 1
+      puffs: 1,
+      note: "Quick log from dashboard"
     };
     try {
       const updatedUser = await api<User>(`/api/user/${user.id}/journal`, {
@@ -45,23 +61,13 @@ export function DashboardPage() {
       });
       setUser(updatedUser);
       vibrate('success');
-      toast.success("Puff logged. Keep tracking!");
+      toast.success("Puff logged.");
     } catch (err) {
       vibrate('error');
       toast.error("Failed to log puff");
     }
   };
   if (!user?.profile) return null;
-  const quitDate = new Date(user.profile.quitDate);
-  const secondsElapsed = differenceInSeconds(now, quitDate);
-  // Calculate avoided stats
-  const weeksElapsed = secondsElapsed / (60 * 60 * 24 * 7);
-  const podsAvoided = weeksElapsed * user.profile.unitsPerWeek;
-  const puffsAvoided = podsAvoided * 200;
-  const nicotineAvoided = podsAvoided * 50; // mg
-  // Calculate savings
-  const moneySaved = weeksElapsed * user.profile.unitsPerWeek * user.profile.costPerUnit;
-  const dailySavings = (user.profile.unitsPerWeek * user.profile.costPerUnit) / 7;
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background pb-32 transition-colors duration-300">
       {/* Header Section with Gradient */}
@@ -74,13 +80,13 @@ export function DashboardPage() {
             </p>
           </div>
           <div className="flex gap-3">
-            <ShareButton 
-              secondsFree={secondsElapsed} 
-              moneySaved={moneySaved}
+            <ShareButton
+              secondsFree={0} // Not using time free for share context anymore in this view
+              moneySaved={projectedSavings}
               currency={user.profile.currency}
             />
             {/* SOS Breathing Button */}
-            <Link 
+            <Link
               to="/breathe"
               onClick={() => vibrate('medium')}
               className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center group"
@@ -88,14 +94,14 @@ export function DashboardPage() {
             >
               <Wind className="w-6 h-6 text-sky-200 group-hover:text-white transition-colors" />
             </Link>
-            <Link 
+            <Link
               to="/achievements"
               onClick={() => vibrate('light')}
               className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
             >
               <Crown className="w-6 h-6 text-yellow-300 fill-yellow-300" />
             </Link>
-            <Link 
+            <Link
               to="/profile"
               onClick={() => vibrate('light')}
               className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
@@ -111,21 +117,14 @@ export function DashboardPage() {
       </div>
       {/* Main Content - Overlapping Header */}
       <div className="px-4 -mt-12 space-y-4 relative z-10">
-        <TimerDisplay secondsElapsed={secondsElapsed} />
-        <PuffCounter 
-          puffs={puffsAvoided} 
-          nicotine={nicotineAvoided} 
-          limit={0}
-          puffsTaken={puffsTakenToday}
-          onQuickAdd={handleQuickLog}
+        <DailyTracker 
+          puffsToday={puffsToday}
+          costWasted={costWasted}
+          nicotineUsed={nicotineUsed}
+          projectedSavings={projectedSavings}
+          currency={user.profile.currency}
+          onQuickLog={handleQuickLog}
         />
-        <div className="w-full overflow-hidden rounded-3xl">
-          <SavingsChart 
-            currentSavings={moneySaved} 
-            dailySavings={dailySavings}
-            currency={user.profile.currency}
-          />
-        </div>
         <div className="w-full overflow-hidden rounded-3xl">
           <HourlyChart entries={user.journal} />
         </div>

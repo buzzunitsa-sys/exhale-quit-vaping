@@ -18,6 +18,7 @@ const profileSchema = z.object({
   quitDate: z.string().min(1, "Quit date is required"),
   costPerUnit: z.coerce.number().min(0.01, "Cost must be greater than 0"),
   unitsPerWeek: z.coerce.number().min(0.1, "Usage must be greater than 0"),
+  puffsPerUnit: z.coerce.number().min(1, "Puffs per unit must be at least 1").default(200),
   currency: z.string().default("USD"),
 });
 type ProfileForm = z.infer<typeof profileSchema>;
@@ -33,6 +34,7 @@ export function ProfilePage() {
       quitDate: user?.profile?.quitDate || new Date().toISOString().slice(0, 16),
       costPerUnit: user?.profile?.costPerUnit || 0,
       unitsPerWeek: user?.profile?.unitsPerWeek || 0,
+      puffsPerUnit: user?.profile?.puffsPerUnit || 200,
       currency: user?.profile?.currency || 'USD',
     }
   });
@@ -95,7 +97,7 @@ export function ProfilePage() {
     <div className="min-h-screen bg-slate-50 dark:bg-background pb-24 transition-colors duration-300">
       <PageHeader 
         title="Profile & Settings" 
-        subtitle="Manage your quit plan and account preferences."
+        subtitle="Manage your usage plan and account preferences."
       />
       <div className="px-4 space-y-6 relative z-10">
         {/* Appearance Section */}
@@ -133,15 +135,15 @@ export function ProfilePage() {
               </div>
           </CardContent>
         </Card>
-        {/* Quit Plan Settings */}
+        {/* Usage Plan Settings */}
         <Card className="border border-border/50 shadow-sm bg-card transition-colors duration-300">
           <CardHeader>
-              <CardTitle className="text-lg text-foreground">Quit Plan Settings</CardTitle>
+              <CardTitle className="text-lg text-foreground">Usage Plan Settings</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="quitDate" className="text-foreground">Quit Date</Label>
+                <Label htmlFor="quitDate" className="text-foreground">Start Date</Label>
                 <Input
                   id="quitDate"
                   type="datetime-local"
@@ -173,6 +175,20 @@ export function ProfilePage() {
                   />
                   {errors.unitsPerWeek && <p className="text-sm text-red-500">{errors.unitsPerWeek.message}</p>}
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="puffs" className="text-foreground">Puffs per Device/Pod</Label>
+                <Input
+                  id="puffs"
+                  type="number"
+                  step="1"
+                  {...register('puffsPerUnit')}
+                  className="bg-background border-input text-foreground focus-visible:ring-violet-500"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Used to calculate cost per puff.
+                </p>
+                {errors.puffsPerUnit && <p className="text-sm text-red-500">{errors.puffsPerUnit.message}</p>}
               </div>
               <Button type="submit" className="w-full bg-gradient-to-r from-sky-500 to-violet-600 hover:opacity-90 transition-opacity text-white" disabled={isSubmitting}>
                 <Save className="w-4 h-4 mr-2" />
@@ -207,7 +223,7 @@ export function ProfilePage() {
           Log Out
         </Button>
         <div className="text-center pt-4 pb-8">
-          <p className="text-xs text-muted-foreground">Built with ❤��� by Aurelia | Your AI Co-founder</p>
+          <p className="text-xs text-muted-foreground">Built with ❤️ by Aurelia | Your AI Co-founder</p>
         </div>
       </div>
     </div>

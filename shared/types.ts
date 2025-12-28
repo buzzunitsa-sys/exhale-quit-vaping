@@ -7,6 +7,7 @@ export interface QuitProfile {
   quitDate: string; // ISO string
   costPerUnit: number;
   unitsPerWeek: number;
+  puffsPerUnit?: number; // New field for cost per puff calculation
   currency: string;
   motivation?: string;
 }

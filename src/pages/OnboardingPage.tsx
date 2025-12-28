@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Calendar, DollarSign, Wind } from 'lucide-react';
+import { ArrowRight, Calendar, DollarSign, Wind, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,6 +21,7 @@ const profileSchema = z.object({
   quitDate: z.string().min(1, "Quit date is required"),
   costPerUnit: z.coerce.number().min(0.01, "Cost must be greater than 0"),
   unitsPerWeek: z.coerce.number().min(0.1, "Usage must be greater than 0"),
+  puffsPerUnit: z.coerce.number().min(1, "Puffs per unit must be at least 1").default(200),
   currency: z.string().default("USD"),
 });
 type EmailForm = z.infer<typeof emailSchema>;
@@ -68,7 +69,7 @@ export function OnboardingPage() {
       if (updatedUser.profile) {
         updateProfile(updatedUser.profile);
       }
-      toast.success("You're all set! Freedom starts now.");
+      toast.success("You're all set! Start tracking.");
       navigate('/dashboard');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to save profile");
@@ -82,7 +83,7 @@ export function OnboardingPage() {
             <Wind className="text-white w-8 h-8" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight mb-2 bg-clip-text text-transparent bg-gradient-to-r from-sky-500 to-violet-600">Exhale</h1>
-          <p className="text-muted-foreground">Your journey to freedom begins here.</p>
+          <p className="text-muted-foreground">Track your usage. Regain control.</p>
         </div>
         <AnimatePresence mode="wait">
           {step === 'login' ? (
@@ -135,7 +136,8 @@ function ProfileWizard({ onSubmit }: { onSubmit: (data: ProfileForm) => void }) 
       quitDate: new Date().toISOString().slice(0, 16), // Local datetime-local format
       currency: 'USD',
       costPerUnit: 0,
-      unitsPerWeek: 0
+      unitsPerWeek: 0,
+      puffsPerUnit: 200 // Default for a pod
     }
   });
   return (
@@ -150,7 +152,7 @@ function ProfileWizard({ onSubmit }: { onSubmit: (data: ProfileForm) => void }) 
             <div className="space-y-2">
               <Label className="flex items-center gap-2 text-foreground">
                 <Calendar className="w-4 h-4 text-violet-500" />
-                When did you quit?
+                Start Date
               </Label>
               <Input
                 type="datetime-local"
@@ -163,7 +165,7 @@ function ProfileWizard({ onSubmit }: { onSubmit: (data: ProfileForm) => void }) 
               <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-foreground">
                   <DollarSign className="w-4 h-4 text-violet-500" />
-                  Cost per pod/pack
+                  Cost per Unit
                 </Label>
                 <Input
                   type="number"
@@ -177,7 +179,7 @@ function ProfileWizard({ onSubmit }: { onSubmit: (data: ProfileForm) => void }) 
               <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-foreground">
                   <Wind className="w-4 h-4 text-violet-500" />
-                  Pods per week
+                  Units per Week
                 </Label>
                 <Input
                   type="number"
@@ -188,6 +190,23 @@ function ProfileWizard({ onSubmit }: { onSubmit: (data: ProfileForm) => void }) 
                 />
                 {errors.unitsPerWeek && <p className="text-sm text-red-500">{errors.unitsPerWeek.message}</p>}
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-foreground">
+                <Zap className="w-4 h-4 text-violet-500" />
+                Puffs per Device/Pod
+              </Label>
+              <Input
+                type="number"
+                step="1"
+                placeholder="e.g. 200 for pod, 5000 for disposable"
+                {...register('puffsPerUnit')}
+                className="h-12 bg-background border-input text-foreground focus-visible:ring-sky-500"
+              />
+              <p className="text-xs text-muted-foreground">
+                Used to calculate cost per puff. (Pod ≈ 200, Disposable ≈ 5000)
+              </p>
+              {errors.puffsPerUnit && <p className="text-sm text-red-500">{errors.puffsPerUnit.message}</p>}
             </div>
             <Button type="submit" className="w-full h-12 text-lg bg-gradient-to-r from-sky-500 to-violet-600 hover:opacity-90 transition-opacity text-white" disabled={isSubmitting}>
               {isSubmitting ? "Saving..." : "Start Tracking"} <ArrowRight className="ml-2 w-5 h-5" />

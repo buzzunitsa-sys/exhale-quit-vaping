@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Plus, Minus } from 'lucide-react';
 const TRIGGERS = [
   "Stress", "Boredom", "Social Pressure", "Habit/Routine", "Alcohol", "Coffee", "After Meal", "Other"
 ];
@@ -17,54 +17,98 @@ interface JournalFormProps {
 }
 export function JournalForm({ onSubmit, onCancel }: JournalFormProps) {
   const [intensity, setIntensity] = useState([5]);
-  const [trigger, setTrigger] = useState("");
+  const [trigger, setTrigger] = useState("Habit/Routine");
   const [note, setNote] = useState("");
-  const [hadSlip, setHadSlip] = useState(false);
-  const [puffs, setPuffs] = useState<string>("");
+  const [isLogPuff, setIsLogPuff] = useState(true); // Default to true for usage tracking
+  const [puffs, setPuffs] = useState<number>(1);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!trigger) {
+    // If logging puff, trigger is optional or default
+    if (!isLogPuff && !trigger) {
       toast.error("Please select a trigger");
       return;
     }
-    const puffsNum = hadSlip && puffs ? parseInt(puffs, 10) : 0;
     onSubmit({
       intensity: intensity[0],
-      trigger,
+      trigger: trigger || "Quick Log",
       note,
-      puffs: puffsNum > 0 ? puffsNum : undefined
+      puffs: isLogPuff ? puffs : undefined
     });
     // Reset form
     setIntensity([5]);
-    setTrigger("");
+    setTrigger("Habit/Routine");
     setNote("");
-    setHadSlip(false);
-    setPuffs("");
+    setIsLogPuff(true);
+    setPuffs(1);
   };
+  const incrementPuffs = () => setPuffs(p => p + 1);
+  const decrementPuffs = () => setPuffs(p => Math.max(1, p - 1));
   return (
     <form onSubmit={handleSubmit} className="space-y-6 py-4">
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label>Craving Intensity (1-10)</Label>
-          <div className="flex items-center gap-4">
-            <span className="text-2xl font-bold w-8 text-center text-sky-600">{intensity[0]}</span>
-            <Slider
-              value={intensity}
-              onValueChange={setIntensity}
-              max={10}
-              min={1}
-              step={1}
-              className="flex-1"
-            />
-          </div>
-          <div className="flex justify-between text-xs text-muted-foreground px-1">
-            <span>Mild</span>
-            <span>Moderate</span>
-            <span>Severe</span>
+      {/* Mode Toggle */}
+      <div className="flex items-center justify-between bg-secondary/30 p-3 rounded-xl">
+        <Label className="text-base font-medium">Log Usage (Puffs)</Label>
+        <Switch
+          checked={isLogPuff}
+          onCheckedChange={setIsLogPuff}
+        />
+      </div>
+      {isLogPuff ? (
+        <div className="space-y-6 animate-fade-in">
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <Label className="text-lg font-semibold">How many puffs?</Label>
+            <div className="flex items-center gap-6">
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="icon" 
+                className="h-12 w-12 rounded-full"
+                onClick={decrementPuffs}
+              >
+                <Minus className="w-6 h-6" />
+              </Button>
+              <div className="text-5xl font-bold text-sky-600 w-20 text-center">
+                {puffs}
+              </div>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="icon" 
+                className="h-12 w-12 rounded-full"
+                onClick={incrementPuffs}
+              >
+                <Plus className="w-6 h-6" />
+              </Button>
+            </div>
           </div>
         </div>
+      ) : (
+        <div className="space-y-4 animate-fade-in">
+          <div className="space-y-2">
+            <Label>Craving Intensity (1-10)</Label>
+            <div className="flex items-center gap-4">
+              <span className="text-2xl font-bold w-8 text-center text-sky-600">{intensity[0]}</span>
+              <Slider
+                value={intensity}
+                onValueChange={setIntensity}
+                max={10}
+                min={1}
+                step={1}
+                className="flex-1"
+              />
+            </div>
+            <div className="flex justify-between text-xs text-muted-foreground px-1">
+              <span>Mild</span>
+              <span>Moderate</span>
+              <span>Severe</span>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Common Fields (Optional/Context) */}
+      <div className="space-y-4 pt-2 border-t border-border/50">
         <div className="space-y-2">
-          <Label>Trigger</Label>
+          <Label>Trigger (Optional)</Label>
           <Select value={trigger} onValueChange={setTrigger}>
             <SelectTrigger>
               <SelectValue placeholder="What triggered this?" />
@@ -76,45 +120,13 @@ export function JournalForm({ onSubmit, onCancel }: JournalFormProps) {
             </SelectContent>
           </Select>
         </div>
-        {/* Slip Tracking Section */}
-        <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-border/50 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label className="text-base">Did you vape?</Label>
-              <p className="text-xs text-muted-foreground">Log any slips to track your usage.</p>
-            </div>
-            <Switch
-              checked={hadSlip}
-              onCheckedChange={setHadSlip}
-            />
-          </div>
-          {hadSlip && (
-            <div className="pt-2 animate-accordion-down overflow-hidden">
-              <Label className="mb-2 block text-red-500 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4" />
-                How many puffs?
-              </Label>
-              <Input
-                type="number"
-                min="1"
-                placeholder="e.g. 5"
-                value={puffs}
-                onChange={(e) => setPuffs(e.target.value)}
-                className="bg-background border-red-200 focus-visible:ring-red-500"
-              />
-              <p className="text-xs text-muted-foreground mt-2">
-                Be honest. Tracking slips helps you understand your patterns.
-              </p>
-            </div>
-          )}
-        </div>
         <div className="space-y-2">
           <Label>Notes (Optional)</Label>
           <Textarea
-            placeholder="How are you feeling? What happened?"
+            placeholder="Any context?"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="resize-none h-24"
+            className="resize-none h-20"
           />
         </div>
       </div>
@@ -122,11 +134,11 @@ export function JournalForm({ onSubmit, onCancel }: JournalFormProps) {
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
         )}
-        <Button 
-          type="submit" 
-          className={hadSlip ? "bg-red-500 hover:bg-red-600 text-white" : "bg-sky-500 hover:bg-sky-600 text-white"}
+        <Button
+          type="submit"
+          className={isLogPuff ? "bg-sky-500 hover:bg-sky-600 text-white w-full" : "bg-violet-500 hover:bg-violet-600 text-white w-full"}
         >
-          {hadSlip ? "Log Slip" : "Log Craving"}
+          {isLogPuff ? "Log Puffs" : "Log Craving"}
         </Button>
       </div>
     </form>
