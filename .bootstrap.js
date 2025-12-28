@@ -81,7 +81,8 @@ function runSetupCommands() {
     "bun add canvas-confetti@^1.9.0",
     "bun add @types/canvas-confetti@^1.6.0",
     "bun add react-circular-progressbar@^2.1.0",
-    "bun add lucide-react recharts clsx tailwind-merge framer-motion"
+    "bun add lucide-react recharts clsx tailwind-merge framer-motion",
+    "bun add react-select"
 ];
     
     if (commands.length === 0) {
