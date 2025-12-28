@@ -15,6 +15,7 @@ import { MilestoneCelebration } from '@/components/MilestoneCelebration';
 import { BreathingCard } from '@/components/BreathingCard';
 import { QuoteCarousel } from '@/components/QuoteCarousel';
 import { TimeSinceLastPuff } from '@/components/TimeSinceLastPuff';
+import { MotivationCard } from '@/components/MotivationCard';
 import { useHaptic } from '@/hooks/use-haptic';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
@@ -52,7 +53,8 @@ export function DashboardPage() {
     dailyBaselineCost,
     weeklyConsistency,
     secondsElapsed,
-    secondsFreeForRank
+    secondsFreeForRank,
+    lastPuffTime
   } = useMemo(() => {
     if (!user?.profile) {
       return {
@@ -64,7 +66,8 @@ export function DashboardPage() {
         dailyBaselineCost: 0,
         weeklyConsistency: [],
         secondsElapsed: 0,
-        secondsFreeForRank: 0
+        secondsFreeForRank: 0,
+        lastPuffTime: 0
       };
     }
     const journal = user.journal || [];
@@ -112,7 +115,8 @@ export function DashboardPage() {
       dailyBaselineCost,
       weeklyConsistency,
       secondsElapsed,
-      secondsFreeForRank
+      secondsFreeForRank,
+      lastPuffTime
     };
   }, [user?.journal, user?.profile, now, user?.createdAt]);
   const handleQuickLog = async () => {
@@ -151,66 +155,67 @@ export function DashboardPage() {
       <MilestoneCelebration />
       {/* Header Section with Gradient */}
       <div className="bg-gradient-to-br from-sky-500 via-blue-600 to-violet-600 rounded-b-[40px] pt-8 pb-20 px-6 text-white shadow-lg shadow-violet-200/50 dark:shadow-none relative z-0">
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h1 className="text-4xl font-bold mb-1 tracking-tight">Hello</h1>
-            <p className="text-sky-100 font-medium uppercase tracking-wide text-sm opacity-90">
-              {format(now, 'EEEE, MMMM d')}
-            </p>
-            {/* Rank Badge */}
-            <div className="mt-4 inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
-              <RankIcon className="w-4 h-4 text-yellow-300 fill-yellow-300" />
-              <span className="text-xs font-bold text-white tracking-wide uppercase">
-                {currentRank.title}
-              </span>
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h1 className="text-4xl font-bold mb-1 tracking-tight">Hello</h1>
+              <p className="text-sky-100 font-medium uppercase tracking-wide text-sm opacity-90">
+                {format(now, 'EEEE, MMMM d')}
+              </p>
+              {/* Rank Badge */}
+              <div className="mt-4 inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
+                <RankIcon className="w-4 h-4 text-yellow-300 fill-yellow-300" />
+                <span className="text-xs font-bold text-white tracking-wide uppercase">
+                  {currentRank.title}
+                </span>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              {!isStandalone && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={promptInstall}
+                  className="bg-white/20 hover:bg-white/30 text-white rounded-xl backdrop-blur-sm transition-all duration-200"
+                  title="Install App"
+                >
+                  <Download className="w-5 h-5" />
+                </Button>
+              )}
+              <ShareButton
+                secondsFree={secondsFreeForRank}
+                moneySaved={totalMoneySaved}
+                currency={user.profile.currency}
+              />
+              <Link
+                to="/achievements"
+                onClick={() => vibrate('light')}
+                className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
+              >
+                <Crown className="w-6 h-6 text-yellow-300 fill-yellow-300" />
+              </Link>
+              <Link
+                to="/profile"
+                onClick={() => vibrate('light')}
+                className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
+              >
+                <Settings2 className="w-6 h-6 text-white" />
+              </Link>
             </div>
           </div>
-          <div className="flex gap-3">
-            {!isStandalone && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={promptInstall}
-                className="bg-white/20 hover:bg-white/30 text-white rounded-xl backdrop-blur-sm transition-all duration-200"
-                title="Install App"
-              >
-                <Download className="w-5 h-5" />
-              </Button>
-            )}
-            <ShareButton 
-              secondsFree={secondsFreeForRank} 
-              moneySaved={totalMoneySaved}
-              currency={user.profile.currency}
-            />
-            <Link 
-              to="/achievements" 
-              onClick={() => vibrate('light')}
-              className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
-            >
-              <Crown className="w-6 h-6 text-yellow-300 fill-yellow-300" />
-            </Link>
-            <Link 
-              to="/profile" 
-              onClick={() => vibrate('light')}
-              className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
-            >
-              <Settings2 className="w-6 h-6 text-white" />
-            </Link>
+          {/* Date Strip */}
+          <div className="mb-4">
+            <DateStrip />
           </div>
-        </div>
-        {/* Date Strip */}
-        <div className="mb-4">
-          <DateStrip />
         </div>
       </div>
       {/* Main Content - Overlapping Header */}
-      <div className="px-4 -mt-12 space-y-4 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 space-y-4 relative z-10">
         {/* Daily Pledge Button */}
         <DailyPledge />
         {/* Daily Tracker (Puff Count) */}
-        {/* Added mb-8 to ensure the absolute positioned Quick Log button doesn't overlap with next content */}
         <div className="mb-8">
-          <DailyTracker 
+          <DailyTracker
             puffsToday={puffsToday}
             costWasted={costWastedToday}
             nicotineUsed={nicotineUsedToday}
@@ -222,10 +227,12 @@ export function DashboardPage() {
         </div>
         {/* Quote Carousel */}
         <QuoteCarousel />
+        {/* Motivation Card */}
+        <MotivationCard motivation={user.profile.motivation} />
         {/* Time Since Last Puff */}
-        <TimeSinceLastPuff 
-          journal={user.journal || []} 
-          quitDate={user.profile.quitDate} 
+        <TimeSinceLastPuff
+          lastPuffTime={lastPuffTime}
+          now={now}
         />
         {/* Breathing Card */}
         <BreathingCard />
@@ -237,16 +244,16 @@ export function DashboardPage() {
         </div>
         {/* Savings Goal Card (if configured) */}
         {user.profile.savingsGoal && user.profile.savingsGoal.cost > 0 && (
-          <SavingsGoalCard 
-            savedAmount={totalMoneySaved} 
+          <SavingsGoalCard
+            savedAmount={totalMoneySaved}
             goal={user.profile.savingsGoal}
             currency={user.profile.currency}
           />
         )}
         {/* Savings Chart */}
         <div className="w-full h-[250px] rounded-3xl min-w-0 overflow-hidden">
-          <SavingsChart 
-            currentSavings={totalMoneySaved} 
+          <SavingsChart
+            currentSavings={totalMoneySaved}
             dailySavings={dailyBaselineCost}
             currency={user.profile.currency}
           />

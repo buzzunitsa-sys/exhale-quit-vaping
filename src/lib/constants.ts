@@ -75,6 +75,7 @@ export const GUEST_USER: User = {
     country: 'US',
     nicotineStrength: 50,
     volumePerUnit: 2.0,
+    motivation: "To run my first marathon with healthy lungs.",
     savingsGoal: {
       name: "New Headphones",
       cost: 250

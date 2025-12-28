@@ -7,10 +7,11 @@ import { api } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { LogOut, Save, User as UserIcon, Palette, RefreshCw, Beaker, Zap, Droplets, Target, Globe, LogIn, Download, Upload, FileJson } from 'lucide-react';
+import { LogOut, Save, User as UserIcon, Palette, RefreshCw, Beaker, Zap, Droplets, Target, Globe, LogIn, Download, Upload, FileJson, Heart } from 'lucide-react';
 import type { User } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -28,6 +29,7 @@ const profileSchema = z.object({
   nicotineStrength: z.coerce.number().min(0, "Strength must be positive").default(50),
   volumePerUnit: z.coerce.number().min(0.1, "Volume must be positive").default(1.0),
   mlPerPuff: z.coerce.number().min(0.001, "Must be positive").default(0.05),
+  motivation: z.string().optional(),
   savingsGoal: z.object({
     name: z.string().optional(),
     cost: z.coerce.number().min(0).optional(),
@@ -55,6 +57,7 @@ export function ProfilePage() {
       nicotineStrength: user?.profile?.nicotineStrength || 50,
       volumePerUnit: user?.profile?.volumePerUnit || 1.0,
       mlPerPuff: user?.profile?.mlPerPuff || 0.05,
+      motivation: user?.profile?.motivation || "",
       savingsGoal: {
         name: user?.profile?.savingsGoal?.name || "",
         cost: user?.profile?.savingsGoal?.cost || 0,
@@ -171,11 +174,11 @@ export function ProfilePage() {
   if (!user) return null;
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background pb-24 transition-colors duration-300">
-      <PageHeader 
-        title="Profile & Settings" 
+      <PageHeader
+        title="Profile & Settings"
         subtitle={isGuest ? "Preview Mode - Sign in to customize" : "Manage your usage plan and account preferences."}
       />
-      <div className="px-4 space-y-6 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 relative z-10">
         {isGuest && (
           <Card className="border-violet-200 bg-violet-50 dark:bg-violet-900/20 dark:border-violet-800">
             <CardContent className="p-4 flex items-center gap-4">
@@ -235,10 +238,10 @@ export function ProfilePage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="quitDate" className="text-foreground">Start Date</Label>
-                <Input 
-                  id="quitDate" 
-                  type="datetime-local" 
-                  {...register('quitDate')} 
+                <Input
+                  id="quitDate"
+                  type="datetime-local"
+                  {...register('quitDate')}
                   disabled={isGuest}
                   className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
                 />
@@ -266,9 +269,9 @@ export function ProfilePage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="currency" className="text-foreground">Currency Code</Label>
-                  <Input 
-                    id="currency" 
-                    {...register('currency')} 
+                  <Input
+                    id="currency"
+                    {...register('currency')}
                     disabled={isGuest}
                     className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
                   />
@@ -278,11 +281,11 @@ export function ProfilePage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="cost" className="text-foreground">Cost per Unit ({currencySymbol})</Label>
-                  <Input 
-                    id="cost" 
-                    type="number" 
-                    step="0.01" 
-                    {...register('costPerUnit')} 
+                  <Input
+                    id="cost"
+                    type="number"
+                    step="0.01"
+                    {...register('costPerUnit')}
                     disabled={isGuest}
                     className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
                   />
@@ -290,11 +293,11 @@ export function ProfilePage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="usage" className="text-foreground">Units per Week</Label>
-                  <Input 
-                    id="usage" 
-                    type="number" 
-                    step="0.1" 
-                    {...register('unitsPerWeek')} 
+                  <Input
+                    id="usage"
+                    type="number"
+                    step="0.1"
+                    {...register('unitsPerWeek')}
                     disabled={isGuest}
                     className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
                   />
@@ -307,11 +310,11 @@ export function ProfilePage() {
                     <Zap className="w-3 h-3 text-violet-500" />
                     Nicotine (mg/ml)
                   </Label>
-                  <Input 
-                    id="strength" 
-                    type="number" 
-                    step="0.1" 
-                    {...register('nicotineStrength')} 
+                  <Input
+                    id="strength"
+                    type="number"
+                    step="0.1"
+                    {...register('nicotineStrength')}
                     disabled={isGuest}
                     className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
                   />
@@ -322,11 +325,11 @@ export function ProfilePage() {
                     <Beaker className="w-3 h-3 text-violet-500" />
                     Volume (ml)
                   </Label>
-                  <Input 
-                    id="volume" 
-                    type="number" 
-                    step="0.1" 
-                    {...register('volumePerUnit')} 
+                  <Input
+                    id="volume"
+                    type="number"
+                    step="0.1"
+                    {...register('volumePerUnit')}
                     disabled={isGuest}
                     className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
                   />
@@ -338,11 +341,11 @@ export function ProfilePage() {
                   <Droplets className="w-3 h-3 text-violet-500" />
                   Liquid per Puff (ml)
                 </Label>
-                <Input 
-                  id="mlPerPuff" 
-                  type="number" 
-                  step="0.01" 
-                  {...register('mlPerPuff')} 
+                <Input
+                  id="mlPerPuff"
+                  type="number"
+                  step="0.01"
+                  {...register('mlPerPuff')}
                   disabled={isGuest}
                   className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
                 />
@@ -353,12 +356,12 @@ export function ProfilePage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="limit" className="text-foreground">Daily Puff Goal (Optional)</Label>
-                <Input 
-                  id="limit" 
-                  type="number" 
-                  step="1" 
+                <Input
+                  id="limit"
+                  type="number"
+                  step="1"
                   placeholder="e.g. 20 (Leave 0 for no limit)"
-                  {...register('dailyLimit')} 
+                  {...register('dailyLimit')}
                   disabled={isGuest}
                   className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
                 />
@@ -366,6 +369,26 @@ export function ProfilePage() {
                   Set a daily limit to help you taper off.
                 </p>
                 {errors.dailyLimit && <p className="text-sm text-red-500">{errors.dailyLimit.message}</p>}
+              </div>
+              {/* Motivation Section */}
+              <div className="pt-4 border-t border-border/50">
+                <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <Heart className="w-4 h-4 text-pink-500" />
+                  My Motivation
+                </h3>
+                <div className="space-y-2">
+                  <Label htmlFor="motivation" className="text-foreground">Why are you quitting?</Label>
+                  <Textarea
+                    id="motivation"
+                    placeholder="e.g. For my health, to save money for travel, for my family..."
+                    {...register('motivation')}
+                    disabled={isGuest}
+                    className="bg-background border-input text-foreground focus-visible:ring-pink-500 disabled:opacity-70 resize-none h-24"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    This will be pinned to your dashboard to keep you inspired.
+                  </p>
+                </div>
               </div>
               {/* Financial Goal Section */}
               <div className="pt-4 border-t border-border/50">
@@ -376,8 +399,8 @@ export function ProfilePage() {
                 <div className="grid gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="goalName" className="text-foreground">Goal Name</Label>
-                    <Input 
-                      id="goalName" 
+                    <Input
+                      id="goalName"
                       placeholder="e.g. New Bike, Vacation"
                       {...register('savingsGoal.name')}
                       disabled={isGuest}
@@ -386,10 +409,10 @@ export function ProfilePage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="goalCost" className="text-foreground">Goal Cost ({currencySymbol})</Label>
-                    <Input 
-                      id="goalCost" 
-                      type="number" 
-                      step="0.01" 
+                    <Input
+                      id="goalCost"
+                      type="number"
+                      step="0.01"
                       placeholder="0.00"
                       {...register('savingsGoal.cost')}
                       disabled={isGuest}
@@ -429,11 +452,11 @@ export function ProfilePage() {
                   <Upload className="w-4 h-4" />
                   Import Data
                 </Button>
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  className="hidden" 
-                  accept=".json" 
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  accept=".json"
                   onChange={handleFileChange}
                 />
               </div>
