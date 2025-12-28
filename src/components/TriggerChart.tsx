@@ -13,21 +13,7 @@ interface TriggerChartProps {
   data: TriggerDataPoint[];
 }
 export function TriggerChart({ data }: TriggerChartProps) {
-  if (!data || data.length === 0) {
-    return (
-      <Card className="bg-card text-card-foreground border-border shadow-sm transition-colors duration-300">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Target className="w-5 h-5 text-primary" />
-            Trigger Analysis
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="h-[250px] flex items-center justify-center text-muted-foreground text-sm">
-          No data available for this period
-        </CardContent>
-      </Card>
-    );
-  }
+  if (!data || data.length === 0) return null;
   return (
     <Card className="bg-card text-card-foreground border-border shadow-sm transition-colors duration-300">
       <CardHeader className="pb-2">
@@ -37,10 +23,11 @@ export function TriggerChart({ data }: TriggerChartProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {/* Explicit wrapper div for ResponsiveContainer to prevent width(-1) errors */}
-        <div style={{ width: '100%', height: 250, position: 'relative' }} className="mt-2 min-w-0 overflow-hidden">
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-            <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+        <div className="h-[250px] w-full mt-2 min-h-[250px] min-w-0">
+          {/* Explicit wrapper div for ResponsiveContainer to prevent width(-1) errors */}
+          <div style={{ width: '100%', height: 250, minHeight: 250, minWidth: '100%' }}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+              <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
                 <Pie
                   data={data}
                   cx="50%"
@@ -70,8 +57,9 @@ export function TriggerChart({ data }: TriggerChartProps) {
                     return null;
                   }}
                 />
-            </PieChart>
-          </ResponsiveContainer>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
         {/* Custom Legend */}
         <div className="mt-4 grid grid-cols-2 gap-2">

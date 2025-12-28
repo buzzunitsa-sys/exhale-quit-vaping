@@ -36,6 +36,12 @@ export interface DailyConsistency {
   label: string;
   fullDate: string;
 }
+export interface TriggerDataPoint {
+  name: string;
+  value: number;
+  percentage: number;
+  fill: string;
+}
 export function getChartData(entries: JournalEntry[], range: TimeRange): ChartDataPoint[] {
   const now = new Date();
   let dataPoints: ChartDataPoint[] = [];
@@ -128,7 +134,7 @@ export function getWeeklyConsistency(entries: JournalEntry[], dailyLimit: number
       if (dailyLimit > 0) {
         status = puffs <= dailyLimit ? 'under-limit' : 'over-limit';
       } else {
-        // If no limit is set, any smoking is technically "over" the ideal of 0, 
+        // If no limit is set, any smoking is technically "over" the ideal of 0,
         // but we'll mark it as over-limit to indicate usage.
         status = 'over-limit';
       }
@@ -142,4 +148,35 @@ export function getWeeklyConsistency(entries: JournalEntry[], dailyLimit: number
       fullDate: format(day, 'MMM d')
     };
   });
+}
+// Color mapping for common triggers
+const TRIGGER_COLORS: Record<string, string> = {
+  "Stress": "#f43f5e", // Rose 500
+  "Boredom": "#0ea5e9", // Sky 500
+  "Social Pressure": "#8b5cf6", // Violet 500
+  "Habit/Routine": "#f59e0b", // Amber 500
+  "Alcohol": "#eab308", // Yellow 500
+  "Coffee": "#78716c", // Stone 500
+  "After Meal": "#10b981", // Emerald 500
+  "Other": "#64748b", // Slate 500
+  "Quick Log": "#94a3b8" // Slate 400
+};
+const DEFAULT_COLORS = ["#0ea5e9", "#8b5cf6", "#10b981", "#f59e0b", "#f43f5e", "#64748b"];
+export function getTriggerDistribution(entries: JournalEntry[]): TriggerDataPoint[] {
+  if (!entries || entries.length === 0) return [];
+  const counts: Record<string, number> = {};
+  let total = 0;
+  entries.forEach(entry => {
+    const trigger = entry.trigger || "Other";
+    counts[trigger] = (counts[trigger] || 0) + 1;
+    total++;
+  });
+  return Object.entries(counts)
+    .map(([name, value], index) => ({
+      name,
+      value,
+      percentage: Math.round((value / total) * 100),
+      fill: TRIGGER_COLORS[name] || DEFAULT_COLORS[index % DEFAULT_COLORS.length]
+    }))
+    .sort((a, b) => b.value - a.value); // Sort by count descending
 }
