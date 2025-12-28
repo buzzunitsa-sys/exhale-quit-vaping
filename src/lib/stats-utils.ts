@@ -15,17 +15,26 @@ import type { JournalEntry } from '@shared/types';
 export type TimeRange = 'DAILY' | 'WEEKLY' | 'MONTHLY';
 export interface ChartDataPoint {
   name: string;
-  puffs: number; // This is actually "Cravings Logged" in the UI context usually, but let's keep name for compat
+  puffs: number; // Cravings Logged
   puffsTaken: number; // Actual puffs from slips
   average: number;
   fullDate: string;
 }
 export interface SummaryStats {
-  totalPuffs: number; // Total cravings logged
-  actualPuffs: number; // Total actual puffs taken (slips)
+  totalPuffs: number;
+  actualPuffs: number;
   dailyAverage: number;
   daysWithSmoke: number;
   daysNoSmoke: number;
+}
+export type DayStatus = 'clean' | 'under-limit' | 'over-limit' | 'unknown';
+export interface DailyConsistency {
+  date: Date;
+  status: DayStatus;
+  puffs: number;
+  limit: number;
+  label: string;
+  fullDate: string;
 }
 export function getChartData(entries: JournalEntry[], range: TimeRange): ChartDataPoint[] {
   const now = new Date();
@@ -92,8 +101,6 @@ export function getSummaryStats(entries: JournalEntry[]): SummaryStats {
   const daysPassed = Math.max(1, (now.getDay() + 6) % 7 + 1);
   const dailyAverage = Math.round(totalPuffs / daysPassed);
   // Count unique days with smoke (where puffs > 0)
-  // If we just want days with ANY entry, use thisWeekEntries.
-  // But "days with smoke" implies slips. Let's count days with slips.
   const daysWithSlips = new Set(
     thisWeekEntries
       .filter(e => (e.puffs || 0) > 0)
@@ -106,4 +113,33 @@ export function getSummaryStats(entries: JournalEntry[]): SummaryStats {
     daysWithSmoke: daysWithSlips,
     daysNoSmoke: daysPassed - daysWithSlips
   };
+}
+export function getWeeklyConsistency(entries: JournalEntry[], dailyLimit: number = 0): DailyConsistency[] {
+  const end = new Date();
+  const start = subDays(end, 6); // Last 7 days including today
+  const days = eachDayOfInterval({ start, end });
+  return days.map(day => {
+    const dayEntries = entries.filter(e => isSameDay(e.timestamp, day));
+    const puffs = dayEntries.reduce((sum, e) => sum + (e.puffs || 0), 0);
+    let status: DayStatus = 'unknown';
+    if (puffs === 0) {
+      status = 'clean';
+    } else {
+      if (dailyLimit > 0) {
+        status = puffs <= dailyLimit ? 'under-limit' : 'over-limit';
+      } else {
+        // If no limit is set, any smoking is technically "over" the ideal of 0, 
+        // but we'll mark it as over-limit to indicate usage.
+        status = 'over-limit';
+      }
+    }
+    return {
+      date: day,
+      status,
+      puffs,
+      limit: dailyLimit,
+      label: format(day, 'EEEEE'), // M, T, W...
+      fullDate: format(day, 'MMM d')
+    };
+  });
 }

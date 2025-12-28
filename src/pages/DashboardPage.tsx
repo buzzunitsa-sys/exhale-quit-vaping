@@ -7,11 +7,13 @@ import { DateStrip } from '@/components/ui/date-strip';
 import { DailyTracker } from '@/components/ui/daily-tracker';
 import { HourlyChart } from '@/components/ui/hourly-chart';
 import { SavingsChart } from '@/components/SavingsChart';
+import { WeeklyProgress } from '@/components/ui/weekly-progress';
 import { ShareButton } from '@/components/ui/share-button';
 import { useHaptic } from '@/hooks/use-haptic';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import type { User, JournalEntry } from '@shared/types';
+import { getWeeklyConsistency } from '@/lib/stats-utils';
 export function DashboardPage() {
   const user = useAppStore(s => s.user);
   const setUser = useAppStore(s => s.setUser);
@@ -28,7 +30,8 @@ export function DashboardPage() {
     nicotineUsedToday,
     projectedDailySavings,
     totalMoneySaved,
-    dailyBaselineCost
+    dailyBaselineCost,
+    weeklyConsistency
   } = useMemo(() => {
     if (!user?.profile) {
       return {
@@ -37,7 +40,8 @@ export function DashboardPage() {
         nicotineUsedToday: 0,
         projectedDailySavings: 0,
         totalMoneySaved: 0,
-        dailyBaselineCost: 0
+        dailyBaselineCost: 0,
+        weeklyConsistency: []
       };
     }
     const journal = user.journal || [];
@@ -63,13 +67,16 @@ export function DashboardPage() {
     const totalPuffsAllTime = journal.reduce((sum, entry) => sum + (entry.puffs || 0), 0);
     const totalCostWastedAllTime = totalPuffsAllTime * costPerPuff;
     const totalMoneySaved = Math.max(0, theoreticalMaxSavings - totalCostWastedAllTime);
+    // Weekly Consistency Data
+    const weeklyConsistency = getWeeklyConsistency(journal, user.profile.dailyLimit || 0);
     return {
       puffsToday,
       costWastedToday,
       nicotineUsedToday,
       projectedDailySavings,
       totalMoneySaved,
-      dailyBaselineCost
+      dailyBaselineCost,
+      weeklyConsistency
     };
   }, [user?.journal, user?.profile, now]);
   const handleQuickLog = async () => {
@@ -109,29 +116,29 @@ export function DashboardPage() {
             </p>
           </div>
           <div className="flex gap-3">
-            <ShareButton
+            <ShareButton 
               secondsFree={0} // Not using time free for share context anymore in this view
               moneySaved={totalMoneySaved}
               currency={user.profile.currency}
             />
             {/* SOS Breathing Button */}
-            <Link
-              to="/breathe"
+            <Link 
+              to="/breathe" 
               onClick={() => vibrate('medium')}
               className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center group"
               title="SOS Breathing"
             >
               <Wind className="w-6 h-6 text-sky-200 group-hover:text-white transition-colors" />
             </Link>
-            <Link
-              to="/achievements"
+            <Link 
+              to="/achievements" 
               onClick={() => vibrate('light')}
               className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
             >
               <Crown className="w-6 h-6 text-yellow-300 fill-yellow-300" />
             </Link>
-            <Link
-              to="/profile"
+            <Link 
+              to="/profile" 
               onClick={() => vibrate('light')}
               className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
             >
@@ -146,7 +153,7 @@ export function DashboardPage() {
       </div>
       {/* Main Content - Overlapping Header */}
       <div className="px-4 -mt-12 space-y-4 relative z-10">
-        <DailyTracker
+        <DailyTracker 
           puffsToday={puffsToday}
           costWasted={costWastedToday}
           nicotineUsed={nicotineUsedToday}
@@ -155,11 +162,12 @@ export function DashboardPage() {
           dailyLimit={user.profile.dailyLimit}
           onQuickLog={handleQuickLog}
         />
+        <WeeklyProgress data={weeklyConsistency} />
         <div className="w-full h-[200px] overflow-hidden rounded-3xl">
           <HourlyChart entries={user.journal} />
         </div>
         <div className="w-full h-[200px] overflow-hidden rounded-3xl">
-          <SavingsChart
+          <SavingsChart 
             currentSavings={totalMoneySaved}
             dailySavings={dailyBaselineCost}
             currency={user.profile.currency}
