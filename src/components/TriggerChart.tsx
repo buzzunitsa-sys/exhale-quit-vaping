@@ -13,7 +13,21 @@ interface TriggerChartProps {
   data: TriggerDataPoint[];
 }
 export function TriggerChart({ data }: TriggerChartProps) {
-  if (!data || data.length === 0) return null;
+  if (!data || data.length === 0) {
+    return (
+      <Card className="bg-card text-card-foreground border-border shadow-sm transition-colors duration-300">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Target className="w-5 h-5 text-primary" />
+            Trigger Analysis
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="h-[250px] flex items-center justify-center text-muted-foreground text-sm">
+          No data available for this period
+        </CardContent>
+      </Card>
+    );
+  }
   return (
     <Card className="bg-card text-card-foreground border-border shadow-sm transition-colors duration-300">
       <CardHeader className="pb-2">
@@ -23,6 +37,7 @@ export function TriggerChart({ data }: TriggerChartProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Explicit wrapper div for ResponsiveContainer to prevent width(-1) errors */}
         <div style={{ width: '100%', height: 250 }} className="mt-2">
           <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
@@ -62,8 +77,8 @@ export function TriggerChart({ data }: TriggerChartProps) {
         <div className="mt-4 grid grid-cols-2 gap-2">
           {data.slice(0, 6).map((item) => (
             <div key={item.name} className="flex items-center gap-2 text-xs">
-              <div
-                className="w-3 h-3 rounded-full flex-shrink-0"
+              <div 
+                className="w-3 h-3 rounded-full flex-shrink-0" 
                 style={{ backgroundColor: item.fill }}
               />
               <span className="truncate text-muted-foreground flex-1">{item.name}</span>

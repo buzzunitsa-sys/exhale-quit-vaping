@@ -3,9 +3,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { StatsChart } from '@/components/ui/stats-chart';
 import { StatsSummary } from '@/components/ui/stats-summary';
 import { RecoveryTimeline } from '@/components/RecoveryTimeline';
+import { TriggerChart } from '@/components/TriggerChart';
+import { RecentHistory } from '@/components/RecentHistory';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/lib/store';
-import { getChartData, getSummaryStats, type TimeRange } from '@/lib/stats-utils';
+import { 
+  getChartData, 
+  getSummaryStats, 
+  filterEntriesByRange, 
+  getTriggerDistribution,
+  type TimeRange 
+} from '@/lib/stats-utils';
 import { BarChart3, Activity } from 'lucide-react';
 type ViewMode = 'stats' | 'recovery';
 export function HealthPage() {
@@ -14,16 +22,23 @@ export function HealthPage() {
   const user = useAppStore(s => s.user);
   // Memoize journal to prevent unstable dependency
   const journal = useMemo(() => user?.journal || [], [user?.journal]);
+  // Filter entries based on selected time range
+  const filteredEntries = useMemo(() => {
+    return filterEntriesByRange(journal, activeTab);
+  }, [journal, activeTab]);
   const chartData = useMemo(() => {
     return getChartData(journal, activeTab);
   }, [journal, activeTab]);
   const summaryStats = useMemo(() => {
     return getSummaryStats(journal);
   }, [journal]);
+  const triggerData = useMemo(() => {
+    return getTriggerDistribution(filteredEntries);
+  }, [filteredEntries]);
   return (
-    <div className="min-h-screen bg-slate-50 pb-24 flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-background pb-24 flex flex-col transition-colors duration-300">
       {/* Header Section */}
-      <div className="bg-gradient-to-br from-sky-500 via-blue-500 to-indigo-500 pt-8 pb-8 px-4 relative z-0 rounded-b-[40px] shadow-lg shadow-blue-200/50">
+      <div className="bg-gradient-to-br from-sky-500 via-blue-500 to-indigo-500 pt-8 pb-8 px-4 relative z-0 rounded-b-[40px] shadow-lg shadow-blue-200/50 dark:shadow-none">
         <h1 className="text-2xl font-bold text-white text-center mb-6">Health & Progress</h1>
         {/* View Toggle */}
         <div className="flex justify-center mb-6">
@@ -32,8 +47,8 @@ export function HealthPage() {
               onClick={() => setViewMode('stats')}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200",
-                viewMode === 'stats' 
-                  ? "bg-white text-blue-600 shadow-sm" 
+                viewMode === 'stats'
+                  ? "bg-white text-blue-600 shadow-sm"
                   : "text-white/80 hover:bg-white/10"
               )}
             >
@@ -44,8 +59,8 @@ export function HealthPage() {
               onClick={() => setViewMode('recovery')}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200",
-                viewMode === 'recovery' 
-                  ? "bg-white text-blue-600 shadow-sm" 
+                viewMode === 'recovery'
+                  ? "bg-white text-blue-600 shadow-sm"
                   : "text-white/80 hover:bg-white/10"
               )}
             >
@@ -90,7 +105,7 @@ export function HealthPage() {
       </div>
       {/* Main Content Area */}
       <div className={cn(
-        "flex-1 bg-slate-50 px-4 space-y-6 relative z-10 transition-all duration-300",
+        "flex-1 px-4 space-y-6 relative z-10 transition-all duration-300",
         viewMode === 'stats' ? "-mt-6" : "pt-6"
       )}>
         <AnimatePresence mode="wait">
@@ -101,8 +116,13 @@ export function HealthPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
+              className="space-y-6"
             >
               <StatsSummary stats={summaryStats} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <TriggerChart data={triggerData} />
+                <RecentHistory entries={journal} />
+              </div>
             </motion.div>
           ) : (
             <motion.div

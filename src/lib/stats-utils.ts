@@ -10,7 +10,8 @@ import {
   eachDayOfInterval,
   eachWeekOfInterval,
   eachMonthOfInterval,
-  startOfDay
+  startOfDay,
+  isAfter
 } from 'date-fns';
 import type { JournalEntry } from '@shared/types';
 export type TimeRange = 'DAILY' | 'WEEKLY' | 'MONTHLY';
@@ -43,6 +44,31 @@ export interface TriggerDataPoint {
   percentage: number;
   fill: string;
   [key: string]: any;
+}
+/**
+ * Filters journal entries based on the selected time range.
+ * DAILY: Last 7 days
+ * WEEKLY: Last 8 weeks
+ * MONTHLY: Last 6 months
+ */
+export function filterEntriesByRange(entries: JournalEntry[], range: TimeRange): JournalEntry[] {
+  const now = new Date();
+  let startDate: Date;
+  switch (range) {
+    case 'DAILY':
+      startDate = subDays(now, 7);
+      break;
+    case 'WEEKLY':
+      startDate = subWeeks(now, 8);
+      break;
+    case 'MONTHLY':
+      startDate = subMonths(now, 6);
+      break;
+    default:
+      startDate = subDays(now, 7);
+  }
+  // Filter entries that are after the start date
+  return entries.filter(entry => isAfter(entry.timestamp, startDate));
 }
 export function getChartData(entries: JournalEntry[], range: TimeRange): ChartDataPoint[] {
   const now = new Date();

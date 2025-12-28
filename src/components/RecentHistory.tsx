@@ -1,16 +1,13 @@
 import React, { useMemo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { History, Trash2, Pencil, ClipboardList } from 'lucide-react';
+import { History, AlertCircle, CheckCircle2, Circle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import type { JournalEntry } from '@shared/types';
 import { cn } from '@/lib/utils';
 interface RecentHistoryProps {
   entries: JournalEntry[];
-  onDelete?: (id: string) => void;
-  onEdit?: (entry: JournalEntry) => void;
 }
-export function RecentHistory({ entries, onDelete, onEdit }: RecentHistoryProps) {
+export function RecentHistory({ entries }: RecentHistoryProps) {
   const recentEntries = useMemo(() => {
     return [...entries]
       .sort((a, b) => b.timestamp - a.timestamp)
@@ -25,13 +22,8 @@ export function RecentHistory({ entries, onDelete, onEdit }: RecentHistoryProps)
             Recent History
           </CardTitle>
         </CardHeader>
-        <CardContent className="py-12 flex flex-col items-center text-center">
-          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
-            <ClipboardList className="w-8 h-8 text-slate-400" />
-          </div>
-          <p className="text-muted-foreground text-sm max-w-[200px]">
-            No entries yet. Log your first craving to start tracking your patterns.
-          </p>
+        <CardContent className="py-8 text-center">
+          <p className="text-muted-foreground text-sm">No entries yet. Your journey starts now!</p>
         </CardContent>
       </Card>
     );
@@ -50,9 +42,9 @@ export function RecentHistory({ entries, onDelete, onEdit }: RecentHistoryProps)
             const isHighIntensity = entry.intensity >= 7;
             const isMediumIntensity = entry.intensity >= 4 && entry.intensity < 7;
             return (
-              <div
-                key={entry.id}
-                className="group flex items-center justify-between py-3 px-6 hover:bg-secondary/50 transition-colors border-b border-border/30 last:border-0"
+              <div 
+                key={entry.id} 
+                className="flex items-center justify-between py-3 px-6 hover:bg-secondary/50 transition-colors border-b border-border/30 last:border-0"
               >
                 <div className="flex items-center gap-4 overflow-hidden">
                   {/* Intensity Indicator */}
@@ -76,39 +68,15 @@ export function RecentHistory({ entries, onDelete, onEdit }: RecentHistoryProps)
                     )}
                   </div>
                 </div>
-                {/* Time & Actions */}
-                <div className="flex items-center gap-1 flex-shrink-0 ml-4">
-                  <div className="text-right mr-2">
-                    <p className="text-xs text-muted-foreground font-medium">
-                      {formatDistanceToNow(entry.timestamp, { addSuffix: true })}
+                {/* Time */}
+                <div className="text-right flex-shrink-0 ml-4">
+                  <p className="text-xs text-muted-foreground font-medium">
+                    {formatDistanceToNow(entry.timestamp, { addSuffix: true })}
+                  </p>
+                  {entry.puffs && entry.puffs > 0 && (
+                    <p className="text-[10px] font-bold text-red-500 mt-0.5">
+                      {entry.puffs} PUFFS
                     </p>
-                    {entry.puffs && entry.puffs > 0 && (
-                      <p className="text-[10px] font-bold text-red-500 mt-0.5">
-                        {entry.puffs} PUFFS
-                      </p>
-                    )}
-                  </div>
-                  {onEdit && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onEdit(entry)}
-                      className="h-8 w-8 text-muted-foreground hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/20 opacity-0 group-hover:opacity-100 transition-opacity md:opacity-0 opacity-100"
-                      title="Edit Entry"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                  )}
-                  {onDelete && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onDelete(entry.id)}
-                      className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-0 group-hover:opacity-100 transition-opacity md:opacity-0 opacity-100"
-                      title="Delete Entry"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
                   )}
                 </div>
               </div>
