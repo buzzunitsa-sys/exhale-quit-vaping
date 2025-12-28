@@ -22,19 +22,14 @@ export function StatsChart({ data }: StatsChartProps) {
     );
   }
   return (
-    <div className="w-full h-[300px] relative min-w-0 min-h-[300px]">
+    <div className="w-full h-[300px] relative">
       {/* Year Label */}
       <div className="absolute top-0 left-4 bg-slate-800/50 text-white text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm z-10">
         {new Date().getFullYear()}
       </div>
       {/* Explicit wrapper div for ResponsiveContainer to prevent width(-1) errors */}
-      <div style={{ width: '100%', height: 300, minWidth: '100%', minHeight: 300 }}>
-        <ResponsiveContainer
-          width="100%"
-          height="100%"
-          minWidth={0}
-          minHeight={0}
-        >
+      <div style={{ width: '100%', height: 300 }}>
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <ComposedChart
             data={data}
             margin={{ top: 40, right: 20, bottom: 20, left: -20 }}

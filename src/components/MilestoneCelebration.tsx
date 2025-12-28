@@ -4,12 +4,11 @@ import { differenceInSeconds, isSameDay } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Trophy, Star, Heart, X } from 'lucide-react';
 import { RANKS, getUserRank } from '@/lib/ranks';
 import { RECOVERY_MILESTONES } from '@/data/recovery-milestones';
 import { ACHIEVEMENTS } from '@/lib/achievements';
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 type CelebrationType = 'rank' | 'health' | 'achievement';
 interface CelebrationItem {
   id: string;
@@ -159,9 +158,8 @@ export function MilestoneCelebration() {
     <AnimatePresence>
       <Dialog open={!!current} onOpenChange={(open) => !open && handleDismiss()}>
         <DialogContent className="sm:max-w-md border-none bg-transparent shadow-none p-0 flex items-center justify-center" aria-describedby="celebration-desc">
-          <VisuallyHidden>
-            <DialogTitle>{current.title}</DialogTitle>
-          </VisuallyHidden>
+          <DialogTitle className="sr-only">{current.title}</DialogTitle>
+          <DialogDescription className="sr-only">{current.description}</DialogDescription>
           <motion.div
             initial={{ opacity: 0, scale: 0.5, y: 50 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}

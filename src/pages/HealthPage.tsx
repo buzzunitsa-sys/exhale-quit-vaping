@@ -61,7 +61,6 @@ export function HealthPage() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden"
             >
               <div className="flex justify-center mb-6">
                 <div className="flex items-center gap-2 bg-white/10 p-1 rounded-full backdrop-blur-md">

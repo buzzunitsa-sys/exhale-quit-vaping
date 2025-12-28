@@ -196,7 +196,7 @@ export function DashboardPage() {
         {/* Weekly Progress */}
         <WeeklyProgress data={weeklyConsistency} />
         {/* Hourly Chart */}
-        <div className="w-full h-[250px] rounded-3xl min-w-0">
+        <div className="w-full h-[250px] rounded-3xl">
           <HourlyChart entries={user.journal} />
         </div>
         {/* Savings Goal Card (if configured) */}
@@ -208,7 +208,7 @@ export function DashboardPage() {
           />
         )}
         {/* Savings Chart */}
-        <div className="w-full h-[250px] rounded-3xl min-w-0">
+        <div className="w-full h-[250px] rounded-3xl">
           <SavingsChart
             currentSavings={totalMoneySaved}
             dailySavings={dailyBaselineCost}

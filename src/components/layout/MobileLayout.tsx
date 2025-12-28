@@ -71,8 +71,8 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
         <div className="md:hidden fixed bottom-6 left-4 right-4 z-50">
           <nav className="bg-white/80 backdrop-blur-md dark:bg-card/90 rounded-full shadow-lg shadow-slate-200/50 dark:shadow-violet-900/10 border border-border h-16 px-6 flex items-center justify-between relative transition-all duration-300">
             {/* Left: Dashboard */}
-            <NavLink
-              to="/dashboard"
+            <NavLink 
+              to="/dashboard" 
               onClick={() => vibrate('light')}
               className={({ isActive }) => cn(
                 "p-2 rounded-full transition-colors",
@@ -83,7 +83,7 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
             </NavLink>
             {/* Center: FAB (Log Craving) */}
             <div className="absolute left-1/2 -translate-x-1/2 -top-6">
-              <button
+              <button 
                 onClick={() => {
                   vibrate('medium');
                   setIsLogOpen(true);
@@ -94,8 +94,8 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
               </button>
             </div>
             {/* Right: Stats */}
-            <NavLink
-              to="/health"
+            <NavLink 
+              to="/health" 
               onClick={() => vibrate('light')}
               className={({ isActive }) => cn(
                 "p-2 rounded-full transition-colors",
@@ -124,13 +124,13 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
 }
 function NavItem({ icon, label, to, onClick }: { icon: React.ReactNode, label: string, to: string, onClick?: () => void }) {
   return (
-    <NavLink
-      to={to}
+    <NavLink 
+      to={to} 
       onClick={onClick}
       className={({ isActive }) => cn(
         "flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-200 group",
-        isActive
-          ? "bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 font-medium"
+        isActive 
+          ? "bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 font-medium" 
           : "text-muted-foreground hover:bg-secondary hover:text-foreground"
       )}
     >

@@ -63,10 +63,10 @@ export function BreathingCircle() {
       <motion.div
         className={cn(
           "absolute w-72 h-72 rounded-full blur-3xl opacity-30 transition-colors duration-1000",
-          phase === 'inhale' ? "bg-sky-500" :
+          phase === 'inhale' ? "bg-sky-500" : 
           phase === 'hold' ? "bg-violet-500" : "bg-emerald-500"
         )}
-        animate={{
+        animate={{ 
           scale: phase === 'inhale' ? 1.4 : phase === 'hold' ? 1.5 : 1,
           opacity: phase === 'exhale' ? 0.2 : 0.4
         }}
@@ -97,6 +97,7 @@ export function BreathingCircle() {
             strokeLinecap="round"
             strokeDasharray={circumference}
             className={cn("transition-colors duration-500", PHASES[phase].color)}
+            initial={{ strokeDashoffset: circumference }}
             animate={{ strokeDashoffset }}
             transition={{ duration: 1, ease: "linear" }}
           />
@@ -105,10 +106,10 @@ export function BreathingCircle() {
         <motion.div
           className={cn(
             "w-full h-full rounded-full flex items-center justify-center shadow-2xl transition-colors duration-1000 z-10",
-            phase === 'inhale' ? "bg-sky-500" :
+            phase === 'inhale' ? "bg-sky-500" : 
             phase === 'hold' ? "bg-violet-500" : "bg-emerald-500"
           )}
-          animate={{
+          animate={{ 
             scale: phase === 'inhale' ? 0.85 : phase === 'hold' ? 0.9 : 0.4,
           }}
           transition={{ duration: PHASES[phase].duration, ease: "easeInOut" }}

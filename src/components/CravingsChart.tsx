@@ -39,9 +39,8 @@ export function CravingsChart({ entries }: CravingsChartProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[200px] w-full mt-2 min-h-[200px] min-w-0">
-          {/* Explicit wrapper div for ResponsiveContainer to prevent width(-1) errors */}
-          <div style={{ width: '100%', height: 200, minHeight: 200, minWidth: '100%' }}>
+        <div className="h-[200px] w-full mt-2">
+          <div style={{ width: '100%', height: '100%' }}>
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <BarChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
                 <XAxis

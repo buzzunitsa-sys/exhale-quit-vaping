@@ -1,80 +1,85 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, Share, PlusSquare, MoreVertical } from 'lucide-react';
+import { Download, Share, PlusSquare } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { useInstallPrompt } from '@/hooks/use-install-prompt';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export function InstallPWA() {
-  const {
-    isStandalone,
-    promptInstall,
-    showInstructions,
-    setShowInstructions,
-    isIOS
-  } = useInstallPrompt();
-  // If already installed/standalone, hide component
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [showIOSInstructions, setShowIOSInstructions] = useState(false);
+  useEffect(() => {
+    // Check if standalone
+    const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+    setIsStandalone(isStandaloneMode);
+    // Check if iOS
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
+    setIsIOS(isIosDevice);
+    // Listen for install prompt
+    const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      const choiceResult = await deferredPrompt.userChoice;
+      if (choiceResult.outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
+    } else if (isIOS) {
+      setShowIOSInstructions(true);
+    }
+  };
+  // If already installed or not installable (and not iOS), hide component
   if (isStandalone) return null;
+  if (!deferredPrompt && !isIOS) return null;
   return (
     <>
       <Card className="border border-border/50 shadow-sm bg-card transition-colors duration-300">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2 text-foreground">
             <Download className="w-5 h-5 text-sky-500" />
-            Get the Android App
+            Install App
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Install Exhale for the full native app experience. Works offline and looks great on your home screen.
+            Install Exhale on your home screen for quick access and a better experience.
           </p>
-          <Button onClick={promptInstall} className="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold">
-            Install App
+          <Button onClick={handleInstallClick} className="w-full bg-sky-500 hover:bg-sky-600 text-white">
+            Add to Home Screen
           </Button>
         </CardContent>
       </Card>
-      <Dialog open={showInstructions} onOpenChange={setShowInstructions}>
+      <Dialog open={showIOSInstructions} onOpenChange={setShowIOSInstructions}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Install Exhale App</DialogTitle>
+            <DialogTitle>Install on iOS</DialogTitle>
             <DialogDescription>
-              Follow these steps to install the app on your device.
+              Follow these steps to add Exhale to your home screen:
             </DialogDescription>
           </DialogHeader>
-          <Tabs defaultValue={isIOS ? "ios" : "android"} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="ios">iOS (Safari)</TabsTrigger>
-              <TabsTrigger value="android">Android / Chrome</TabsTrigger>
-            </TabsList>
-            <TabsContent value="ios" className="space-y-4 pt-4">
-              <div className="flex items-center gap-3">
-                <div className="bg-secondary p-2 rounded-md shrink-0">
-                  <Share className="w-5 h-5" />
-                </div>
-                <p className="text-sm">1. Tap the <strong>Share</strong> button in your browser menu bar.</p>
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center gap-3">
+              <div className="bg-secondary p-2 rounded-md">
+                <Share className="w-5 h-5" />
               </div>
-              <div className="flex items-center gap-3">
-                <div className="bg-secondary p-2 rounded-md shrink-0">
-                  <PlusSquare className="w-5 h-5" />
-                </div>
-                <p className="text-sm">2. Scroll down and tap <strong>Add to Home Screen</strong>.</p>
+              <p className="text-sm">1. Tap the <strong>Share</strong> button in your browser menu.</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="bg-secondary p-2 rounded-md">
+                <PlusSquare className="w-5 h-5" />
               </div>
-            </TabsContent>
-            <TabsContent value="android" className="space-y-4 pt-4">
-              <div className="flex items-center gap-3">
-                <div className="bg-secondary p-2 rounded-md shrink-0">
-                  <MoreVertical className="w-5 h-5" />
-                </div>
-                <p className="text-sm">1. Tap the <strong>Menu</strong> (three dots) button in Chrome.</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="bg-secondary p-2 rounded-md shrink-0">
-                  <Download className="w-5 h-5" />
-                </div>
-                <p className="text-sm">2. Tap <strong>Install App</strong> or <strong>Add to Home screen</strong>.</p>
-              </div>
-            </TabsContent>
-          </Tabs>
+              <p className="text-sm">2. Scroll down and tap <strong>Add to Home Screen</strong>.</p>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </>

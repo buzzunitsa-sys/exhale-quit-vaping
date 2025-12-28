@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { PageHeader } from '@/components/ui/page-header';
 import { COUNTRIES } from '@/lib/constants';
+import { InstallPWA } from '@/components/InstallPWA';
 const profileSchema = z.object({
   quitDate: z.string().min(1, "Quit date is required"),
   costPerUnit: z.coerce.number().min(0.01, "Cost must be greater than 0"),
@@ -115,8 +116,8 @@ export function ProfilePage() {
   if (!user) return null;
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background pb-24 transition-colors duration-300">
-      <PageHeader
-        title="Profile & Settings"
+      <PageHeader 
+        title="Profile & Settings" 
         subtitle="Manage your usage plan and account preferences."
       />
       <div className="px-4 space-y-6 relative z-10">
@@ -136,6 +137,8 @@ export function ProfilePage() {
               <ThemeToggle className="static bg-secondary hover:bg-secondary/80 text-foreground" />
           </CardContent>
         </Card>
+        {/* App Installation Section */}
+        <InstallPWA />
         {/* Account Details */}
         <Card className="border border-border/50 shadow-sm bg-card transition-colors duration-300">
           <CardHeader>
@@ -164,10 +167,10 @@ export function ProfilePage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="quitDate" className="text-foreground">Start Date</Label>
-                <Input
-                  id="quitDate"
-                  type="datetime-local"
-                  {...register('quitDate')}
+                <Input 
+                  id="quitDate" 
+                  type="datetime-local" 
+                  {...register('quitDate')} 
                   className="bg-background border-input text-foreground focus-visible:ring-violet-500"
                 />
                 {errors.quitDate && <p className="text-sm text-red-500">{errors.quitDate.message}</p>}
@@ -194,9 +197,9 @@ export function ProfilePage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="currency" className="text-foreground">Currency Code</Label>
-                  <Input
-                    id="currency"
-                    {...register('currency')}
+                  <Input 
+                    id="currency" 
+                    {...register('currency')} 
                     className="bg-background border-input text-foreground focus-visible:ring-violet-500"
                   />
                   <p className="text-xs text-muted-foreground">Automatically set by country, but editable.</p>
@@ -205,22 +208,22 @@ export function ProfilePage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="cost" className="text-foreground">Cost per Unit ({currencySymbol})</Label>
-                  <Input
-                    id="cost"
-                    type="number"
-                    step="0.01"
-                    {...register('costPerUnit')}
+                  <Input 
+                    id="cost" 
+                    type="number" 
+                    step="0.01" 
+                    {...register('costPerUnit')} 
                     className="bg-background border-input text-foreground focus-visible:ring-violet-500"
                   />
                   {errors.costPerUnit && <p className="text-sm text-red-500">{errors.costPerUnit.message}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="usage" className="text-foreground">Units per Week</Label>
-                  <Input
-                    id="usage"
-                    type="number"
-                    step="0.1"
-                    {...register('unitsPerWeek')}
+                  <Input 
+                    id="usage" 
+                    type="number" 
+                    step="0.1" 
+                    {...register('unitsPerWeek')} 
                     className="bg-background border-input text-foreground focus-visible:ring-violet-500"
                   />
                   {errors.unitsPerWeek && <p className="text-sm text-red-500">{errors.unitsPerWeek.message}</p>}
@@ -232,11 +235,11 @@ export function ProfilePage() {
                     <Zap className="w-3 h-3 text-violet-500" />
                     Nicotine (mg/ml)
                   </Label>
-                  <Input
-                    id="strength"
-                    type="number"
-                    step="0.1"
-                    {...register('nicotineStrength')}
+                  <Input 
+                    id="strength" 
+                    type="number" 
+                    step="0.1" 
+                    {...register('nicotineStrength')} 
                     className="bg-background border-input text-foreground focus-visible:ring-violet-500"
                   />
                   {errors.nicotineStrength && <p className="text-sm text-red-500">{errors.nicotineStrength.message}</p>}
@@ -246,11 +249,11 @@ export function ProfilePage() {
                     <Beaker className="w-3 h-3 text-violet-500" />
                     Volume (ml)
                   </Label>
-                  <Input
-                    id="volume"
-                    type="number"
-                    step="0.1"
-                    {...register('volumePerUnit')}
+                  <Input 
+                    id="volume" 
+                    type="number" 
+                    step="0.1" 
+                    {...register('volumePerUnit')} 
                     className="bg-background border-input text-foreground focus-visible:ring-violet-500"
                   />
                   {errors.volumePerUnit && <p className="text-sm text-red-500">{errors.volumePerUnit.message}</p>}
@@ -261,11 +264,11 @@ export function ProfilePage() {
                   <Droplets className="w-3 h-3 text-violet-500" />
                   Liquid per Puff (ml)
                 </Label>
-                <Input
-                  id="mlPerPuff"
-                  type="number"
-                  step="0.01"
-                  {...register('mlPerPuff')}
+                <Input 
+                  id="mlPerPuff" 
+                  type="number" 
+                  step="0.01" 
+                  {...register('mlPerPuff')} 
                   className="bg-background border-input text-foreground focus-visible:ring-violet-500"
                 />
                 <p className="text-xs text-muted-foreground">
@@ -275,12 +278,12 @@ export function ProfilePage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="limit" className="text-foreground">Daily Puff Goal (Optional)</Label>
-                <Input
-                  id="limit"
-                  type="number"
-                  step="1"
+                <Input 
+                  id="limit" 
+                  type="number" 
+                  step="1" 
                   placeholder="e.g. 20 (Leave 0 for no limit)"
-                  {...register('dailyLimit')}
+                  {...register('dailyLimit')} 
                   className="bg-background border-input text-foreground focus-visible:ring-violet-500"
                 />
                 <p className="text-xs text-muted-foreground">
@@ -297,21 +300,21 @@ export function ProfilePage() {
                 <div className="grid gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="goalName" className="text-foreground">Goal Name</Label>
-                    <Input
-                      id="goalName"
+                    <Input 
+                      id="goalName" 
                       placeholder="e.g. New Bike, Vacation"
-                      {...register('savingsGoal.name')}
+                      {...register('savingsGoal.name')} 
                       className="bg-background border-input text-foreground focus-visible:ring-indigo-500"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="goalCost" className="text-foreground">Goal Cost ({currencySymbol})</Label>
-                    <Input
-                      id="goalCost"
-                      type="number"
-                      step="0.01"
+                    <Input 
+                      id="goalCost" 
+                      type="number" 
+                      step="0.01" 
                       placeholder="0.00"
-                      {...register('savingsGoal.cost')}
+                      {...register('savingsGoal.cost')} 
                       className="bg-background border-input text-foreground focus-visible:ring-indigo-500"
                     />
                   </div>
@@ -347,7 +350,7 @@ export function ProfilePage() {
           Log Out
         </Button>
         <div className="text-center pt-4 pb-8">
-          <p className="text-xs text-muted-foreground">Built with ��️ by Aurelia | Your AI Co-founder</p>
+          <p className="text-xs text-muted-foreground">Built with ❤️ by Aurelia | Your AI Co-founder</p>
         </div>
       </div>
     </div>

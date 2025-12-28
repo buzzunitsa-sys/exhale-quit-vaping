@@ -37,9 +37,8 @@ export function HourlyChart({ entries = [] }: HourlyChartProps) {
           </span>
         )}
       </div>
-      <div className="h-[200px] w-full min-h-[200px] min-w-0 relative">
-        {/* Explicit wrapper div for ResponsiveContainer to prevent width(-1) errors */}
-        <div style={{ width: '100%', height: 200, minHeight: 200, minWidth: '100%' }}>
+      <div className="h-[200px] w-full relative">
+        <div style={{ width: '100%', height: '100%' }}>
           <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <AreaChart data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
               <defs>

@@ -53,9 +53,9 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
             {projectedTotal.toFixed(2)}
           </p>
         </div>
-        <div className="h-[200px] w-full min-h-[200px] min-w-0">
+        <div className="h-[200px] w-full">
           {/* Explicit wrapper div for ResponsiveContainer to prevent width(-1) errors */}
-          <div style={{ width: '100%', height: 200, minHeight: 200, minWidth: '100%' }}>
+          <div style={{ width: '100%', height: '100%' }}>
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <AreaChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
                 <defs>

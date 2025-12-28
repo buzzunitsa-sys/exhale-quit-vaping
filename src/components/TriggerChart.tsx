@@ -23,11 +23,9 @@ export function TriggerChart({ data }: TriggerChartProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[250px] w-full mt-2 min-h-[250px] min-w-0">
-          {/* Explicit wrapper div for ResponsiveContainer to prevent width(-1) errors */}
-          <div style={{ width: '100%', height: 250, minHeight: 250, minWidth: '100%' }}>
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+        <div style={{ width: '100%', height: 250 }} className="mt-2">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+            <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
                 <Pie
                   data={data}
                   cx="50%"
@@ -57,9 +55,8 @@ export function TriggerChart({ data }: TriggerChartProps) {
                     return null;
                   }}
                 />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
+            </PieChart>
+          </ResponsiveContainer>
         </div>
         {/* Custom Legend */}
         <div className="mt-4 grid grid-cols-2 gap-2">
