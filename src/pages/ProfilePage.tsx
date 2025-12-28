@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { LogOut, Save, User as UserIcon, Palette, Download, RefreshCw } from 'lucide-react';
+import { LogOut, Save, User as UserIcon, Palette, Download, RefreshCw, Beaker, Zap } from 'lucide-react';
 import type { User } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -21,6 +21,8 @@ const profileSchema = z.object({
   puffsPerUnit: z.coerce.number().min(1, "Puffs per unit must be at least 1").default(200),
   dailyLimit: z.coerce.number().min(0, "Limit cannot be negative").optional(),
   currency: z.string().default("USD"),
+  nicotineStrength: z.coerce.number().min(0, "Strength must be positive").default(50),
+  volumePerUnit: z.coerce.number().min(0.1, "Volume must be positive").default(1.0),
 });
 type ProfileForm = z.infer<typeof profileSchema>;
 export function ProfilePage() {
@@ -38,6 +40,8 @@ export function ProfilePage() {
       puffsPerUnit: user?.profile?.puffsPerUnit || 200,
       dailyLimit: user?.profile?.dailyLimit || 0,
       currency: user?.profile?.currency || 'USD',
+      nicotineStrength: user?.profile?.nicotineStrength || 50,
+      volumePerUnit: user?.profile?.volumePerUnit || 1.0,
     }
   });
   const handleLogout = () => {
@@ -178,6 +182,36 @@ export function ProfilePage() {
                   {errors.unitsPerWeek && <p className="text-sm text-red-500">{errors.unitsPerWeek.message}</p>}
                 </div>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="strength" className="flex items-center gap-2 text-foreground">
+                    <Zap className="w-3 h-3 text-violet-500" />
+                    Nicotine (mg/ml)
+                  </Label>
+                  <Input
+                    id="strength"
+                    type="number"
+                    step="0.1"
+                    {...register('nicotineStrength')}
+                    className="bg-background border-input text-foreground focus-visible:ring-violet-500"
+                  />
+                  {errors.nicotineStrength && <p className="text-sm text-red-500">{errors.nicotineStrength.message}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="volume" className="flex items-center gap-2 text-foreground">
+                    <Beaker className="w-3 h-3 text-violet-500" />
+                    Volume (ml)
+                  </Label>
+                  <Input
+                    id="volume"
+                    type="number"
+                    step="0.1"
+                    {...register('volumePerUnit')}
+                    className="bg-background border-input text-foreground focus-visible:ring-violet-500"
+                  />
+                  {errors.volumePerUnit && <p className="text-sm text-red-500">{errors.volumePerUnit.message}</p>}
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="puffs" className="text-foreground">Puffs per Device/Pod</Label>
                 <Input
@@ -240,7 +274,7 @@ export function ProfilePage() {
           Log Out
         </Button>
         <div className="text-center pt-4 pb-8">
-          <p className="text-xs text-muted-foreground">Built with ❤️ by Aurelia | Your AI Co-founder</p>
+          <p className="text-xs text-muted-foreground">Built with ❤�� by Aurelia | Your AI Co-founder</p>
         </div>
       </div>
     </div>

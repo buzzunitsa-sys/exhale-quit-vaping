@@ -11,6 +11,8 @@ export interface QuitProfile {
   dailyLimit?: number; // New field for tapering goal
   currency: string;
   motivation?: string;
+  nicotineStrength?: number; // mg/ml (e.g., 50 for 5%, 20 for 2%)
+  volumePerUnit?: number; // ml per pod/device (e.g., 0.7, 2.0, 10.0)
 }
 export interface JournalEntry {
   id: string;

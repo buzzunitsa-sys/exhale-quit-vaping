@@ -3,7 +3,7 @@ import { Calendar, BarChart3, Plus, Crown, Settings2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/lib/store';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { JournalForm } from '@/components/JournalForm';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
@@ -115,9 +115,12 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
       )}
       {/* Log Craving Dialog */}
       <Dialog open={isLogOpen} onOpenChange={setIsLogOpen}>
-        <DialogContent className="sm:max-w-md bg-card border-border">
+        <DialogContent className="sm:max-w-md bg-card border-border" aria-describedby="log-craving-desc">
           <DialogHeader>
             <DialogTitle className="text-foreground">Log a Craving</DialogTitle>
+            <DialogDescription id="log-craving-desc">
+              Record details about your current craving or slip.
+            </DialogDescription>
           </DialogHeader>
           <JournalForm onSubmit={handleAddEntry} onCancel={() => setIsLogOpen(false)} />
         </DialogContent>

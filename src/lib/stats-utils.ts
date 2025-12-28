@@ -41,6 +41,7 @@ export interface TriggerDataPoint {
   value: number;
   percentage: number;
   fill: string;
+  [key: string]: any;
 }
 export function getChartData(entries: JournalEntry[], range: TimeRange): ChartDataPoint[] {
   const now = new Date();

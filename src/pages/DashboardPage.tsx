@@ -51,9 +51,12 @@ export function DashboardPage() {
     const puffsPerUnit = user.profile.puffsPerUnit || 200;
     const costPerPuff = user.profile.costPerUnit / puffsPerUnit;
     const costWastedToday = puffsToday * costPerPuff;
-    // Nicotine calculations (approx 50mg per pod/unit usually, or 5% strength)
-    const nicotinePerUnit = 50; // mg (standard 5% pod)
-    const nicotinePerPuff = nicotinePerUnit / puffsPerUnit;
+    // Nicotine calculations
+    // Fallback logic: if new fields missing, assume 5% (50mg/ml) and 1ml volume approx
+    const strength = user.profile.nicotineStrength ?? 50; // mg/ml
+    const volume = user.profile.volumePerUnit ?? 1.0; // ml
+    const totalNicotinePerUnit = strength * volume; // Total mg in one unit/pod
+    const nicotinePerPuff = totalNicotinePerUnit / puffsPerUnit;
     const nicotineUsedToday = puffsToday * nicotinePerPuff;
     // Baseline daily cost = (units per week * cost per unit) / 7
     const dailyBaselineCost = (user.profile.unitsPerWeek * user.profile.costPerUnit) / 7;
@@ -163,10 +166,10 @@ export function DashboardPage() {
           onQuickLog={handleQuickLog}
         />
         <WeeklyProgress data={weeklyConsistency} />
-        <div className="w-full h-[200px] overflow-hidden rounded-3xl">
+        <div className="w-full h-[200px] rounded-3xl min-w-0">
           <HourlyChart entries={user.journal} />
         </div>
-        <div className="w-full h-[200px] overflow-hidden rounded-3xl">
+        <div className="w-full h-[200px] rounded-3xl min-w-0">
           <SavingsChart 
             currentSavings={totalMoneySaved}
             dailySavings={dailyBaselineCost}
