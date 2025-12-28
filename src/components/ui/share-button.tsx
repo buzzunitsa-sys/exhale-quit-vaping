@@ -9,17 +9,18 @@ interface ShareButtonProps {
   currency?: string;
   className?: string;
 }
-export function ShareButton({ 
-  secondsFree, 
-  moneySaved, 
+export function ShareButton({
+  secondsFree,
+  moneySaved,
   currency = 'USD',
-  className 
+  className
 }: ShareButtonProps) {
   const [copied, setCopied] = React.useState(false);
   const days = Math.floor(secondsFree / (3600 * 24));
   const shareText = `I've been smoke-free for ${days} days and saved ${currency === 'USD' ? '$' : currency + ' '}${moneySaved.toFixed(2)} with Exhale! 🌬️💪 #QuitVaping #ExhaleApp`;
   const shareUrl = window.location.origin;
   const handleShare = async () => {
+    // Try native share first
     if (navigator.share) {
       try {
         await navigator.share({
@@ -28,21 +29,26 @@ export function ShareButton({
           url: shareUrl,
         });
         toast.success("Shared successfully!");
+        return;
       } catch (error) {
         // User cancelled or share failed, fallback to copy
         if ((error as Error).name !== 'AbortError') {
-          copyToClipboard();
+          console.warn('Share failed, falling back to clipboard', error);
+        } else {
+          return; // User cancelled
         }
       }
-    } else {
-      copyToClipboard();
     }
-  };
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-    setCopied(true);
-    toast.success("Copied to clipboard!");
-    setTimeout(() => setCopied(false), 2000);
+    // Fallback to clipboard
+    try {
+      await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+      setCopied(true);
+      toast.success("Copied to clipboard!");
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Clipboard failed', err);
+      toast.error("Could not share or copy to clipboard");
+    }
   };
   return (
     <Button

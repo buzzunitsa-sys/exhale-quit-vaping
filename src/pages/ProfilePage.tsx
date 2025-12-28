@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { LogOut, Save, User as UserIcon, Palette, Download, RefreshCw, Beaker, Zap, Droplets, Target, Globe } from 'lucide-react';
+import { LogOut, Save, User as UserIcon, Palette, RefreshCw, Beaker, Zap, Droplets, Target, Globe } from 'lucide-react';
 import type { User } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -82,21 +82,6 @@ export function ProfilePage() {
       toast.success("Settings updated successfully");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to update settings");
-    }
-  };
-  const handleExport = () => {
-    if (!user) return;
-    try {
-      const dataStr = JSON.stringify(user, null, 2);
-      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-      const exportFileDefaultName = `exhale-data-${new Date().toISOString().slice(0, 10)}.json`;
-      const linkElement = document.createElement('a');
-      linkElement.setAttribute('href', dataUri);
-      linkElement.setAttribute('download', exportFileDefaultName);
-      linkElement.click();
-      toast.success("Data exported successfully");
-    } catch (err) {
-      toast.error("Failed to export data");
     }
   };
   const handleReset = async () => {
@@ -348,18 +333,12 @@ export function ProfilePage() {
               <CardTitle className="text-lg text-foreground">Data Management</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Button variant="outline" onClick={handleExport} className="w-full">
-                <Download className="w-4 h-4 mr-2" />
-                Export Data
-              </Button>
-              <Button variant="ghost" onClick={handleReset} className="w-full text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Reset Progress
-              </Button>
-            </div>
+            <Button variant="ghost" onClick={handleReset} className="w-full text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Reset Progress
+            </Button>
             <p className="text-xs text-muted-foreground text-center">
-              Exporting downloads your data as JSON. Resetting clears your journal and restarts your timer.
+              Resetting clears your journal and restarts your timer.
             </p>
           </CardContent>
         </Card>
@@ -368,7 +347,7 @@ export function ProfilePage() {
           Log Out
         </Button>
         <div className="text-center pt-4 pb-8">
-          <p className="text-xs text-muted-foreground">Built with ❤️ by Aurelia | Your AI Co-founder</p>
+          <p className="text-xs text-muted-foreground">Built with ��️ by Aurelia | Your AI Co-founder</p>
         </div>
       </div>
     </div>

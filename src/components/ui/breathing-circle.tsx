@@ -55,7 +55,8 @@ export function BreathingCircle() {
   const strokeWidth = 8;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
+  // Ensure we have a valid number for initial render to avoid "undefined" animation warning
+  const strokeDashoffset = circumference - (progress / 100) * circumference || circumference;
   return (
     <div className="flex flex-col items-center justify-center py-12 relative">
       {/* Outer Glow Ring */}

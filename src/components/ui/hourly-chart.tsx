@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { BarChart, Bar, XAxis, ResponsiveContainer, Cell, Tooltip } from 'recharts';
+import { AreaChart, Area, XAxis, ResponsiveContainer, Tooltip, CartesianGrid } from 'recharts';
 import type { JournalEntry } from '@shared/types';
 import { Clock } from 'lucide-react';
 interface HourlyChartProps {
@@ -25,61 +25,68 @@ export function HourlyChart({ entries = [] }: HourlyChartProps) {
   }, [entries]);
   const hasData = entries.length > 0;
   return (
-    <div className="bg-slate-950/50 border border-slate-800 rounded-3xl p-6 shadow-sm backdrop-blur-md">
+    <div className="bg-card border border-border/50 rounded-3xl p-6 shadow-sm transition-colors duration-300">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="font-semibold text-slate-100 text-lg flex items-center gap-2">
+        <h3 className="font-semibold text-foreground text-lg flex items-center gap-2">
           <Clock className="w-5 h-5 text-sky-500" />
           Hourly Overview
         </h3>
         {!hasData && (
-          <span className="text-xs text-slate-400 bg-slate-800 px-2 py-1 rounded-full">
+          <span className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded-full">
             No data yet
           </span>
         )}
       </div>
       <div className="h-[200px] w-full min-h-[200px] min-w-0 relative">
         {/* Explicit wrapper div for ResponsiveContainer to prevent width(-1) errors */}
-        <div style={{ width: '100%', height: 200, minHeight: 200, minWidth: 0 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
+        <div style={{ width: '100%', height: 200, minHeight: 200, minWidth: '100%' }}>
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+            <AreaChart data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorVal" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.3} />
               <XAxis
                   dataKey="hour"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 10, fill: '#cbd5e1' }}
+                  tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
                   interval={3} // Show every 4th label to avoid clutter
                   tickFormatter={(hour) => hour === 0 ? '12am' : hour === 12 ? '12pm' : hour > 12 ? `${hour - 12}pm` : `${hour}am`}
                   dy={10}
               />
               <Tooltip
-                cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                cursor={{ stroke: 'var(--border)', strokeWidth: 1 }}
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     const d = payload[0].payload;
                     return (
-                      <div className="bg-slate-950 border-slate-800 text-slate-200 text-xs p-2 rounded-lg shadow-xl border">
+                      <div className="bg-popover text-popover-foreground text-xs p-2 rounded-lg shadow-xl border border-border">
                         <p className="font-bold mb-1">{d.label}</p>
-                        <p>Cravings: <span className="font-bold text-sky-400">{d.val}</span></p>
+                        <p>Activity: <span className="font-bold text-sky-500">{d.val}</span></p>
                       </div>
                     );
                   }
                   return null;
                 }}
               />
-              <Bar dataKey="val" radius={[4, 4, 4, 4]} barSize={8}>
-                {data.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={entry.val > 0 ? '#38bdf8' : 'rgba(255,255,255,0.05)'}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
+              <Area
+                type="monotone"
+                dataKey="val"
+                stroke="#0ea5e9"
+                strokeWidth={2}
+                fillOpacity={1}
+                fill="url(#colorVal)"
+              />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       </div>
       {!hasData && (
-        <p className="text-center text-xs text-slate-400 mt-2">
+        <p className="text-center text-xs text-muted-foreground mt-2">
           Log your cravings to see patterns here.
         </p>
       )}

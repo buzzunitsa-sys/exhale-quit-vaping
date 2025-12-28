@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/lib/store';
 import { api } from '@/lib/api-client';
 import { format } from 'date-fns';
 import confetti from 'canvas-confetti';
-import { Quote, CheckCircle2, Flame } from 'lucide-react';
+import { CheckCircle2, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { getDailyQuote } from '@/lib/quotes';
 import { toast } from 'sonner';
 import type { User } from '@shared/types';
 import { useHaptic } from '@/hooks/use-haptic';
@@ -20,7 +19,6 @@ export function DailyPledge() {
   const todayStr = format(today, 'yyyy-MM-dd');
   const isPledged = user?.lastPledgeDate === todayStr;
   const streak = user?.pledgeStreak || 0;
-  const dailyQuote = getDailyQuote();
   const handlePledge = async () => {
     if (!user) return;
     setIsLoading(true);
@@ -69,8 +67,8 @@ export function DailyPledge() {
                 <p className="text-violet-100 mb-6 text-sm max-w-xs">
                   Pledge to stay smoke-free today and keep your streak alive.
                 </p>
-                <Button 
-                  onClick={handlePledge} 
+                <Button
+                  onClick={handlePledge}
                   disabled={isLoading}
                   className="w-full bg-white text-violet-600 hover:bg-white/90 font-bold shadow-lg transition-all active:scale-95"
                 >
@@ -81,33 +79,29 @@ export function DailyPledge() {
           </motion.div>
         ) : (
           <motion.div
-            key="quote-card"
+            key="pledged-state"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
           >
-            <Card className="bg-card border-border/50 shadow-sm overflow-hidden relative">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2 text-emerald-500 dark:text-emerald-400">
-                    <CheckCircle2 className="w-5 h-5" />
-                    <span className="font-bold text-sm">Pledged for Today</span>
+            <Card className="bg-emerald-500/10 border-emerald-500/20 shadow-sm overflow-hidden relative">
+              <CardContent className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                    <CheckCircle2 className="w-6 h-6 text-white" />
                   </div>
-                  <div className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 px-3 py-1 rounded-full">
-                    <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-500" />
-                    <span className="text-xs font-bold text-orange-600 dark:text-orange-400">
-                      {streak} Day Streak
-                    </span>
+                  <div>
+                    <p className="font-bold text-emerald-700 dark:text-emerald-400">Pledged for Today</p>
+                    <p className="text-xs text-emerald-600/80 dark:text-emerald-500">Keep going strong!</p>
                   </div>
                 </div>
-                <div className="relative pl-4 border-l-4 border-violet-200 dark:border-violet-900/50 py-1">
-                  <Quote className="absolute -top-2 -left-2 w-4 h-4 text-violet-300 dark:text-violet-800 fill-violet-300 dark:fill-violet-800" />
-                  <p className="text-foreground font-medium italic text-lg leading-relaxed mb-2">
-                    "{dailyQuote.text}"
-                  </p>
-                  <p className="text-sm text-muted-foreground font-medium">
-                    — {dailyQuote.author}
-                  </p>
+                <div className="flex flex-col items-end">
+                  <div className="flex items-center gap-1.5 bg-orange-100 dark:bg-orange-900/30 px-3 py-1 rounded-full">
+                    <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-500" />
+                    <span className="text-xs font-bold text-orange-600 dark:text-orange-400">
+                      {streak} Days
+                    </span>
+                  </div>
                 </div>
               </CardContent>
             </Card>

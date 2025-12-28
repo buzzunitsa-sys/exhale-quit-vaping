@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useAppStore } from '@/lib/store';
 import { format, isSameDay, differenceInSeconds } from 'date-fns';
-import { Crown, Settings2, Wind } from 'lucide-react';
+import { Crown, Settings2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DateStrip } from '@/components/ui/date-strip';
 import { DailyTracker } from '@/components/ui/daily-tracker';
@@ -13,6 +13,8 @@ import { DailyPledge } from '@/components/DailyPledge';
 import { SavingsGoalCard } from '@/components/SavingsGoalCard';
 import { MilestoneCelebration } from '@/components/MilestoneCelebration';
 import { BreathingCard } from '@/components/BreathingCard';
+import { QuoteCarousel } from '@/components/QuoteCarousel';
+import { TimeSinceLastPuff } from '@/components/TimeSinceLastPuff';
 import { useHaptic } from '@/hooks/use-haptic';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
@@ -62,21 +64,16 @@ export function DashboardPage() {
     const unitsPerWeek = user.profile.unitsPerWeek;
     const puffsPerUnitFallback = user.profile.puffsPerUnit || 200;
     // Cost Calculation Logic
-    // Priority: Calculate cost per ml, then cost per puff based on mlPerPuff
     let costPerPuff = 0;
     if (volumePerUnit > 0) {
       const costPerMl = costPerUnit / volumePerUnit;
       costPerPuff = costPerMl * mlPerPuff;
     } else {
-      // Fallback to legacy puffsPerUnit if volume is missing (unlikely with new onboarding)
       costPerPuff = costPerUnit / puffsPerUnitFallback;
     }
     const costWastedToday = puffsToday * costPerPuff;
-    // Nicotine Calculation Logic
-    // nicotine (mg) = strength (mg/ml) * volume (ml)
     const nicotinePerPuff = strength * mlPerPuff;
     const nicotineUsedToday = puffsToday * nicotinePerPuff;
-    // Baseline daily cost = (units per week * cost per unit) / 7
     const dailyBaselineCost = (unitsPerWeek * costPerUnit) / 7;
     const projectedDailySavings = Math.max(0, dailyBaselineCost - costWastedToday);
     // Total Lifetime Savings Calculation
@@ -84,12 +81,11 @@ export function DashboardPage() {
     const secondsElapsed = Math.max(0, differenceInSeconds(now, quitDate));
     const weeksElapsed = secondsElapsed / (60 * 60 * 24 * 7);
     const theoreticalMaxSavings = weeksElapsed * unitsPerWeek * costPerUnit;
-    // Calculate total cost of all slips in history
     const totalPuffsAllTime = journal.reduce((sum, entry) => sum + (entry.puffs || 0), 0);
     const totalCostWastedAllTime = totalPuffsAllTime * costPerPuff;
     const totalMoneySaved = Math.max(0, theoreticalMaxSavings - totalCostWastedAllTime);
     // Weekly Consistency Data
-    const weeklyConsistency = getWeeklyConsistency(journal, user.profile.dailyLimit || 0);
+    const weeklyConsistency = getWeeklyConsistency(journal, user.profile.dailyLimit || 0, user.createdAt);
     return {
       puffsToday,
       costWastedToday,
@@ -100,10 +96,9 @@ export function DashboardPage() {
       weeklyConsistency,
       secondsElapsed
     };
-  }, [user?.journal, user?.profile, now]);
+  }, [user?.journal, user?.profile, now, user?.createdAt]);
   const handleQuickLog = async () => {
     if (!user) return;
-    // Quick log adds 1 puff
     const newEntry: JournalEntry = {
       id: crypto.randomUUID(),
       timestamp: Date.now(),
@@ -126,7 +121,6 @@ export function DashboardPage() {
     }
   };
   if (!user?.profile) return null;
-  // Calculate Rank
   const hoursFree = secondsElapsed / 3600;
   const { current: currentRank } = getUserRank(hoursFree);
   const RankIcon = currentRank.icon;
@@ -150,20 +144,20 @@ export function DashboardPage() {
             </div>
           </div>
           <div className="flex gap-3">
-            <ShareButton 
-              secondsFree={secondsElapsed} 
+            <ShareButton
+              secondsFree={secondsElapsed}
               moneySaved={totalMoneySaved}
               currency={user.profile.currency}
             />
-            <Link 
-              to="/achievements" 
+            <Link
+              to="/achievements"
               onClick={() => vibrate('light')}
               className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
             >
               <Crown className="w-6 h-6 text-yellow-300 fill-yellow-300" />
             </Link>
-            <Link 
-              to="/profile" 
+            <Link
+              to="/profile"
               onClick={() => vibrate('light')}
               className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
             >
@@ -178,19 +172,10 @@ export function DashboardPage() {
       </div>
       {/* Main Content - Overlapping Header */}
       <div className="px-4 -mt-12 space-y-4 relative z-10">
-        {/* Daily Pledge Card */}
+        {/* Daily Pledge Button */}
         <DailyPledge />
-        {/* SOS Breathing Card */}
-        <BreathingCard />
-        {/* Savings Goal Card (if configured) */}
-        {user.profile.savingsGoal && user.profile.savingsGoal.cost > 0 && (
-          <SavingsGoalCard 
-            savedAmount={totalMoneySaved} 
-            goal={user.profile.savingsGoal}
-            currency={user.profile.currency}
-          />
-        )}
-        <DailyTracker 
+        {/* Daily Tracker (Puff Count) */}
+        <DailyTracker
           puffsToday={puffsToday}
           costWasted={costWastedToday}
           nicotineUsed={nicotineUsedToday}
@@ -199,13 +184,33 @@ export function DashboardPage() {
           dailyLimit={user.profile.dailyLimit}
           onQuickLog={handleQuickLog}
         />
+        {/* Quote Carousel */}
+        <QuoteCarousel />
+        {/* Time Since Last Puff */}
+        <TimeSinceLastPuff
+          journal={user.journal || []}
+          quitDate={user.profile.quitDate}
+        />
+        {/* Breathing Card */}
+        <BreathingCard />
+        {/* Weekly Progress */}
         <WeeklyProgress data={weeklyConsistency} />
-        <div className="w-full h-[200px] rounded-3xl min-w-0">
+        {/* Hourly Chart */}
+        <div className="w-full h-[250px] rounded-3xl min-w-0">
           <HourlyChart entries={user.journal} />
         </div>
-        <div className="w-full h-[200px] rounded-3xl min-w-0">
-          <SavingsChart 
-            currentSavings={totalMoneySaved} 
+        {/* Savings Goal Card (if configured) */}
+        {user.profile.savingsGoal && user.profile.savingsGoal.cost > 0 && (
+          <SavingsGoalCard
+            savedAmount={totalMoneySaved}
+            goal={user.profile.savingsGoal}
+            currency={user.profile.currency}
+          />
+        )}
+        {/* Savings Chart */}
+        <div className="w-full h-[250px] rounded-3xl min-w-0">
+          <SavingsChart
+            currentSavings={totalMoneySaved}
             dailySavings={dailyBaselineCost}
             currency={user.profile.currency}
           />

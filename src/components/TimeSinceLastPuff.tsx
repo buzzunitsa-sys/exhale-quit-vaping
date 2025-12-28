@@ -1,38 +1,49 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { differenceInSeconds } from 'date-fns';
 import { Timer, History } from 'lucide-react';
+import type { JournalEntry } from '@shared/types';
 import { Card } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
 interface TimeSinceLastPuffProps {
-  lastPuffTime: number;
-  now: Date;
+  journal: JournalEntry[];
+  quitDate: string;
 }
-export function TimeSinceLastPuff({ lastPuffTime, now }: TimeSinceLastPuffProps) {
+export function TimeSinceLastPuff({ journal, quitDate }: TimeSinceLastPuffProps) {
+  const [now, setNow] = useState(new Date());
+  const [lastPuffTime, setLastPuffTime] = useState<number>(0);
+  useEffect(() => {
+    // Find the most recent entry with puffs > 0
+    const slips = journal.filter(e => (e.puffs || 0) > 0);
+    if (slips.length > 0) {
+      // Sort descending by timestamp
+      slips.sort((a, b) => b.timestamp - a.timestamp);
+      setLastPuffTime(slips[0].timestamp);
+    } else {
+      // If no slips, use quit date
+      setLastPuffTime(new Date(quitDate).getTime());
+    }
+  }, [journal, quitDate]);
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
   const secondsElapsed = Math.max(0, differenceInSeconds(now, lastPuffTime));
   const days = Math.floor(secondsElapsed / (3600 * 24));
   const hours = Math.floor((secondsElapsed % (3600 * 24)) / 3600);
   const minutes = Math.floor((secondsElapsed % 3600) / 60);
-  const seconds = Math.floor(secondsElapsed % 60);
   return (
-    <Card className="bg-gradient-to-br from-card to-secondary/50 border border-border/50 shadow-lg p-6 mb-6 relative overflow-hidden group">
-      {/* Background Glow Effect */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-orange-500/20 transition-colors duration-500" />
-      <div className="flex items-center justify-between relative z-10">
-        <div className="flex items-center gap-4 w-full">
-          <div className="w-12 h-12 rounded-2xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center shadow-inner ring-1 ring-orange-200 dark:ring-orange-800 flex-shrink-0">
-            <History className="w-6 h-6 text-orange-500 animate-pulse-slow" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Time Since Last Puff</p>
-            <div className="flex items-baseline">
-              <span className="text-2xl sm:text-3xl font-bold text-foreground font-mono tracking-tight tabular-nums truncate">
-                {days}d {hours}h {minutes}m {seconds}s
-              </span>
-            </div>
-          </div>
+    <Card className="bg-card border border-border/50 shadow-sm p-4 mb-4 flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-full bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center">
+          <History className="w-5 h-5 text-orange-500" />
         </div>
-        <Timer className="w-6 h-6 text-muted-foreground/20 flex-shrink-0 ml-2" />
+        <div>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Time Since Last Puff</p>
+          <p className="text-lg font-bold text-foreground font-mono">
+            {days}d {hours}h {minutes}m
+          </p>
+        </div>
       </div>
+      <Timer className="w-5 h-5 text-muted-foreground/30" />
     </Card>
   );
 }

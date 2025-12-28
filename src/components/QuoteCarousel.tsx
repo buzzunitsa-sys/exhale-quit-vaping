@@ -35,18 +35,22 @@ export function QuoteCarousel() {
             <div className="flex-[0_0_100%] min-w-0 pl-4 first:pl-0" key={index}>
               <Card className={cn(
                 "border-none shadow-sm relative overflow-hidden h-full transition-all",
-                // Apply premium styling to ALL cards unconditionally
-                "bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 border border-violet-200 dark:border-violet-900/50"
+                index === 0 ? "bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 border border-violet-200 dark:border-violet-900/50" : "bg-card border-border/50"
               )}>
                 <CardContent className="p-6 flex flex-col items-center text-center justify-center min-h-[140px]">
-                  <QuoteIcon className="w-6 h-6 mb-3 opacity-50 text-violet-500" />
-                  <p className="font-medium italic text-lg leading-relaxed mb-2 text-foreground">
+                  <QuoteIcon className={cn(
+                    "w-6 h-6 mb-3 opacity-50",
+                    index === 0 ? "text-violet-500" : "text-muted-foreground"
+                  )} />
+                  <p className={cn(
+                    "font-medium italic text-lg leading-relaxed mb-2",
+                    index === 0 ? "text-foreground" : "text-muted-foreground"
+                  )}>
                     "{quote.text}"
                   </p>
                   <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground/70">
                     — {quote.author}
                   </p>
-                  {/* Only show the DAILY badge for the first quote */}
                   {index === 0 && (
                     <span className="absolute top-3 right-3 text-[10px] font-bold bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 px-2 py-0.5 rounded-full">
                       DAILY

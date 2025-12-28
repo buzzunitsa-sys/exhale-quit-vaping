@@ -9,7 +9,8 @@ import {
   isSameMonth,
   eachDayOfInterval,
   eachWeekOfInterval,
-  eachMonthOfInterval
+  eachMonthOfInterval,
+  startOfDay
 } from 'date-fns';
 import type { JournalEntry } from '@shared/types';
 export type TimeRange = 'DAILY' | 'WEEKLY' | 'MONTHLY';
@@ -122,11 +123,23 @@ export function getSummaryStats(entries: JournalEntry[]): SummaryStats {
     daysNoSmoke: daysPassed - daysWithSlips
   };
 }
-export function getWeeklyConsistency(entries: JournalEntry[], dailyLimit: number = 0): DailyConsistency[] {
+export function getWeeklyConsistency(entries: JournalEntry[], dailyLimit: number = 0, userCreatedAt?: number): DailyConsistency[] {
   const end = new Date();
   const start = subDays(end, 6); // Last 7 days including today
   const days = eachDayOfInterval({ start, end });
+  const userStartDate = userCreatedAt ? startOfDay(userCreatedAt) : null;
   return days.map(day => {
+    // If the day is before the user started, mark as unknown
+    if (userStartDate && day < userStartDate) {
+      return {
+        date: day,
+        status: 'unknown',
+        puffs: 0,
+        limit: dailyLimit,
+        label: format(day, 'EEEEE'),
+        fullDate: format(day, 'MMM d')
+      };
+    }
     const dayEntries = entries.filter(e => isSameDay(e.timestamp, day));
     const puffs = dayEntries.reduce((sum, e) => sum + (e.puffs || 0), 0);
     let status: DayStatus = 'unknown';
