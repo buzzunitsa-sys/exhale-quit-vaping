@@ -31,7 +31,7 @@ export function DashboardPage() {
   return (
     <div className="min-h-screen bg-slate-50 pb-32">
       {/* Header Section with Gradient - Blue Dominant with Purple Hint */}
-      <div className="bg-gradient-to-br from-sky-500 via-blue-500 to-indigo-500 rounded-b-[40px] pt-8 pb-20 px-6 text-white shadow-lg shadow-blue-200/50">
+      <div className="bg-gradient-to-br from-sky-500 via-blue-600 to-violet-600 rounded-b-[40px] pt-8 pb-20 px-6 text-white shadow-lg shadow-violet-200/50">
         <div className="flex justify-between items-start mb-6">
           <div>
             <h1 className="text-4xl font-bold mb-1">Hello</h1>

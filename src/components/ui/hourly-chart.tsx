@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { BarChart, Bar, XAxis, ResponsiveContainer, Cell, Tooltip } from 'recharts';
 import type { JournalEntry } from '@shared/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock } from 'lucide-react';
 interface HourlyChartProps {
   entries?: JournalEntry[];
@@ -22,9 +21,6 @@ export function HourlyChart({ entries = [] }: HourlyChartProps) {
         hours[hour].val += 1;
       }
     });
-    // Filter to show a relevant range if needed, or just show all 24h
-    // For mobile, showing all 24 bars might be tight, but let's try.
-    // Alternatively, we could just show "active hours" but 0-23 is standard.
     return hours;
   }, [entries]);
   const hasData = entries.length > 0;
@@ -41,13 +37,13 @@ export function HourlyChart({ entries = [] }: HourlyChartProps) {
           </span>
         )}
       </div>
-      <div className="h-48 w-full">
+      <div className="h-48 w-full min-h-[200px] min-w-0">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
-            <XAxis
-                dataKey="hour"
-                axisLine={false}
-                tickLine={false}
+            <XAxis 
+                dataKey="hour" 
+                axisLine={false} 
+                tickLine={false} 
                 tick={{ fontSize: 10, fill: '#94a3b8' }}
                 interval={3} // Show every 4th label to avoid clutter
                 tickFormatter={(hour) => hour === 0 ? '12am' : hour === 12 ? '12pm' : hour > 12 ? `${hour - 12}pm` : `${hour}am`}
@@ -70,9 +66,9 @@ export function HourlyChart({ entries = [] }: HourlyChartProps) {
             />
             <Bar dataKey="val" radius={[4, 4, 4, 4]} barSize={8}>
               {data.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={entry.val > 0 ? '#38bdf8' : '#f1f5f9'}
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={entry.val > 0 ? '#38bdf8' : '#f1f5f9'} 
                 />
               ))}
             </Bar>

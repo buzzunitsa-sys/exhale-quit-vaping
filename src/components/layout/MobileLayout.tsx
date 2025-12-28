@@ -49,10 +49,10 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
       {showNav && (
         <aside className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 border-r bg-card flex-col p-6 z-50">
           <div className="flex items-center gap-2 mb-8">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-400 to-cyan-300 flex items-center justify-center shadow-lg shadow-sky-400/20">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-400 to-violet-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
               <span className="text-white font-bold">E</span>
             </div>
-            <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-cyan-300">Exhale</span>
+            <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-violet-500">Exhale</span>
           </div>
           <nav className="space-y-2 flex-1">
             <NavItem to="/dashboard" icon={<Calendar className="w-5 h-5" />} label="Dashboard" />
@@ -68,30 +68,30 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
         <div className="md:hidden fixed bottom-6 left-4 right-4 z-50">
           <nav className="bg-white rounded-full shadow-lg shadow-slate-200/50 border border-slate-100 h-16 px-6 flex items-center justify-between relative">
             {/* Left: Dashboard/Calendar */}
-            <NavLink 
-              to="/dashboard" 
+            <NavLink
+              to="/dashboard"
               className={({ isActive }) => cn(
                 "p-2 rounded-full transition-colors",
-                isActive ? "text-sky-500" : "text-slate-400 hover:text-slate-600"
+                isActive ? "text-violet-600" : "text-slate-400 hover:text-slate-600"
               )}
             >
               <Calendar className="w-6 h-6" />
             </NavLink>
             {/* Center: FAB */}
             <div className="absolute left-1/2 -translate-x-1/2 -top-6">
-              <button 
+              <button
                 onClick={() => setIsLogOpen(true)}
-                className="w-14 h-14 rounded-full bg-sky-400 hover:bg-sky-500 text-white shadow-lg shadow-sky-400/30 flex items-center justify-center transition-transform active:scale-95"
+                className="w-14 h-14 rounded-full bg-gradient-to-r from-sky-500 to-violet-600 hover:opacity-90 text-white shadow-lg shadow-violet-500/30 flex items-center justify-center transition-transform active:scale-95"
               >
                 <Plus className="w-8 h-8" />
               </button>
             </div>
             {/* Right: Stats */}
-            <NavLink 
-              to="/health" 
+            <NavLink
+              to="/health"
               className={({ isActive }) => cn(
                 "p-2 rounded-full transition-colors",
-                isActive ? "text-sky-500" : "text-slate-400 hover:text-slate-600"
+                isActive ? "text-violet-600" : "text-slate-400 hover:text-slate-600"
               )}
             >
               <BarChart3 className="w-6 h-6" />
@@ -118,7 +118,7 @@ function NavItem({ icon, label, to }: { icon: React.ReactNode, label: string, to
       className={({ isActive }) => cn(
         "flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-200 group",
         isActive
-          ? "bg-sky-50 text-sky-600 font-medium"
+          ? "bg-violet-50 text-violet-600 font-medium"
           : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
       )}
     >

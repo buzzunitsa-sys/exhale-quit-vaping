@@ -39,7 +39,7 @@ export function CravingsChart({ entries }: CravingsChartProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[200px] w-full mt-2">
+        <div className="h-[200px] w-full mt-2 min-h-[200px] min-w-0">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
               <XAxis 
@@ -51,7 +51,7 @@ export function CravingsChart({ entries }: CravingsChartProps) {
               />
               <YAxis 
                 hide 
-                domain={[0, 10]} 
+                domain={[0, 10]}
               />
               <Tooltip 
                 cursor={{ fill: 'transparent' }}

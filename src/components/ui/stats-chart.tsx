@@ -21,7 +21,7 @@ export function StatsChart({ data }: StatsChartProps) {
     );
   }
   return (
-    <div className="w-full h-[300px] relative min-w-0">
+    <div className="w-full h-[300px] relative min-w-0 min-h-[300px]">
       {/* Year Label */}
       <div className="absolute top-0 left-4 bg-slate-800/50 text-white text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm z-10">
         {new Date().getFullYear()}
@@ -32,27 +32,27 @@ export function StatsChart({ data }: StatsChartProps) {
           data={data}
           margin={{ top: 40, right: 20, bottom: 20, left: -20 }}
         >
-          <CartesianGrid
-            strokeDasharray="5 5"
-            vertical={true}
-            horizontal={true}
-            stroke="rgba(255,255,255,0.2)"
+          <CartesianGrid 
+            strokeDasharray="5 5" 
+            vertical={true} 
+            horizontal={true} 
+            stroke="rgba(255,255,255,0.2)" 
           />
-          <XAxis
-            dataKey="name"
-            axisLine={false}
-            tickLine={false}
+          <XAxis 
+            dataKey="name" 
+            axisLine={false} 
+            tickLine={false} 
             tick={{ fill: 'rgba(255,255,255,0.8)', fontSize: 12 }}
             dy={10}
           />
-          <YAxis
-            axisLine={false}
-            tickLine={false}
+          <YAxis 
+            axisLine={false} 
+            tickLine={false} 
             tick={{ fill: 'rgba(255,255,255,0.8)', fontSize: 12 }}
             domain={[0, 'auto']}
             tickCount={5}
           />
-          <Tooltip
+          <Tooltip 
             content={({ active, payload }) => {
               if (active && payload && payload.length) {
                 const d = payload[0].payload as ChartDataPoint;
@@ -77,20 +77,20 @@ export function StatsChart({ data }: StatsChartProps) {
             cursor={{ stroke: 'rgba(255,255,255,0.5)', strokeWidth: 1 }}
           />
           {/* Average Line */}
-          <Line
-            type="monotone"
-            dataKey="average"
-            stroke="#3b82f6"
-            strokeWidth={3}
+          <Line 
+            type="monotone" 
+            dataKey="average" 
+            stroke="#3b82f6" 
+            strokeWidth={3} 
             dot={{ r: 0 }}
             activeDot={{ r: 6, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }}
           />
           {/* Puffs Line */}
-          <Line
-            type="monotone"
-            dataKey="puffs"
-            stroke="#ffffff"
-            strokeWidth={3}
+          <Line 
+            type="monotone" 
+            dataKey="puffs" 
+            stroke="#ffffff" 
+            strokeWidth={3} 
             dot={{ r: 4, fill: '#ffffff', strokeWidth: 0 }}
             activeDot={{ r: 8, fill: '#ffffff', strokeWidth: 0 }}
           />
