@@ -54,8 +54,8 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
     setIsLogOpen(true);
   };
   return (
-    <div className="min-h-[100dvh] bg-slate-50 dark:bg-background flex flex-col transition-colors duration-300">
-      <main className={cn("flex-1 pb-24 md:pb-0 md:pl-64", className)}>
+    <div className="min-h-[100dvh] bg-slate-50 dark:bg-background flex flex-col transition-colors duration-300 overflow-x-hidden w-full">
+      <main className={cn("flex-1 pb-24 md:pb-0 md:pl-64 w-full", className)}>
         <div className="w-full h-full">
             {children || <Outlet />}
         </div>
@@ -144,8 +144,8 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
 }
 function NavItem({ icon, label, to, onClick }: { icon: React.ReactNode, label: string, to: string, onClick?: () => void }) {
   return (
-    <NavLink 
-      to={to} 
+    <NavLink
+      to={to}
       onClick={onClick}
       className={({ isActive }) => cn(
         "flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-200 group",

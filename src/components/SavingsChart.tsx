@@ -55,7 +55,7 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
         </div>
         <div className="h-[200px] w-full min-w-0 overflow-hidden">
           {/* Explicit wrapper div for ResponsiveContainer to prevent width(-1) errors */}
-          <div style={{ width: '100%', height: '100%' }}>
+          <div style={{ width: '100%', height: 200 }}>
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <AreaChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
                 <defs>
@@ -76,7 +76,7 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
                   hide 
                   domain={['auto', 'auto']}
                 />
-                <Tooltip 
+                <Tooltip
                   cursor={{ stroke: '#10b981', strokeWidth: 1, strokeDasharray: '3 3' }}
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {

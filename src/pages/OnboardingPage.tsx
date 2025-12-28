@@ -161,7 +161,7 @@ export function OnboardingPage() {
     if (step === 'daily-puffs') setStep('goals');
   };
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-background flex items-center justify-center p-4 transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-background flex items-center justify-center p-4 transition-colors duration-300 overflow-x-hidden w-full">
       <div className="w-full max-w-md">
         {step === 'login' && (
           <div className="mb-8 text-center">
@@ -219,9 +219,9 @@ function LoginForm({ onSubmit }: { onSubmit: (data: EmailForm) => void }) {
                 <span className="bg-card px-2 text-muted-foreground">Or</span>
               </div>
             </div>
-            <Button
-              type="button"
-              variant="outline"
+            <Button 
+              type="button" 
+              variant="outline" 
               onClick={handleGuestLogin}
               className="w-full h-12 text-base gap-2 border-sky-200 hover:bg-sky-50 dark:border-sky-900/30 dark:hover:bg-sky-900/20 text-sky-600 dark:text-sky-400"
             >
@@ -230,9 +230,9 @@ function LoginForm({ onSubmit }: { onSubmit: (data: EmailForm) => void }) {
             </Button>
             {isInstallable && (
               <div className="pt-2 border-t border-border/50 mt-4">
-                <Button
-                  type="button"
-                  variant="ghost"
+                <Button 
+                  type="button" 
+                  variant="ghost" 
                   onClick={promptInstall}
                   className="w-full gap-2 text-muted-foreground hover:text-foreground"
                 >
