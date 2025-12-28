@@ -14,6 +14,7 @@ export function BreathingPage() {
   const { vibrate } = useHaptic();
   const user = useAppStore(s => s.user);
   const setUser = useAppStore(s => s.setUser);
+  const isGuest = useAppStore(s => s.isGuest);
   const handleExit = async () => {
     vibrate('success');
     if (user) {
@@ -25,6 +26,16 @@ export function BreathingPage() {
         trigger: "Breathing Exercise",
         note: "Completed SOS breathing session"
       };
+      if (isGuest) {
+        // Local update for guest
+        setUser({
+          ...user,
+          journal: [entry, ...(user.journal || [])]
+        });
+        toast.success("Session logged (Demo Mode)");
+        navigate('/dashboard');
+        return;
+      }
       try {
         const updatedUser = await api<User>(`/api/user/${user.id}/journal`, {
           method: 'POST',

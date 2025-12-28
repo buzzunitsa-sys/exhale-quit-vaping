@@ -21,13 +21,30 @@ export function DailyPledge() {
   const isPledged = user?.lastPledgeDate === todayStr;
   const streak = user?.pledgeStreak || 0;
   const handlePledge = async () => {
-    if (isGuest) {
-      toast.info("Sign in to make a pledge");
-      return;
-    }
     if (!user) return;
     setIsLoading(true);
     vibrate('medium');
+    if (isGuest) {
+      // Fake pledge logic for guest
+      setTimeout(() => {
+        const newStreak = (user.pledgeStreak || 0) + 1;
+        setUser({
+          ...user,
+          lastPledgeDate: todayStr,
+          pledgeStreak: newStreak
+        });
+        vibrate('success');
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#0ea5e9', '#8b5cf6', '#10b981']
+        });
+        toast.success("Pledge recorded! (Demo Mode)");
+        setIsLoading(false);
+      }, 500); // Small delay for realism
+      return;
+    }
     try {
       const updatedUser = await api<User>(`/api/user/${user.id}/pledge`, {
         method: 'POST',
@@ -77,7 +94,7 @@ export function DailyPledge() {
                   disabled={isLoading}
                   className="w-full bg-white text-violet-600 hover:bg-white/90 font-bold shadow-lg transition-all active:scale-95"
                 >
-                  {isLoading ? "Committing..." : isGuest ? "Sign in to Pledge" : "I Pledge For Today"}
+                  {isLoading ? "Committing..." : "I Pledge For Today"}
                 </Button>
               </CardContent>
             </Card>

@@ -7,12 +7,15 @@ import { TriggerChart } from '@/components/TriggerChart';
 import { RecentHistory } from '@/components/RecentHistory';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/lib/store';
-import { 
-  getChartData, 
-  getSummaryStats, 
-  filterEntriesByRange, 
+import { api } from '@/lib/api-client';
+import { toast } from 'sonner';
+import type { User } from '@shared/types';
+import {
+  getChartData,
+  getSummaryStats,
+  filterEntriesByRange,
   getTriggerDistribution,
-  type TimeRange 
+  type TimeRange
 } from '@/lib/stats-utils';
 import { BarChart3, Activity } from 'lucide-react';
 type ViewMode = 'stats' | 'recovery';
@@ -20,6 +23,8 @@ export function HealthPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('stats');
   const [activeTab, setActiveTab] = useState<TimeRange>('WEEKLY');
   const user = useAppStore(s => s.user);
+  const setUser = useAppStore(s => s.setUser);
+  const isGuest = useAppStore(s => s.isGuest);
   // Memoize journal to prevent unstable dependency
   const journal = useMemo(() => user?.journal || [], [user?.journal]);
   // Filter entries based on selected time range
@@ -35,6 +40,28 @@ export function HealthPage() {
   const triggerData = useMemo(() => {
     return getTriggerDistribution(filteredEntries);
   }, [filteredEntries]);
+  const handleDeleteEntry = async (entryId: string) => {
+    if (!user) return;
+    if (window.confirm("Are you sure you want to delete this entry?")) {
+      if (isGuest) {
+        // Local update for guest
+        const updatedJournal = (user.journal || []).filter(e => e.id !== entryId);
+        setUser({ ...user, journal: updatedJournal });
+        toast.success("Entry deleted (Demo Mode)");
+      } else {
+        // API call for real user
+        try {
+          const updatedUser = await api<User>(`/api/user/${user.id}/journal/${entryId}`, {
+            method: 'DELETE',
+          });
+          setUser(updatedUser);
+          toast.success("Entry deleted");
+        } catch (err) {
+          toast.error("Failed to delete entry");
+        }
+      }
+    }
+  };
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background pb-24 flex flex-col transition-colors duration-300">
       {/* Header Section */}
@@ -121,7 +148,7 @@ export function HealthPage() {
               <StatsSummary stats={summaryStats} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <TriggerChart data={triggerData} />
-                <RecentHistory entries={journal} />
+                <RecentHistory entries={journal} onDelete={handleDeleteEntry} />
               </div>
             </motion.div>
           ) : (

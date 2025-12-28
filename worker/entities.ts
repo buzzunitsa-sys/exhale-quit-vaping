@@ -15,6 +15,12 @@ export class UserEntity extends IndexedEntity<User> {
       journal: [entry, ...(s.journal || [])] // Prepend new entry
     }));
   }
+  async removeJournalEntry(entryId: string): Promise<User> {
+    return this.mutate(s => ({
+      ...s,
+      journal: (s.journal || []).filter(e => e.id !== entryId)
+    }));
+  }
   async resetProgress(): Promise<User> {
     return this.mutate(s => {
       const now = new Date().toISOString();

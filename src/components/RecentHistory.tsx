@@ -1,13 +1,15 @@
 import React, { useMemo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { History, AlertCircle, CheckCircle2, Circle } from 'lucide-react';
+import { History, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import type { JournalEntry } from '@shared/types';
 import { cn } from '@/lib/utils';
 interface RecentHistoryProps {
   entries: JournalEntry[];
+  onDelete?: (id: string) => void;
 }
-export function RecentHistory({ entries }: RecentHistoryProps) {
+export function RecentHistory({ entries, onDelete }: RecentHistoryProps) {
   const recentEntries = useMemo(() => {
     return [...entries]
       .sort((a, b) => b.timestamp - a.timestamp)
@@ -42,9 +44,9 @@ export function RecentHistory({ entries }: RecentHistoryProps) {
             const isHighIntensity = entry.intensity >= 7;
             const isMediumIntensity = entry.intensity >= 4 && entry.intensity < 7;
             return (
-              <div 
-                key={entry.id} 
-                className="flex items-center justify-between py-3 px-6 hover:bg-secondary/50 transition-colors border-b border-border/30 last:border-0"
+              <div
+                key={entry.id}
+                className="group flex items-center justify-between py-3 px-6 hover:bg-secondary/50 transition-colors border-b border-border/30 last:border-0"
               >
                 <div className="flex items-center gap-4 overflow-hidden">
                   {/* Intensity Indicator */}
@@ -68,15 +70,28 @@ export function RecentHistory({ entries }: RecentHistoryProps) {
                     )}
                   </div>
                 </div>
-                {/* Time */}
-                <div className="text-right flex-shrink-0 ml-4">
-                  <p className="text-xs text-muted-foreground font-medium">
-                    {formatDistanceToNow(entry.timestamp, { addSuffix: true })}
-                  </p>
-                  {entry.puffs && entry.puffs > 0 && (
-                    <p className="text-[10px] font-bold text-red-500 mt-0.5">
-                      {entry.puffs} PUFFS
+                {/* Time & Actions */}
+                <div className="flex items-center gap-3 flex-shrink-0 ml-4">
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground font-medium">
+                      {formatDistanceToNow(entry.timestamp, { addSuffix: true })}
                     </p>
+                    {entry.puffs && entry.puffs > 0 && (
+                      <p className="text-[10px] font-bold text-red-500 mt-0.5">
+                        {entry.puffs} PUFFS
+                      </p>
+                    )}
+                  </div>
+                  {onDelete && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onDelete(entry.id)}
+                      className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-0 group-hover:opacity-100 transition-opacity md:opacity-0 opacity-100"
+                      title="Delete Entry"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   )}
                 </div>
               </div>
