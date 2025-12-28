@@ -1,0 +1,22 @@
+{
+  "name": "Exhale - Quit Vaping Tracker",
+  "short_name": "Exhale",
+  "description": "Track your journey to freedom. Monitor health recovery, money saved, and cravings resisted.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0ea5e9",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/vite.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512"
+    }
+  ]
+}

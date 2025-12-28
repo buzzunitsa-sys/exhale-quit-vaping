@@ -1,0 +1,121 @@
+import React, { useMemo } from 'react';
+import { formatDistanceToNow } from 'date-fns';
+import { History, Trash2, Pencil, ClipboardList } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import type { JournalEntry } from '@shared/types';
+import { cn } from '@/lib/utils';
+interface RecentHistoryProps {
+  entries: JournalEntry[];
+  onDelete?: (id: string) => void;
+  onEdit?: (entry: JournalEntry) => void;
+}
+export function RecentHistory({ entries, onDelete, onEdit }: RecentHistoryProps) {
+  const recentEntries = useMemo(() => {
+    return [...entries]
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, 10);
+  }, [entries]);
+  if (recentEntries.length === 0) {
+    return (
+      <Card className="bg-card border border-border/50 shadow-sm transition-colors duration-300">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+            <History className="w-5 h-5 text-sky-500" />
+            Recent History
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-12 flex flex-col items-center text-center">
+          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+            <ClipboardList className="w-8 h-8 text-slate-400" />
+          </div>
+          <p className="text-muted-foreground text-sm max-w-[200px]">
+            No entries yet. Log your first craving to start tracking your patterns.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+  return (
+    <Card className="bg-card border border-border/50 shadow-sm transition-colors duration-300">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+          <History className="w-5 h-5 text-sky-500" />
+          Recent History
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="px-0 pb-2">
+        <div className="space-y-1">
+          {recentEntries.map((entry) => {
+            const isHighIntensity = entry.intensity >= 7;
+            const isMediumIntensity = entry.intensity >= 4 && entry.intensity < 7;
+            return (
+              <div
+                key={entry.id}
+                className="group flex items-center justify-between py-3 px-6 hover:bg-secondary/50 transition-colors border-b border-border/30 last:border-0"
+              >
+                <div className="flex items-center gap-4 overflow-hidden">
+                  {/* Intensity Indicator */}
+                  <div className={cn(
+                    "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs",
+                    isHighIntensity ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400" :
+                    isMediumIntensity ? "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400" :
+                    "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
+                  )}>
+                    {entry.intensity}
+                  </div>
+                  {/* Details */}
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm text-foreground truncate">
+                      {entry.trigger}
+                    </p>
+                    {entry.note && (
+                      <p className="text-xs text-muted-foreground truncate max-w-[200px]">
+                        {entry.note}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {/* Time & Actions */}
+                <div className="flex items-center gap-1 flex-shrink-0 ml-4">
+                  <div className="text-right mr-2">
+                    <p className="text-xs text-muted-foreground font-medium">
+                      {formatDistanceToNow(entry.timestamp, { addSuffix: true })}
+                    </p>
+                    {entry.puffs && entry.puffs > 0 && (
+                      <p className="text-[10px] font-bold text-red-500 mt-0.5">
+                        {entry.puffs} PUFFS
+                      </p>
+                    )}
+                  </div>
+                  {onEdit && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onEdit(entry)}
+                      className="h-8 w-8 text-muted-foreground hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/20 opacity-0 group-hover:opacity-100 transition-opacity md:opacity-0 opacity-100"
+                      title="Edit Entry"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                  )}
+                  {onDelete && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onDelete(entry.id)}
+                      className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-0 group-hover:opacity-100 transition-opacity md:opacity-0 opacity-100"
+                      title="Delete Entry"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
