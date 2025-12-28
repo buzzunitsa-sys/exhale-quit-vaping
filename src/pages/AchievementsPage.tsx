@@ -94,16 +94,21 @@ export function AchievementsPage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.05 }}
+              whileHover={isUnlocked ? { scale: 1.03 } : {}}
             >
-              <Card className={`h-full border-none shadow-sm transition-all duration-300 ${
+              <Card className={`h-full border-none shadow-sm transition-all duration-300 relative overflow-hidden ${
                 isUnlocked
-                  ? 'bg-gradient-to-br from-bling-cyan/10 to-bling-purple/10 shadow-md border border-bling-cyan/20'
+                  ? 'bg-gradient-to-br from-bling-cyan/20 to-bling-purple/20 shadow-lg shadow-bling-purple/10 border border-bling-cyan/30'
                   : 'bg-slate-100 dark:bg-slate-800/50 opacity-70 grayscale'
               }`}>
-                <CardContent className="p-5 flex flex-col items-center text-center gap-3 h-full justify-center">
-                  <div className={`p-3 rounded-full ${
+                {/* Shimmer effect for unlocked cards */}
+                {isUnlocked && (
+                  <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/30 to-transparent z-10 pointer-events-none" />
+                )}
+                <CardContent className="p-5 flex flex-col items-center text-center gap-3 h-full justify-center relative z-20">
+                  <div className={`p-3 rounded-full transition-all duration-500 ${
                     isUnlocked
-                      ? 'bg-gradient-to-br from-bling-cyan to-bling-purple text-white shadow-lg shadow-bling-purple/30'
+                      ? 'bg-gradient-to-br from-bling-cyan to-bling-purple text-white shadow-lg shadow-bling-purple/30 scale-110'
                       : 'bg-slate-200 text-slate-400 dark:bg-slate-700'
                   }`}>
                     {isUnlocked ? achievement.icon : <Trophy className="w-6 h-6" />}

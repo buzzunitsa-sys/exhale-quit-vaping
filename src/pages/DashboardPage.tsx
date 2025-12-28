@@ -1,14 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useAppStore } from '@/lib/store';
 import { CircularProgress } from '@/components/ui/circular-progress';
 import { Card, CardContent } from '@/components/ui/card';
 import { differenceInSeconds } from 'date-fns';
-import { Wallet, Wind, Heart } from 'lucide-react';
+import { Wallet, Wind, Quote as QuoteIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { SavingsChart } from '@/components/SavingsChart';
+import { getDailyQuote } from '@/lib/quotes';
 export function DashboardPage() {
   const user = useAppStore(s => s.user);
   const [now, setNow] = useState(new Date());
+  // Memoize the quote so it doesn't change on every second tick
+  const dailyQuote = useMemo(() => getDailyQuote(), []);
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
@@ -41,31 +44,36 @@ export function DashboardPage() {
       </header>
       {/* Main Timer */}
       <div className="flex flex-col items-center justify-center py-8">
-        <CircularProgress 
-            value={Math.min((secondsElapsed / (24 * 60 * 60)) * 100, 100)} 
-            size={280} 
-            strokeWidth={12}
-            showGradient={true}
+        <motion.div
+          animate={{ scale: [1, 1.02, 1] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         >
-          <div className="flex flex-col items-center text-center">
-            <div className="text-5xl font-mono font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-bling-cyan to-bling-purple">
-              {days}
+          <CircularProgress
+              value={Math.min((secondsElapsed / (24 * 60 * 60)) * 100, 100)}
+              size={280}
+              strokeWidth={12}
+              showGradient={true}
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className="text-5xl font-mono font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-bling-cyan to-bling-purple">
+                {days}
+              </div>
+              <div className="text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Days Free</div>
+              <div className="flex gap-2 text-xl font-mono text-slate-600 dark:text-slate-300">
+                <span>{hours.toString().padStart(2, '0')}</span>:
+                <span>{minutes.toString().padStart(2, '0')}</span>:
+                <span>{seconds.toString().padStart(2, '0')}</span>
+              </div>
             </div>
-            <div className="text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Days Free</div>
-            <div className="flex gap-2 text-xl font-mono text-slate-600 dark:text-slate-300">
-              <span>{hours.toString().padStart(2, '0')}</span>:
-              <span>{minutes.toString().padStart(2, '0')}</span>:
-              <span>{seconds.toString().padStart(2, '0')}</span>
-            </div>
-          </div>
-        </CircularProgress>
+          </CircularProgress>
+        </motion.div>
       </div>
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-4">
         <StatCard
           icon={<Wallet className="w-5 h-5 text-bling-purple" />}
           label="Money Saved"
-          value={`${moneySaved.toFixed(2)}`}
+          value={`${user.profile.currency === 'USD' ? '$' : user.profile.currency + ' '}${moneySaved.toFixed(2)}`}
           delay={0.1}
         />
         <StatCard
@@ -81,28 +89,34 @@ export function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.25 }}
       >
-        <SavingsChart
+        <SavingsChart 
           currentSavings={moneySaved}
           dailySavings={dailySavings}
           currency={user.profile.currency}
         />
       </motion.div>
-      {/* Motivation Card */}
+      {/* Daily Motivation Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <Card className="bg-gradient-to-br from-bling-cyan to-bling-purple text-white border-none shadow-lg shadow-bling-purple/30">
-          <CardContent className="p-6">
+        <Card className="bg-gradient-to-br from-bling-cyan to-bling-purple text-white border-none shadow-lg shadow-bling-purple/30 overflow-hidden relative">
+          {/* Decorative background elements */}
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
+          <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-20 h-20 bg-black/10 rounded-full blur-xl" />
+          <CardContent className="p-6 relative z-10">
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-white/10 rounded-xl backdrop-blur-sm">
-                <Heart className="w-6 h-6 text-white" />
+              <div className="p-3 bg-white/10 rounded-xl backdrop-blur-sm shrink-0">
+                <QuoteIcon className="w-6 h-6 text-white fill-white/20" />
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-1">Health Recovery</h3>
-                <p className="text-indigo-100 text-sm leading-relaxed">
-                  Your oxygen levels are returning to normal. Carbon monoxide is leaving your body.
+                <h3 className="font-semibold text-lg mb-2">Daily Motivation</h3>
+                <p className="text-white/90 text-sm leading-relaxed italic mb-2">
+                  "{dailyQuote.text}"
+                </p>
+                <p className="text-indigo-100 text-xs font-medium">
+                  — {dailyQuote.author}
                 </p>
               </div>
             </div>
@@ -126,7 +140,7 @@ function StatCard({ icon, label, value, delay }: { icon: React.ReactNode, label:
           </div>
           <div>
             <p className="text-sm text-muted-foreground font-medium">{label}</p>
-            <p className="text-2xl font-bold tracking-tight">{value}</p>
+            <p className="text-2xl font-bold tracking-tight truncate" title={value}>{value}</p>
           </div>
         </CardContent>
       </Card>

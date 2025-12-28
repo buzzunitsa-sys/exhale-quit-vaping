@@ -9,9 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { LogOut, Save, User as UserIcon } from 'lucide-react';
+import { LogOut, Save, User as UserIcon, Palette, Moon } from 'lucide-react';
 import type { User } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
+import { ThemeToggle } from '@/components/ThemeToggle';
 const profileSchema = z.object({
   quitDate: z.string().min(1, "Quit date is required"),
   costPerUnit: z.coerce.number().min(0.01, "Cost must be greater than 0"),
@@ -62,10 +63,27 @@ export function ProfilePage() {
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Profile & Settings</h2>
         <p className="text-slate-500">Manage your quit plan and account.</p>
       </header>
-      <Card className="border-none shadow-sm">
+      {/* Appearance Section */}
+      <Card className="border-none shadow-sm bg-white dark:bg-slate-900">
         <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-                <UserIcon className="w-5 h-5 text-emerald-500" />
+                <Palette className="w-5 h-5 text-bling-purple" />
+                Appearance
+            </CardTitle>
+        </CardHeader>
+        <CardContent className="flex items-center justify-between">
+            <div className="space-y-1">
+                <Label className="text-base">Theme Mode</Label>
+                <p className="text-sm text-muted-foreground">Switch between light and dark mode</p>
+            </div>
+            <ThemeToggle className="static bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700" />
+        </CardContent>
+      </Card>
+      {/* Account Details */}
+      <Card className="border-none shadow-sm bg-white dark:bg-slate-900">
+        <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+                <UserIcon className="w-5 h-5 text-bling-cyan" />
                 Account Details
             </CardTitle>
         </CardHeader>
@@ -80,7 +98,8 @@ export function ProfilePage() {
             </div>
         </CardContent>
       </Card>
-      <Card className="border-none shadow-sm">
+      {/* Quit Plan Settings */}
+      <Card className="border-none shadow-sm bg-white dark:bg-slate-900">
         <CardHeader>
             <CardTitle className="text-lg">Quit Plan Settings</CardTitle>
         </CardHeader>
@@ -92,6 +111,7 @@ export function ProfilePage() {
                 id="quitDate"
                 type="datetime-local"
                 {...register('quitDate')}
+                className="focus-visible:ring-bling-purple"
               />
               {errors.quitDate && <p className="text-sm text-red-500">{errors.quitDate.message}</p>}
             </div>
@@ -103,6 +123,7 @@ export function ProfilePage() {
                   type="number"
                   step="0.01"
                   {...register('costPerUnit')}
+                  className="focus-visible:ring-bling-purple"
                 />
                 {errors.costPerUnit && <p className="text-sm text-red-500">{errors.costPerUnit.message}</p>}
               </div>
@@ -113,11 +134,12 @@ export function ProfilePage() {
                   type="number"
                   step="0.1"
                   {...register('unitsPerWeek')}
+                  className="focus-visible:ring-bling-purple"
                 />
                 {errors.unitsPerWeek && <p className="text-sm text-red-500">{errors.unitsPerWeek.message}</p>}
               </div>
             </div>
-            <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={isSubmitting}>
+            <Button type="submit" className="w-full bg-gradient-to-r from-bling-cyan to-bling-purple hover:opacity-90 transition-opacity text-white" disabled={isSubmitting}>
               <Save className="w-4 h-4 mr-2" />
               {isSubmitting ? "Saving..." : "Save Changes"}
             </Button>
@@ -128,6 +150,9 @@ export function ProfilePage() {
         <LogOut className="w-4 h-4 mr-2" />
         Log Out
       </Button>
+      <div className="text-center pt-4 pb-8">
+        <p className="text-xs text-muted-foreground">Built with ❤️ by Aurelia</p>
+      </div>
     </div>
   );
 }
