@@ -1,17 +1,12 @@
 import React from 'react';
 import { useAppStore } from '@/lib/store';
-import { DashboardPage } from './DashboardPage';
 import { OnboardingPage } from './OnboardingPage';
-import { MobileLayout } from '@/components/layout/MobileLayout';
+import { Navigate } from 'react-router-dom';
 export function HomePage() {
   const user = useAppStore(s => s.user);
-  // If user is logged in AND has a profile, show dashboard
+  // If user is logged in AND has a profile, redirect to dashboard
   if (user?.profile) {
-    return (
-      <MobileLayout>
-        <DashboardPage />
-      </MobileLayout>
-    );
+    return <Navigate to="/dashboard" replace />;
   }
   // Otherwise show onboarding (which handles login + profile setup)
   return <OnboardingPage />;

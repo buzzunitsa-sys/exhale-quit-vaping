@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Calendar, DollarSign, Wind, Check } from 'lucide-react';
+import { ArrowRight, Calendar, DollarSign, Wind } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,7 +11,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { api } from '@/lib/api-client';
 import { useAppStore } from '@/lib/store';
 import { toast } from 'sonner';
-import type { User, QuitProfile } from '@shared/types';
+import type { User } from '@shared/types';
+import { useNavigate } from 'react-router-dom';
 // --- Schemas ---
 const emailSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -29,12 +30,15 @@ export function OnboardingPage() {
   const setUser = useAppStore(s => s.setUser);
   const updateProfile = useAppStore(s => s.updateProfile);
   const user = useAppStore(s => s.user);
+  const navigate = useNavigate();
   // If user exists but no profile, jump to profile step
   React.useEffect(() => {
     if (user && !user.profile) {
       setStep('profile');
+    } else if (user?.profile) {
+        navigate('/dashboard');
     }
-  }, [user]);
+  }, [user, navigate]);
   const handleLogin = async (data: EmailForm) => {
     try {
       const user = await api<User>('/api/auth/login', {
@@ -43,8 +47,8 @@ export function OnboardingPage() {
       });
       setUser(user);
       if (user.profile) {
-        // Already has profile, will be redirected by HomePage
         toast.success("Welcome back!");
+        navigate('/dashboard');
       } else {
         setStep('profile');
         toast.success("Account created! Let's set up your plan.");
@@ -65,6 +69,7 @@ export function OnboardingPage() {
         updateProfile(updatedUser.profile);
       }
       toast.success("You're all set! Freedom starts now.");
+      navigate('/dashboard');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to save profile");
     }
@@ -105,10 +110,10 @@ function LoginForm({ onSubmit }: { onSubmit: (data: EmailForm) => void }) {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="you@example.com" 
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
                 {...register('email')}
                 className="h-12"
               />
@@ -145,8 +150,8 @@ function ProfileWizard({ onSubmit }: { onSubmit: (data: ProfileForm) => void }) 
                 <Calendar className="w-4 h-4 text-emerald-500" />
                 When did you quit?
               </Label>
-              <Input 
-                type="datetime-local" 
+              <Input
+                type="datetime-local"
                 {...register('quitDate')}
                 className="h-12"
               />
@@ -158,9 +163,9 @@ function ProfileWizard({ onSubmit }: { onSubmit: (data: ProfileForm) => void }) 
                   <DollarSign className="w-4 h-4 text-emerald-500" />
                   Cost per pod/pack
                 </Label>
-                <Input 
-                  type="number" 
-                  step="0.01" 
+                <Input
+                  type="number"
+                  step="0.01"
                   placeholder="0.00"
                   {...register('costPerUnit')}
                   className="h-12"
@@ -172,9 +177,9 @@ function ProfileWizard({ onSubmit }: { onSubmit: (data: ProfileForm) => void }) 
                   <Wind className="w-4 h-4 text-emerald-500" />
                   Pods per week
                 </Label>
-                <Input 
-                  type="number" 
-                  step="0.1" 
+                <Input
+                  type="number"
+                  step="0.1"
                   placeholder="0"
                   {...register('unitsPerWeek')}
                   className="h-12"

@@ -1,146 +1,142 @@
 import React, { useEffect, useState } from 'react';
 import { useAppStore } from '@/lib/store';
-import { differenceInSeconds, isSameDay } from 'date-fns';
+import { differenceInSeconds } from 'date-fns';
 import { motion } from 'framer-motion';
-import { Trophy, FileText } from 'lucide-react';
+import { Trophy, Medal, Star, Award, Crown, Zap, Shield, Target } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { PageHeader } from '@/components/ui/page-header';
-import { ACHIEVEMENTS } from '@/lib/achievements';
-import { ShareButton } from '@/components/ui/share-button';
-import { Button } from '@/components/ui/button';
-import { CertificateModal } from '@/components/CertificateModal';
-import { cn } from '@/lib/utils';
+import confetti from 'canvas-confetti';
 import type { Achievement } from '@/types/app';
-// Define which achievements get a certificate
-const MAJOR_MILESTONES = [
-  '1week', '2weeks', '1month', '3months', '6months', '1year', // Time
-  'save100', 'save500', 'save1000', // Money
-  'commitment' // First step
+const ACHIEVEMENTS: Achievement[] = [
+  {
+    id: '1day',
+    title: 'First Step',
+    description: 'Stay smoke-free for 24 hours',
+    type: 'time',
+    icon: <Star className="w-6 h-6" />,
+    condition: ({ secondsFree }) => secondsFree >= 24 * 60 * 60,
+  },
+  {
+    id: '3days',
+    title: 'Chemical Free',
+    description: '3 days without nicotine',
+    type: 'health',
+    icon: <Zap className="w-6 h-6" />,
+    condition: ({ secondsFree }) => secondsFree >= 3 * 24 * 60 * 60,
+  },
+  {
+    id: '1week',
+    title: 'Week Warrior',
+    description: 'One full week of freedom',
+    type: 'time',
+    icon: <Shield className="w-6 h-6" />,
+    condition: ({ secondsFree }) => secondsFree >= 7 * 24 * 60 * 60,
+  },
+  {
+    id: 'save20',
+    title: 'Pocket Change',
+    description: 'Save your first $20',
+    type: 'money',
+    icon: <Target className="w-6 h-6" />,
+    condition: ({ moneySaved }) => moneySaved >= 20,
+  },
+  {
+    id: 'save100',
+    title: 'Baller',
+    description: 'Save $100 not buying vapes',
+    type: 'money',
+    icon: <Award className="w-6 h-6" />,
+    condition: ({ moneySaved }) => moneySaved >= 100,
+  },
+  {
+    id: '1month',
+    title: 'Master of Self',
+    description: 'One month smoke-free',
+    type: 'time',
+    icon: <Crown className="w-6 h-6" />,
+    condition: ({ secondsFree }) => secondsFree >= 30 * 24 * 60 * 60,
+  },
 ];
 export function AchievementsPage() {
   const user = useAppStore(s => s.user);
   const [now, setNow] = useState(new Date());
-  const [selectedCertificate, setSelectedCertificate] = useState<Achievement | null>(null);
+  const [shownConfetti, setShownConfetti] = useState(false);
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
-  // Safe calculation of stats even if user is not fully loaded yet
-  const quitDate = user?.profile ? new Date(user.profile.quitDate) : new Date();
+  if (!user?.profile) return null;
+  const quitDate = new Date(user.profile.quitDate);
   const secondsElapsed = differenceInSeconds(now, quitDate);
   const weeksElapsed = secondsElapsed / (60 * 60 * 24 * 7);
-  const moneySaved = user?.profile ? weeksElapsed * user.profile.unitsPerWeek * user.profile.costPerUnit : 0;
-  const podsAvoided = user?.profile ? Math.floor(weeksElapsed * user.profile.unitsPerWeek) : 0;
-  // Calculate puffs today for taper achievement
-  const journal = user?.journal || [];
-  const todayEntries = journal.filter(entry => isSameDay(entry.timestamp, now));
-  const puffsToday = todayEntries.reduce((sum, entry) => sum + (entry.puffs || 0), 0);
-  const dailyLimit = user?.profile?.dailyLimit || 0;
-  const stats = {
-    secondsFree: secondsElapsed,
-    moneySaved,
-    podsAvoided,
-    dailyLimit,
-    puffsToday,
-    journal,
-    userCreatedAt: user?.createdAt
-  };
+  const moneySaved = weeksElapsed * user.profile.unitsPerWeek * user.profile.costPerUnit;
+  const podsAvoided = Math.floor(weeksElapsed * user.profile.unitsPerWeek);
+  const stats = { secondsFree: secondsElapsed, moneySaved, podsAvoided };
+  // Calculate unlocked count for confetti trigger
   const unlockedCount = ACHIEVEMENTS.filter(a => a.condition(stats)).length;
-  if (!user?.profile) return null;
+  useEffect(() => {
+    // Simple confetti trigger on load if user has achievements
+    // In a real app, we'd track 'newly unlocked' specifically
+    if (unlockedCount > 0 && !shownConfetti) {
+      const random = Math.random();
+      if (random > 0.7) { // Don't show every single time, just sometimes for delight
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+        setShownConfetti(true);
+      }
+    }
+  }, [unlockedCount, shownConfetti]);
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-background pb-24 transition-colors duration-300">
-      <PageHeader 
-        title="Achievements" 
-        subtitle="Your trophy case of freedom."
-        rightElement={
-          <div className="flex items-center gap-2">
-            <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-2xl text-center">
-              <span className="block text-2xl font-bold text-white leading-none">
-                  {unlockedCount}
-              </span>
-              <span className="text-[10px] font-medium text-sky-100 uppercase tracking-wider">
-                  UNLOCKED
-              </span>
-            </div>
-            <ShareButton 
-              customTitle="My Exhale Achievements"
-              customText={`I've unlocked ${unlockedCount} achievements on Exhale! 🏆 #QuitVaping #ExhaleApp`}
-              className="h-12 w-12 rounded-2xl"
-            />
-          </div>
-        }
-      />
-      <div className="px-4 grid grid-cols-2 gap-4 relative z-10">
+    <div className="p-4 space-y-6 pt-8 md:pt-12 pb-24">
+      <header className="mb-8 flex justify-between items-end">
+        <div>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Achievements</h2>
+            <p className="text-slate-500">Your trophy case of freedom.</p>
+        </div>
+        <div className="text-right">
+            <span className="text-3xl font-bold text-emerald-600">{unlockedCount}</span>
+            <span className="text-slate-400 text-sm">/{ACHIEVEMENTS.length}</span>
+        </div>
+      </header>
+      <div className="grid grid-cols-2 gap-4">
         {ACHIEVEMENTS.map((achievement, index) => {
           const isUnlocked = achievement.condition(stats);
-          const hasCertificate = MAJOR_MILESTONES.includes(achievement.id);
           return (
             <motion.div
               key={achievement.id}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.05 }}
-              whileHover={isUnlocked ? { scale: 1.03 } : {}}
             >
-              <Card className={cn(
-                "h-full border-none shadow-sm transition-all duration-300 relative overflow-hidden flex flex-col",
+              <Card className={`h-full border-none shadow-sm transition-all duration-300 ${
                 isUnlocked 
-                  ? "bg-card dark:bg-card border border-sky-100 dark:border-sky-900 shadow-md" 
-                  : "bg-slate-100 dark:bg-muted/50 opacity-70 grayscale"
-              )}>
-                {/* Shimmer effect for unlocked cards */}
-                {isUnlocked && (
-                  <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent z-10 pointer-events-none" />
-                )}
-                <CardContent className="p-5 flex flex-col items-center text-center gap-3 flex-1 relative z-20">
-                  <div className={cn(
-                    "p-3 rounded-full transition-all duration-500",
+                  ? 'bg-gradient-to-br from-white to-emerald-50 dark:from-slate-900 dark:to-emerald-900/20 shadow-md' 
+                  : 'bg-slate-100 dark:bg-slate-800/50 opacity-70 grayscale'
+              }`}>
+                <CardContent className="p-5 flex flex-col items-center text-center gap-3 h-full justify-center">
+                  <div className={`p-3 rounded-full ${
                     isUnlocked 
-                      ? "bg-gradient-to-br from-sky-400 to-violet-500 text-white shadow-lg shadow-violet-500/30 scale-110" 
-                      : "bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-600"
-                  )}>
+                      ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-400' 
+                      : 'bg-slate-200 text-slate-400 dark:bg-slate-700'
+                  }`}>
                     {isUnlocked ? achievement.icon : <Trophy className="w-6 h-6" />}
                   </div>
-                  <div className="flex-1 flex flex-col justify-center">
-                    <h3 className={cn(
-                      "font-semibold mb-1 text-sm sm:text-base",
-                      isUnlocked ? "text-foreground" : "text-muted-foreground"
-                    )}>
+                  <div>
+                    <h3 className={`font-semibold mb-1 ${isUnlocked ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}>
                       {achievement.title}
                     </h3>
-                    <p className="text-xs text-muted-foreground leading-tight">
+                    <p className="text-xs text-muted-foreground">
                       {achievement.description}
                     </p>
                   </div>
-                  {/* Certificate Button */}
-                  {isUnlocked && hasCertificate && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => setSelectedCertificate(achievement)}
-                      className="mt-2 h-8 text-xs gap-1.5 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 w-full"
-                    >
-                      <FileText className="w-3 h-3" />
-                      Certificate
-                    </Button>
-                  )}
                 </CardContent>
               </Card>
             </motion.div>
           );
         })}
       </div>
-      {/* Certificate Modal */}
-      {selectedCertificate && (
-        <CertificateModal
-          isOpen={!!selectedCertificate}
-          onClose={() => setSelectedCertificate(null)}
-          title={selectedCertificate.title}
-          description={selectedCertificate.description}
-          date={now} // Ideally this would be the actual unlock date, but 'now' works for MVP
-          userName={user?.email?.split('@')[0]} // Simple username fallback
-        />
-      )}
     </div>
   );
 }

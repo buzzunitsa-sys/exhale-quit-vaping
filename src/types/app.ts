@@ -17,3 +17,19 @@ export interface OnboardingStepProps {
   onBack: () => void;
   initialData: Partial<QuitProfile>;
 }
+export interface HealthMilestone {
+  id: string;
+  title: string;
+  description: string;
+  durationSeconds: number;
+  icon: React.ReactNode;
+}
+export type AchievementType = 'time' | 'money' | 'health';
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  condition: (stats: { secondsFree: number; moneySaved: number; podsAvoided: number }) => boolean;
+  icon: React.ReactNode;
+  type: AchievementType;
+}

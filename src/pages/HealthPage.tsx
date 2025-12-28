@@ -1,304 +1,157 @@
-import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { StatsChart } from '@/components/ui/stats-chart';
-import { StatsSummary } from '@/components/ui/stats-summary';
-import { RecoveryTimeline } from '@/components/RecoveryTimeline';
-import { TriggerChart } from '@/components/TriggerChart';
-import { RecentHistory } from '@/components/RecentHistory';
-import { HistoryCalendar } from '@/components/HistoryCalendar';
-import { JournalForm } from '@/components/JournalForm';
-import { FullHistoryModal } from '@/components/FullHistoryModal';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { cn } from '@/lib/utils';
+import React, { useEffect, useState } from 'react';
 import { useAppStore } from '@/lib/store';
-import { api } from '@/lib/api-client';
-import { toast } from 'sonner';
-import type { User, JournalEntry } from '@shared/types';
-import {
-  getChartData,
-  getSummaryStats,
-  filterEntriesByRange,
-  getTriggerDistribution,
-  type TimeRange
-} from '@/lib/stats-utils';
-import { BarChart3, Activity, CalendarDays, List } from 'lucide-react';
-type ViewMode = 'stats' | 'recovery' | 'history';
+import { differenceInSeconds } from 'date-fns';
+import { motion } from 'framer-motion';
+import { Heart, Wind, Brain, Activity, Smile, Zap, CheckCircle2, Circle, Lock } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
+import type { HealthMilestone } from '@/types/app';
+const MILESTONES: HealthMilestone[] = [
+  {
+    id: '20m',
+    title: '20 Minutes',
+    description: 'Your heart rate and blood pressure drop to normal levels.',
+    durationSeconds: 20 * 60,
+    icon: <Heart className="w-5 h-5" />,
+  },
+  {
+    id: '8h',
+    title: '8 Hours',
+    description: 'Carbon monoxide levels in your blood drop to normal. Oxygen levels increase.',
+    durationSeconds: 8 * 60 * 60,
+    icon: <Wind className="w-5 h-5" />,
+  },
+  {
+    id: '24h',
+    title: '24 Hours',
+    description: 'Your risk of heart attack begins to decrease.',
+    durationSeconds: 24 * 60 * 60,
+    icon: <Activity className="w-5 h-5" />,
+  },
+  {
+    id: '48h',
+    title: '48 Hours',
+    description: 'Nerve endings start to regrow. Your sense of smell and taste improve.',
+    durationSeconds: 48 * 60 * 60,
+    icon: <Brain className="w-5 h-5" />,
+  },
+  {
+    id: '72h',
+    title: '3 Days',
+    description: 'Nicotine is completely out of your body. Breathing becomes easier.',
+    durationSeconds: 72 * 60 * 60,
+    icon: <Zap className="w-5 h-5" />,
+  },
+  {
+    id: '1w',
+    title: '1 Week',
+    description: 'Cravings may peak but will start to subside. You are building new habits.',
+    durationSeconds: 7 * 24 * 60 * 60,
+    icon: <Lock className="w-5 h-5" />,
+  },
+  {
+    id: '2w',
+    title: '2 Weeks',
+    description: 'Circulation improves. Lung function increases up to 30%.',
+    durationSeconds: 14 * 24 * 60 * 60,
+    icon: <Smile className="w-5 h-5" />,
+  },
+  {
+    id: '1m',
+    title: '1 Month',
+    description: 'Coughing and shortness of breath decrease. Cilia regain normal function.',
+    durationSeconds: 30 * 24 * 60 * 60,
+    icon: <Wind className="w-5 h-5" />,
+  },
+];
 export function HealthPage() {
-  const [viewMode, setViewMode] = useState<ViewMode>('stats');
-  const [activeTab, setActiveTab] = useState<TimeRange>('WEEKLY');
-  const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const user = useAppStore(s => s.user);
-  const setUser = useAppStore(s => s.setUser);
-  const isGuest = useAppStore(s => s.isGuest);
-  // Memoize journal to prevent unstable dependency
-  const journal = useMemo(() => user?.journal || [], [user?.journal]);
-  // Filter entries based on selected time range
-  const filteredEntries = useMemo(() => {
-    return filterEntriesByRange(journal, activeTab);
-  }, [journal, activeTab]);
-  const chartData = useMemo(() => {
-    return getChartData(journal, activeTab);
-  }, [journal, activeTab]);
-  const summaryStats = useMemo(() => {
-    return getSummaryStats(journal);
-  }, [journal]);
-  const triggerData = useMemo(() => {
-    return getTriggerDistribution(filteredEntries);
-  }, [filteredEntries]);
-  const handleDeleteEntry = (entryId: string) => {
-    setDeleteId(entryId);
-  };
-  const confirmDelete = async () => {
-    if (!user || !deleteId) return;
-    if (isGuest) {
-      // Local update for guest
-      const updatedJournal = (user.journal || []).filter(e => e.id !== deleteId);
-      setUser({ ...user, journal: updatedJournal });
-      toast.success("Entry deleted (Demo Mode)");
-      setDeleteId(null);
-    } else {
-      // API call for real user
-      try {
-        const updatedUser = await api<User>(`/api/user/${user.id}/journal/${deleteId}`, {
-          method: 'DELETE',
-        });
-        setUser(updatedUser);
-        toast.success("Entry deleted");
-        setDeleteId(null);
-      } catch (err) {
-        toast.error("Failed to delete entry");
-      }
-    }
-  };
-  const handleEditEntry = (entry: JournalEntry) => {
-    setEditingEntry(entry);
-  };
-  const handleUpdateEntry = async (data: { intensity: number; trigger: string; note: string; puffs?: number }) => {
-    if (!user || !editingEntry) return;
-    if (isGuest) {
-      // Local update for guest
-      const updatedJournal = (user.journal || []).map(e => 
-        e.id === editingEntry.id ? { ...e, ...data } : e
-      );
-      setUser({ ...user, journal: updatedJournal });
-      toast.success("Entry updated (Demo Mode)");
-      setEditingEntry(null);
-      return;
-    }
-    try {
-      const updatedUser = await api<User>(`/api/user/${user.id}/journal/${editingEntry.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-      });
-      setUser(updatedUser);
-      toast.success("Entry updated successfully");
-      setEditingEntry(null);
-    } catch (err) {
-      toast.error("Failed to update entry");
-    }
-  };
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+  if (!user?.profile) return null;
+  const quitDate = new Date(user.profile.quitDate);
+  const secondsElapsed = differenceInSeconds(now, quitDate);
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-background pb-24 flex flex-col transition-colors duration-300">
-      {/* Header Section */}
-      <div className="bg-gradient-to-br from-sky-500 via-blue-500 to-indigo-500 pt-8 pb-8 px-4 relative z-0 rounded-b-[40px] shadow-lg shadow-blue-200/50 dark:shadow-none">
-        <h1 className="text-2xl font-bold text-white text-center mb-6">Health & Progress</h1>
-        {/* View Toggle */}
-        <div className="flex justify-center mb-6">
-          <div className="bg-black/20 p-1 rounded-xl flex gap-1 backdrop-blur-md overflow-x-auto max-w-full">
-            <button
-              onClick={() => setViewMode('stats')}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap",
-                viewMode === 'stats' 
-                  ? "bg-white text-blue-600 shadow-sm" 
-                  : "text-white/80 hover:bg-white/10"
-              )}
-            >
-              <BarChart3 className="w-4 h-4" />
-              Statistics
-            </button>
-            <button
-              onClick={() => setViewMode('history')}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap",
-                viewMode === 'history' 
-                  ? "bg-white text-blue-600 shadow-sm" 
-                  : "text-white/80 hover:bg-white/10"
-              )}
-            >
-              <CalendarDays className="w-4 h-4" />
-              History
-            </button>
-            <button
-              onClick={() => setViewMode('recovery')}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap",
-                viewMode === 'recovery' 
-                  ? "bg-white text-blue-600 shadow-sm" 
-                  : "text-white/80 hover:bg-white/10"
-              )}
-            >
-              <Activity className="w-4 h-4" />
-              Recovery
-            </button>
-          </div>
-        </div>
-        {/* Conditional Header Content: Time Range Tabs (Only for Stats) */}
-        <AnimatePresence mode="wait">
-          {viewMode === 'stats' && (
+    <div className="p-4 space-y-6 pt-8 md:pt-12 pb-24">
+      <header className="mb-8">
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Health Timeline</h2>
+        <p className="text-slate-500">Watch your body heal in real-time.</p>
+      </header>
+      <div className="space-y-6 relative">
+        {/* Vertical Line */}
+        <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-slate-200 dark:bg-slate-800 z-0" />
+        {MILESTONES.map((milestone, index) => {
+          const isCompleted = secondsElapsed >= milestone.durationSeconds;
+          const isNext = !isCompleted && (index === 0 || secondsElapsed >= MILESTONES[index - 1].durationSeconds);
+          let progress = 0;
+          if (isCompleted) progress = 100;
+          else if (isNext) {
+             // Calculate progress for current milestone
+             const prevDuration = index === 0 ? 0 : MILESTONES[index - 1].durationSeconds;
+             const totalDuration = milestone.durationSeconds - prevDuration;
+             const currentElapsed = secondsElapsed - prevDuration;
+             progress = Math.max(0, Math.min(100, (currentElapsed / totalDuration) * 100));
+          }
+          return (
             <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
+              key={milestone.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="relative z-10 pl-16"
             >
-              <div className="flex justify-center mb-6">
-                <div className="flex items-center gap-2 bg-white/10 p-1 rounded-full backdrop-blur-md">
-                  {(['DAILY', 'WEEKLY', 'MONTHLY'] as TimeRange[]).map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      className={cn(
-                        "px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-200",
-                        activeTab === tab 
-                          ? "bg-white text-indigo-600 shadow-sm" 
-                          : "text-white hover:bg-white/10"
-                      )}
-                    >
-                      {tab}
-                    </button>
-                  ))}
-                </div>
+              {/* Icon/Status Indicator */}
+              <div className="absolute left-0 top-0 w-12 h-12 flex items-center justify-center bg-slate-50 dark:bg-slate-950 rounded-full border-4 border-slate-50 dark:border-slate-950">
+                {isCompleted ? (
+                  <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
+                    <CheckCircle2 className="w-6 h-6" />
+                  </div>
+                ) : isNext ? (
+                  <div className="w-10 h-10 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10">
+                        <CircularProgressbar
+                            value={progress}
+                            styles={buildStyles({
+                                pathColor: '#10B981',
+                                trailColor: '#e2e8f0',
+                            })}
+                        />
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center text-emerald-600">
+                        {milestone.icon}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-400">
+                    <Circle className="w-6 h-6" />
+                  </div>
+                )}
               </div>
-              {/* Chart Area */}
-              <div className="mb-8 h-[300px]">
-                <StatsChart data={chartData} />
-              </div>
+              <Card className={`border-none shadow-sm transition-colors ${isCompleted ? 'bg-emerald-50/50 dark:bg-emerald-900/10' : 'bg-white dark:bg-slate-900'}`}>
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start mb-1">
+                    <h3 className={`font-semibold ${isCompleted ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}`}>
+                      {milestone.title}
+                    </h3>
+                    {isNext && (
+                        <span className="text-xs font-medium text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full">
+                            In Progress
+                        </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {milestone.description}
+                  </p>
+                </CardContent>
+              </Card>
             </motion.div>
-          )}
-        </AnimatePresence>
+          );
+        })}
       </div>
-      {/* Main Content Area */}
-      <div className={cn(
-        "flex-1 px-4 space-y-6 relative z-10 transition-all duration-300",
-        viewMode === 'stats' ? "-mt-6" : "pt-6"
-      )}>
-        <AnimatePresence mode="wait">
-          {viewMode === 'stats' ? (
-            <motion.div
-              key="stats"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-6"
-            >
-              <StatsSummary stats={summaryStats} />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <TriggerChart data={triggerData} />
-                <RecentHistory 
-                  entries={journal} 
-                  onDelete={handleDeleteEntry}
-                  onEdit={handleEditEntry}
-                />
-              </div>
-            </motion.div>
-          ) : viewMode === 'history' ? (
-            <motion.div
-              key="history"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-6"
-            >
-              <HistoryCalendar 
-                entries={journal} 
-                dailyLimit={user?.profile?.dailyLimit}
-                createdAt={user?.createdAt || Date.now()}
-              />
-              <RecentHistory 
-                entries={journal} 
-                onDelete={handleDeleteEntry}
-                onEdit={handleEditEntry}
-              />
-              <Button 
-                variant="outline" 
-                className="w-full h-12 gap-2 border-sky-200 text-sky-600 hover:bg-sky-50 dark:border-sky-900 dark:text-sky-400 dark:hover:bg-sky-900/20"
-                onClick={() => setIsHistoryOpen(true)}
-              >
-                <List className="w-4 h-4" />
-                View Full History
-              </Button>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="recovery"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <RecoveryTimeline />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-      {/* Edit Dialog */}
-      <Dialog open={!!editingEntry} onOpenChange={(open) => !open && setEditingEntry(null)}>
-        <DialogContent className="sm:max-w-md bg-card border-border" aria-describedby="edit-entry-desc">
-          <DialogHeader>
-            <DialogTitle className="text-foreground">Edit Entry</DialogTitle>
-            <DialogDescription id="edit-entry-desc">
-              Update the details of your journal entry.
-            </DialogDescription>
-          </DialogHeader>
-          {editingEntry && (
-            <JournalForm 
-              initialData={editingEntry} 
-              onSubmit={handleUpdateEntry}
-              onCancel={() => setEditingEntry(null)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Journal Entry?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This entry will be permanently removed from your history.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700 text-white">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      {/* Full History Modal */}
-      <FullHistoryModal 
-        isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
-        entries={journal}
-        onDelete={handleDeleteEntry}
-        onEdit={handleEditEntry}
-      />
     </div>
   );
 }
