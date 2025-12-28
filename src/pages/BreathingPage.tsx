@@ -32,8 +32,8 @@ export function BreathingPage() {
           ...user,
           journal: [entry, ...(user.journal || [])]
         });
-        toast.success("Session logged (Demo Mode)");
-        navigate('/dashboard');
+        // Navigate with state to trigger dashboard celebration
+        navigate('/dashboard', { state: { breathingCompleted: true } });
         return;
       }
       try {
@@ -42,14 +42,17 @@ export function BreathingPage() {
           body: JSON.stringify({ entry }),
         });
         setUser(updatedUser);
-        toast.success("Session logged. Great job!");
+        // Navigate with state to trigger dashboard celebration
+        navigate('/dashboard', { state: { breathingCompleted: true } });
       } catch (err) {
         console.error("Failed to log breathing session", err);
         // Don't block exit on error, just warn
         toast.error("Could not log session, but great job breathing!");
+        navigate('/dashboard');
       }
+    } else {
+      navigate('/dashboard');
     }
-    navigate('/dashboard');
   };
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background flex flex-col relative overflow-hidden transition-colors duration-300">
@@ -57,9 +60,9 @@ export function BreathingPage() {
       <div className="absolute inset-0 bg-gradient-to-br from-sky-100 via-violet-100 to-emerald-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 animate-pulse-slow opacity-50 z-0" />
       {/* Minimal Header */}
       <header className="p-4 flex items-center relative z-10">
-        <Button
-          variant="ghost"
-          size="icon"
+        <Button 
+          variant="ghost" 
+          size="icon" 
           onClick={() => navigate('/dashboard')}
           className="text-muted-foreground hover:text-foreground hover:bg-white/20"
         >
@@ -82,7 +85,7 @@ export function BreathingPage() {
           transition={{ delay: 12, duration: 0.8 }} // Show button after a full cycle roughly
           className="mt-8 w-full max-w-xs"
         >
-          <Button
+          <Button 
             onClick={handleExit}
             className="w-full h-14 text-lg font-bold bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-90 text-white shadow-xl shadow-emerald-500/20 rounded-full transition-transform active:scale-95"
           >

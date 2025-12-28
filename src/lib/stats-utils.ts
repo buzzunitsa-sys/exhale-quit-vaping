@@ -28,6 +28,7 @@ export interface SummaryStats {
   dailyAverage: number;
   daysWithSmoke: number;
   daysNoSmoke: number;
+  resisted: number;
 }
 export type DayStatus = 'clean' | 'under-limit' | 'over-limit' | 'unknown';
 export interface DailyConsistency {
@@ -150,6 +151,8 @@ export function getSummaryStats(entries: JournalEntry[]): SummaryStats {
   const thisWeekEntries = entries.filter(e => e.timestamp >= startOfCurrentWeek.getTime());
   const totalPuffs = thisWeekEntries.length; // Total cravings
   const actualPuffs = thisWeekEntries.reduce((sum, e) => sum + (e.puffs || 0), 0); // Actual puffs taken
+  // Resisted: entries where puffs is 0
+  const resisted = thisWeekEntries.filter(e => (e.puffs || 0) === 0).length;
   // Calculate days passed in this week (1-7)
   const daysPassed = Math.max(1, (now.getDay() + 6) % 7 + 1);
   const dailyAverage = Math.round(totalPuffs / daysPassed);
@@ -164,7 +167,8 @@ export function getSummaryStats(entries: JournalEntry[]): SummaryStats {
     actualPuffs,
     dailyAverage,
     daysWithSmoke: daysWithSlips,
-    daysNoSmoke: daysPassed - daysWithSlips
+    daysNoSmoke: daysPassed - daysWithSlips,
+    resisted
   };
 }
 export function getWeeklyConsistency(entries: JournalEntry[], dailyLimit: number = 0, userCreatedAt?: number): DailyConsistency[] {

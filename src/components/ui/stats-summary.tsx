@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import type { SummaryStats } from '@/lib/stats-utils';
 import { cn } from '@/lib/utils';
+import { Shield } from 'lucide-react';
 interface StatsSummaryProps {
   stats: SummaryStats;
 }
@@ -42,8 +43,10 @@ export function StatsSummary({ stats }: StatsSummaryProps) {
             <span className="text-sm font-bold text-emerald-500">{stats.daysNoSmoke}</span>
           </div>
           <div className="flex justify-between items-center text-muted-foreground">
-            <span className="text-sm font-medium">Daily craving avg:</span>
-            <span className="text-sm font-bold text-foreground">{stats.dailyAverage}</span>
+            <span className="text-sm font-medium">Cravings Resisted:</span>
+            <span className="text-sm font-bold text-emerald-500 flex items-center gap-1">
+              <Shield className="w-3 h-3" /> {stats.resisted}
+            </span>
           </div>
         </div>
       </CardContent>
