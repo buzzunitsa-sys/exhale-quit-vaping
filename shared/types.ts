@@ -16,6 +16,7 @@ export interface JournalEntry {
   intensity: number; // 1-10
   trigger: string; // e.g., "Stress", "Boredom", "Social"
   note?: string;
+  puffs?: number; // Actual puffs taken (slips)
 }
 export interface User {
   id: string; // email

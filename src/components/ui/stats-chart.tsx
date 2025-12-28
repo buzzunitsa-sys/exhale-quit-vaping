@@ -2,6 +2,7 @@ import React from 'react';
 import {
   ComposedChart,
   Line,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -26,33 +27,32 @@ export function StatsChart({ data }: StatsChartProps) {
       <div className="absolute top-0 left-4 bg-slate-800/50 text-white text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm z-10">
         {new Date().getFullYear()}
       </div>
-      {/* ResponsiveContainer needs explicit parent height which is set by h-[300px] above */}
       <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
         <ComposedChart
           data={data}
           margin={{ top: 40, right: 20, bottom: 20, left: -20 }}
         >
-          <CartesianGrid 
-            strokeDasharray="5 5" 
-            vertical={true} 
-            horizontal={true} 
-            stroke="rgba(255,255,255,0.2)" 
+          <CartesianGrid
+            strokeDasharray="5 5"
+            vertical={true}
+            horizontal={true}
+            stroke="rgba(255,255,255,0.2)"
           />
-          <XAxis 
-            dataKey="name" 
-            axisLine={false} 
-            tickLine={false} 
+          <XAxis
+            dataKey="name"
+            axisLine={false}
+            tickLine={false}
             tick={{ fill: 'rgba(255,255,255,0.8)', fontSize: 12 }}
             dy={10}
           />
-          <YAxis 
-            axisLine={false} 
-            tickLine={false} 
+          <YAxis
+            axisLine={false}
+            tickLine={false}
             tick={{ fill: 'rgba(255,255,255,0.8)', fontSize: 12 }}
             domain={[0, 'auto']}
             tickCount={5}
           />
-          <Tooltip 
+          <Tooltip
             content={({ active, payload }) => {
               if (active && payload && payload.length) {
                 const d = payload[0].payload as ChartDataPoint;
@@ -62,11 +62,17 @@ export function StatsChart({ data }: StatsChartProps) {
                     <div className="space-y-1">
                       <p className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-white"/>
-                        <span>Puffs: <span className="font-bold">{d.puffs}</span></span>
+                        <span>Cravings: <span className="font-bold">{d.puffs}</span></span>
                       </p>
+                      {d.puffsTaken > 0 && (
+                        <p className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-red-500"/>
+                          <span>Actual Puffs: <span className="font-bold text-red-400">{d.puffsTaken}</span></span>
+                        </p>
+                      )}
                       <p className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-blue-500"/>
-                        <span>Avg: <span className="font-bold">{d.average}</span></span>
+                        <span>Avg Cravings: <span className="font-bold">{d.average}</span></span>
                       </p>
                     </div>
                   </div>
@@ -76,35 +82,48 @@ export function StatsChart({ data }: StatsChartProps) {
             }}
             cursor={{ stroke: 'rgba(255,255,255,0.5)', strokeWidth: 1 }}
           />
+          {/* Actual Puffs Bar */}
+          <Bar 
+            dataKey="puffsTaken" 
+            name="Actual Puffs" 
+            fill="#ef4444" 
+            radius={[4, 4, 0, 0]} 
+            barSize={20}
+            opacity={0.8}
+          />
           {/* Average Line */}
-          <Line 
-            type="monotone" 
-            dataKey="average" 
-            stroke="#3b82f6" 
-            strokeWidth={3} 
+          <Line
+            type="monotone"
+            dataKey="average"
+            stroke="#3b82f6"
+            strokeWidth={3}
             dot={{ r: 0 }}
             activeDot={{ r: 6, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }}
           />
-          {/* Puffs Line */}
-          <Line 
-            type="monotone" 
-            dataKey="puffs" 
-            stroke="#ffffff" 
-            strokeWidth={3} 
+          {/* Cravings Line */}
+          <Line
+            type="monotone"
+            dataKey="puffs"
+            stroke="#ffffff"
+            strokeWidth={3}
             dot={{ r: 4, fill: '#ffffff', strokeWidth: 0 }}
             activeDot={{ r: 8, fill: '#ffffff', strokeWidth: 0 }}
           />
         </ComposedChart>
       </ResponsiveContainer>
       {/* Custom Legend */}
-      <div className="flex justify-center items-center gap-6 mt-2">
+      <div className="flex justify-center items-center gap-6 mt-2 flex-wrap">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-white"></div>
-          <span className="text-white/90 text-sm font-medium">Puffs</span>
+          <span className="text-white/90 text-sm font-medium">Cravings</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-red-500"></div>
+          <span className="text-white/90 text-sm font-medium">Actual Puffs</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-          <span className="text-white/90 text-sm font-medium">Average</span>
+          <span className="text-white/90 text-sm font-medium">Avg Cravings</span>
         </div>
       </div>
     </div>

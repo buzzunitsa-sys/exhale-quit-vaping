@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import type { SummaryStats } from '@/lib/stats-utils';
+import { cn } from '@/lib/utils';
 interface StatsSummaryProps {
   stats: SummaryStats;
 }
@@ -10,30 +11,39 @@ export function StatsSummary({ stats }: StatsSummaryProps) {
       <CardContent className="pt-6 pb-8 px-6">
         <h3 className="text-center text-lg font-semibold text-foreground mb-8">This Week</h3>
         <div className="flex justify-between items-start mb-10">
-          {/* Main Stat: Puffs */}
+          {/* Main Stat: Cravings */}
           <div className="flex flex-col items-center flex-1">
-            <span className="text-6xl font-bold text-foreground tracking-tighter">
+            <span className="text-5xl font-bold text-foreground tracking-tighter">
               {stats.totalPuffs}
             </span>
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-widest mt-2">PUFFS</span>
+            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mt-2 text-center">CRAVINGS LOGGED</span>
           </div>
-          {/* Secondary Stat: Daily Average */}
-          <div className="flex flex-col items-center flex-1 pt-4">
-            <span className="text-3xl font-medium text-yellow-500">
-              {stats.dailyAverage}
+          {/* Secondary Stat: Actual Puffs */}
+          <div className="flex flex-col items-center flex-1 border-l border-border/50">
+            <span className={cn(
+              "text-5xl font-bold tracking-tighter",
+              stats.actualPuffs > 0 ? "text-red-500" : "text-emerald-500"
+            )}>
+              {stats.actualPuffs}
             </span>
-            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mt-2">DAILY AVERAGE</span>
+            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mt-2 text-center">ACTUAL PUFFS</span>
           </div>
         </div>
         {/* Tertiary Stats List */}
         <div className="space-y-4 px-4">
           <div className="flex justify-between items-center text-muted-foreground">
-            <span className="text-sm font-medium">days with smoke:</span>
-            <span className="text-sm font-bold text-foreground">{stats.daysWithSmoke}</span>
+            <span className="text-sm font-medium">Days with slips:</span>
+            <span className={cn("text-sm font-bold", stats.daysWithSmoke > 0 ? "text-red-500" : "text-foreground")}>
+              {stats.daysWithSmoke}
+            </span>
           </div>
           <div className="flex justify-between items-center text-muted-foreground">
-            <span className="text-sm font-medium">days no-smoke:</span>
-            <span className="text-sm font-bold text-foreground">{stats.daysNoSmoke}</span>
+            <span className="text-sm font-medium">Days clean:</span>
+            <span className="text-sm font-bold text-emerald-500">{stats.daysNoSmoke}</span>
+          </div>
+          <div className="flex justify-between items-center text-muted-foreground">
+            <span className="text-sm font-medium">Daily craving avg:</span>
+            <span className="text-sm font-bold text-foreground">{stats.dailyAverage}</span>
           </div>
         </div>
       </CardContent>

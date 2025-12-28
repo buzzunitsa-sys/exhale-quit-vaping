@@ -1,16 +1,28 @@
 import React from 'react';
-import { Edit2 } from 'lucide-react';
+import { Edit2, AlertTriangle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 interface PuffCounterProps {
-  puffs: number;
-  nicotine: number;
+  puffs: number; // Avoided
+  nicotine: number; // Avoided
   limit?: number;
+  puffsTaken?: number; // Actual slips today
 }
-export function PuffCounter({ puffs, nicotine, limit = 0 }: PuffCounterProps) {
+export function PuffCounter({ puffs, nicotine, limit = 0, puffsTaken = 0 }: PuffCounterProps) {
   // Calculate progress based on some arbitrary max for visualization if limit is 0
   const progress = limit > 0 ? Math.min((puffs / limit) * 100, 100) : 5;
   return (
-    <div className="bg-card border border-border/50 rounded-3xl p-6 shadow-sm transition-colors duration-300">
-      <h3 className="text-center font-semibold text-foreground mb-6 text-lg">Puffs Avoided</h3>
+    <div className="bg-card border border-border/50 rounded-3xl p-6 shadow-sm transition-colors duration-300 relative overflow-hidden">
+      {puffsTaken > 0 && (
+        <div className="absolute top-0 left-0 right-0 bg-red-500/10 border-b border-red-500/20 py-1 px-4 flex items-center justify-center gap-2">
+          <AlertTriangle className="w-3 h-3 text-red-500" />
+          <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">
+            {puffsTaken} SLIPS TODAY
+          </span>
+        </div>
+      )}
+      <h3 className={cn("text-center font-semibold text-foreground mb-6 text-lg", puffsTaken > 0 && "mt-4")}>
+        Puffs Avoided
+      </h3>
       <div className="flex justify-between items-end mb-6 px-4">
         <div className="text-center">
           <div className="text-4xl font-bold text-foreground mb-1">{Math.floor(puffs)}</div>
@@ -23,7 +35,7 @@ export function PuffCounter({ puffs, nicotine, limit = 0 }: PuffCounterProps) {
       </div>
       <div className="space-y-2">
         <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
-           <div 
+           <div
              className="h-full bg-sky-400 rounded-full transition-all duration-1000"
              style={{ width: `${progress}%` }}
            />

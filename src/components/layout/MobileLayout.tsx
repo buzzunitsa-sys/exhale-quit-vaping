@@ -8,6 +8,7 @@ import { JournalForm } from '@/components/JournalForm';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import type { User, JournalEntry } from '@shared/types';
+import { useHaptic } from '@/hooks/use-haptic';
 interface MobileLayoutProps {
   children?: React.ReactNode;
   className?: string;
@@ -17,6 +18,7 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
   const setUser = useAppStore(s => s.setUser);
   const [isLogOpen, setIsLogOpen] = useState(false);
   const location = useLocation();
+  const { vibrate } = useHaptic();
   // Only show nav if user is logged in
   const showNav = !!user?.profile;
   const handleAddEntry = async (entry: Omit<JournalEntry, 'id' | 'timestamp'>) => {
@@ -33,8 +35,15 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
       });
       setUser(updatedUser);
       setIsLogOpen(false);
-      toast.success("Craving logged. Stay strong!");
+      if (entry.puffs && entry.puffs > 0) {
+        vibrate('warning');
+        toast.success("Slip logged. Don't give up!");
+      } else {
+        vibrate('success');
+        toast.success("Craving logged. Stay strong!");
+      }
     } catch (err) {
+      vibrate('error');
       toast.error("Failed to log entry");
     }
   };
@@ -55,11 +64,11 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
             <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-violet-500">Exhale</span>
           </div>
           <nav className="space-y-2 flex-1">
-            <NavItem to="/dashboard" icon={<Calendar className="w-5 h-5" />} label="Dashboard" />
-            <NavItem to="/journal" icon={<Calendar className="w-5 h-5" />} label="Journal" />
-            <NavItem to="/health" icon={<BarChart3 className="w-5 h-5" />} label="Stats" />
-            <NavItem to="/achievements" icon={<Crown className="w-5 h-5" />} label="Achievements" />
-            <NavItem to="/profile" icon={<Settings2 className="w-5 h-5" />} label="Settings" />
+            <NavItem to="/dashboard" icon={<Calendar className="w-5 h-5" />} label="Dashboard" onClick={() => vibrate('light')} />
+            <NavItem to="/journal" icon={<Calendar className="w-5 h-5" />} label="Journal" onClick={() => vibrate('light')} />
+            <NavItem to="/health" icon={<BarChart3 className="w-5 h-5" />} label="Stats" onClick={() => vibrate('light')} />
+            <NavItem to="/achievements" icon={<Crown className="w-5 h-5" />} label="Achievements" onClick={() => vibrate('light')} />
+            <NavItem to="/profile" icon={<Settings2 className="w-5 h-5" />} label="Settings" onClick={() => vibrate('light')} />
           </nav>
         </aside>
       )}
@@ -68,8 +77,9 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
         <div className="md:hidden fixed bottom-6 left-4 right-4 z-50">
           <nav className="bg-white/80 backdrop-blur-md dark:bg-card/90 rounded-full shadow-lg shadow-slate-200/50 dark:shadow-violet-900/10 border border-border h-16 px-6 flex items-center justify-between relative transition-all duration-300">
             {/* Left: Dashboard/Calendar */}
-            <NavLink 
-              to="/dashboard" 
+            <NavLink
+              to="/dashboard"
+              onClick={() => vibrate('light')}
               className={({ isActive }) => cn(
                 "p-2 rounded-full transition-colors",
                 isActive ? "text-violet-600 dark:text-violet-400" : "text-muted-foreground hover:text-foreground"
@@ -79,16 +89,20 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
             </NavLink>
             {/* Center: FAB */}
             <div className="absolute left-1/2 -translate-x-1/2 -top-6">
-              <button 
-                onClick={() => setIsLogOpen(true)}
+              <button
+                onClick={() => {
+                  vibrate('medium');
+                  setIsLogOpen(true);
+                }}
                 className="w-14 h-14 rounded-full bg-gradient-to-r from-sky-500 to-violet-600 hover:opacity-90 text-white shadow-lg shadow-violet-500/30 flex items-center justify-center transition-transform active:scale-95"
               >
                 <Plus className="w-8 h-8" />
               </button>
             </div>
             {/* Right: Stats */}
-            <NavLink 
-              to="/health" 
+            <NavLink
+              to="/health"
+              onClick={() => vibrate('light')}
               className={({ isActive }) => cn(
                 "p-2 rounded-full transition-colors",
                 isActive ? "text-violet-600 dark:text-violet-400" : "text-muted-foreground hover:text-foreground"
@@ -111,14 +125,15 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
     </div>
   );
 }
-function NavItem({ icon, label, to }: { icon: React.ReactNode, label: string, to: string }) {
+function NavItem({ icon, label, to, onClick }: { icon: React.ReactNode, label: string, to: string, onClick?: () => void }) {
   return (
-    <NavLink 
-      to={to} 
+    <NavLink
+      to={to}
+      onClick={onClick}
       className={({ isActive }) => cn(
         "flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-200 group",
-        isActive 
-          ? "bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 font-medium" 
+        isActive
+          ? "bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 font-medium"
           : "text-muted-foreground hover:bg-secondary hover:text-foreground"
       )}
     >
