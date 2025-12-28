@@ -31,20 +31,20 @@ export function CravingsChart({ entries }: CravingsChartProps) {
   }, [entries]);
   if (entries.length === 0) return null;
   return (
-    <Card className="bg-card border border-border/50 shadow-sm transition-colors duration-300">
+    <Card className="bg-card text-card-foreground border-border shadow-sm transition-colors duration-300">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg flex items-center gap-2 text-foreground">
-          <Activity className="w-5 h-5 text-emerald-500" />
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Activity className="w-5 h-5 text-primary" />
           Recent Cravings Intensity
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[200px] w-full mt-2 min-h-[200px] min-w-0">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <BarChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
-              <XAxis 
-                dataKey="date" 
-                tick={{ fontSize: 10, fill: '#94a3b8' }}
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
                 axisLine={false}
                 tickLine={false}
                 interval={0}
@@ -61,7 +61,7 @@ export function CravingsChart({ entries }: CravingsChartProps) {
                     return (
                       <div className="bg-popover text-popover-foreground text-xs p-2 rounded-lg shadow-xl border border-border">
                         <p className="font-bold mb-1">{d.fullDate}</p>
-                        <p>Intensity: <span className="font-bold text-emerald-400">{d.intensity}/10</span></p>
+                        <p>Intensity: <span className="font-bold text-primary">{d.intensity}/10</span></p>
                         <p className="text-muted-foreground">Trigger: {d.trigger}</p>
                       </div>
                     );

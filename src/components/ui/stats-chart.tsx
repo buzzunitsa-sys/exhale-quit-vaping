@@ -27,7 +27,12 @@ export function StatsChart({ data }: StatsChartProps) {
       <div className="absolute top-0 left-4 bg-slate-800/50 text-white text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm z-10">
         {new Date().getFullYear()}
       </div>
-      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+      <ResponsiveContainer
+        width="100%"
+        height="100%"
+        minWidth={0}
+        minHeight={0}
+      >
         <ComposedChart
           data={data}
           margin={{ top: 40, right: 20, bottom: 20, left: -20 }}
