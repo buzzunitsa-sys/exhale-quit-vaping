@@ -26,7 +26,7 @@ export function ProfilePage() {
   const logout = useAppStore(s => s.logout);
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ProfileForm>({
-    resolver: zodResolver(profileSchema),
+    resolver: zodResolver(profileSchema) as any,
     defaultValues: {
       quitDate: user?.profile?.quitDate || new Date().toISOString().slice(0, 16),
       costPerUnit: user?.profile?.costPerUnit || 0,

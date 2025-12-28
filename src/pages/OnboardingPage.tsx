@@ -97,7 +97,7 @@ export function OnboardingPage() {
 }
 function LoginForm({ onSubmit }: { onSubmit: (data: EmailForm) => void }) {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<EmailForm>({
-    resolver: zodResolver(emailSchema)
+    resolver: zodResolver(emailSchema) as any
   });
   return (
     <motion.div
@@ -130,7 +130,7 @@ function LoginForm({ onSubmit }: { onSubmit: (data: EmailForm) => void }) {
 }
 function ProfileWizard({ onSubmit }: { onSubmit: (data: ProfileForm) => void }) {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ProfileForm>({
-    resolver: zodResolver(profileSchema),
+    resolver: zodResolver(profileSchema) as any,
     defaultValues: {
       quitDate: new Date().toISOString().slice(0, 16), // Local datetime-local format
       currency: 'USD',

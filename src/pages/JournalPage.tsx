@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useAppStore } from '@/lib/store';
 import { api } from '@/lib/api-client';
 import { format } from 'date-fns';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, BookOpen, Frown, Meh, Smile, AlertCircle, X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Plus, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -13,6 +13,7 @@ import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import type { User, JournalEntry } from '@shared/types';
+import { CravingsChart } from '@/components/CravingsChart';
 const TRIGGERS = [
   "Stress", "Boredom", "Social Pressure", "Habit/Routine", "Alcohol", "Coffee", "After Meal", "Other"
 ];
@@ -62,6 +63,15 @@ export function JournalPage() {
           </DialogContent>
         </Dialog>
       </header>
+      {entries.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6"
+        >
+          <CravingsChart entries={entries} />
+        </motion.div>
+      )}
       {entries.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center space-y-4 opacity-60">
           <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center">
@@ -71,6 +81,7 @@ export function JournalPage() {
         </div>
       ) : (
         <div className="space-y-4">
+          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Recent Logs</h3>
           {entries.map((entry) => (
             <motion.div
               key={entry.id}

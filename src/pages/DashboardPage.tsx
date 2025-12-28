@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { differenceInSeconds, differenceInDays } from 'date-fns';
 import { Wallet, Wind, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { SavingsChart } from '@/components/SavingsChart';
 export function DashboardPage() {
   const user = useAppStore(s => s.user);
   const [now, setNow] = useState(new Date());
@@ -15,18 +16,19 @@ export function DashboardPage() {
   if (!user?.profile) return null;
   const quitDate = new Date(user.profile.quitDate);
   const secondsElapsed = differenceInSeconds(now, quitDate);
-  const daysElapsed = differenceInDays(now, quitDate);
   // Calculations
   const weeksElapsed = secondsElapsed / (60 * 60 * 24 * 7);
   const moneySaved = weeksElapsed * user.profile.unitsPerWeek * user.profile.costPerUnit;
   const podsAvoided = Math.floor(weeksElapsed * user.profile.unitsPerWeek);
+  // Daily savings rate for projection
+  const dailySavings = (user.profile.unitsPerWeek * user.profile.costPerUnit) / 7;
   // Time breakdown
   const days = Math.floor(secondsElapsed / (3600 * 24));
   const hours = Math.floor((secondsElapsed % (3600 * 24)) / 3600);
   const minutes = Math.floor((secondsElapsed % 3600) / 60);
   const seconds = Math.floor(secondsElapsed % 60);
   return (
-    <div className="p-4 space-y-6 pt-8 md:pt-12">
+    <div className="p-4 space-y-6 pt-8 md:pt-12 pb-24">
       {/* Header */}
       <header className="flex justify-between items-center mb-8">
         <div>
@@ -55,19 +57,31 @@ export function DashboardPage() {
       </div>
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-4">
-        <StatCard 
+        <StatCard
           icon={<Wallet className="w-5 h-5 text-emerald-500" />}
           label="Money Saved"
-          value={`$${moneySaved.toFixed(2)}`}
+          value={`${moneySaved.toFixed(2)}`}
           delay={0.1}
         />
-        <StatCard 
+        <StatCard
           icon={<Wind className="w-5 h-5 text-sky-500" />}
           label="Pods Avoided"
           value={podsAvoided.toString()}
           delay={0.2}
         />
       </div>
+      {/* Savings Projection Chart */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+      >
+        <SavingsChart 
+          currentSavings={moneySaved} 
+          dailySavings={dailySavings} 
+          currency={user.profile.currency} 
+        />
+      </motion.div>
       {/* Motivation Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
