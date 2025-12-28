@@ -219,20 +219,20 @@ function LoginForm({ onSubmit }: { onSubmit: (data: EmailForm) => void }) {
                 <span className="bg-card px-2 text-muted-foreground">Or</span>
               </div>
             </div>
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={handleGuestLogin}
               className="w-full h-12 text-base gap-2 border-sky-200 hover:bg-sky-50 dark:border-sky-900/30 dark:hover:bg-sky-900/20 text-sky-600 dark:text-sky-400"
             >
               <Eye className="w-4 h-4" />
-              View Demo
+              Continue as Guest
             </Button>
             {isInstallable && (
               <div className="pt-2 border-t border-border/50 mt-4">
-                <Button 
-                  type="button" 
-                  variant="ghost" 
+                <Button
+                  type="button"
+                  variant="ghost"
                   onClick={promptInstall}
                   className="w-full gap-2 text-muted-foreground hover:text-foreground"
                 >
@@ -437,7 +437,7 @@ function UsageStep({ onSubmit, onBack, currency }: { onSubmit: (data: UsageForm)
   const symbol = COUNTRIES.find(c => c.currencyCode === currency)?.currency || '$';
   const { register, handleSubmit, formState: { errors } } = useForm<UsageForm>({
     resolver: zodResolver(usageStepSchema) as any,
-    defaultValues: { 
+    defaultValues: {
       currency: currency,
       costPerUnit: 0,
       unitsPerWeek: 0,
