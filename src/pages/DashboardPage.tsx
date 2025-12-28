@@ -9,6 +9,7 @@ import { HourlyChart } from '@/components/ui/hourly-chart';
 import { SavingsChart } from '@/components/SavingsChart';
 import { WeeklyProgress } from '@/components/ui/weekly-progress';
 import { ShareButton } from '@/components/ui/share-button';
+import { DailyPledge } from '@/components/DailyPledge';
 import { useHaptic } from '@/hooks/use-haptic';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
@@ -156,6 +157,8 @@ export function DashboardPage() {
       </div>
       {/* Main Content - Overlapping Header */}
       <div className="px-4 -mt-12 space-y-4 relative z-10">
+        {/* Daily Pledge Card */}
+        <DailyPledge />
         <DailyTracker 
           puffsToday={puffsToday}
           costWasted={costWastedToday}

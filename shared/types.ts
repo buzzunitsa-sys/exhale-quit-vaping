@@ -29,6 +29,8 @@ export interface User {
   profile?: QuitProfile;
   journal?: JournalEntry[];
   createdAt: number;
+  lastPledgeDate?: string; // YYYY-MM-DD
+  pledgeStreak?: number;
 }
 // Keeping Chat types for compatibility with existing template structure if needed,
 // though we aren't using them for the main features yet.

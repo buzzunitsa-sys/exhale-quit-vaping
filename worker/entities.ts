@@ -24,7 +24,40 @@ export class UserEntity extends IndexedEntity<User> {
         profile: s.profile ? {
           ...s.profile,
           quitDate: now // Reset quit date to now
-        } : undefined
+        } : undefined,
+        pledgeStreak: 0,
+        lastPledgeDate: undefined
+      };
+    });
+  }
+  async submitPledge(date: string): Promise<User> {
+    return this.mutate(s => {
+      const lastDate = s.lastPledgeDate;
+      // If already pledged today (or passed same date), return current state
+      if (lastDate === date) return s;
+      let newStreak = 1;
+      if (lastDate) {
+        // Calculate difference in days
+        const d1 = new Date(lastDate);
+        const d2 = new Date(date);
+        // Reset time part to ensure pure date comparison (though input should be YYYY-MM-DD)
+        d1.setHours(0, 0, 0, 0);
+        d2.setHours(0, 0, 0, 0);
+        const diffTime = Math.abs(d2.getTime() - d1.getTime());
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays === 1) {
+          // Consecutive day
+          newStreak = (s.pledgeStreak || 0) + 1;
+        } else if (diffDays === 0) {
+           // Same day (redundant check but safe)
+           return s;
+        }
+        // If diffDays > 1, streak resets to 1
+      }
+      return {
+        ...s,
+        lastPledgeDate: date,
+        pledgeStreak: newStreak
       };
     });
   }

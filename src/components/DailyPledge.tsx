@@ -1,39 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/lib/store';
 import { api } from '@/lib/api-client';
 import { format } from 'date-fns';
 import confetti from 'canvas-confetti';
-import { CheckCircle2, Flame, WifiOff } from 'lucide-react';
+import { Quote, CheckCircle2, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { getDailyQuote } from '@/lib/quotes';
 import { toast } from 'sonner';
 import type { User } from '@shared/types';
 import { useHaptic } from '@/hooks/use-haptic';
-import { useOnlineStatus } from '@/hooks/use-online-status';
 export function DailyPledge() {
   const user = useAppStore(s => s.user);
   const setUser = useAppStore(s => s.setUser);
-  const isGuest = useAppStore(s => s.isGuest);
   const [isLoading, setIsLoading] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
   const { vibrate } = useHaptic();
-  const isOnline = useOnlineStatus();
   const today = new Date();
   const todayStr = format(today, 'yyyy-MM-dd');
   const isPledged = user?.lastPledgeDate === todayStr;
   const streak = user?.pledgeStreak || 0;
+  const dailyQuote = getDailyQuote();
   const handlePledge = async () => {
     if (!user) return;
-    if (!isOnline && !isGuest) {
-      toast.error("You are offline. Please connect to the internet to pledge.");
-      return;
-    }
     setIsLoading(true);
     vibrate('medium');
-    const onSuccess = (updatedUser: User) => {
+    try {
+      const updatedUser = await api<User>(`/api/user/${user.id}/pledge`, {
+        method: 'POST',
+        body: JSON.stringify({ date: todayStr }),
+      });
       setUser(updatedUser);
+      // Celebration effect
       vibrate('success');
       confetti({
         particleCount: 100,
@@ -41,29 +39,7 @@ export function DailyPledge() {
         origin: { y: 0.6 },
         colors: ['#0ea5e9', '#8b5cf6', '#10b981']
       });
-      setShowSuccess(true);
-      // Auto-dismiss after 2 seconds
-      setTimeout(() => setShowSuccess(false), 2000);
-    };
-    if (isGuest) {
-      // Fake pledge logic for guest
-      setTimeout(() => {
-        const newStreak = (user.pledgeStreak || 0) + 1;
-        onSuccess({
-          ...user,
-          lastPledgeDate: todayStr,
-          pledgeStreak: newStreak
-        });
-        setIsLoading(false);
-      }, 500);
-      return;
-    }
-    try {
-      const updatedUser = await api<User>(`/api/user/${user.id}/pledge`, {
-        method: 'POST',
-        body: JSON.stringify({ date: todayStr }),
-      });
-      onSuccess(updatedUser);
+      toast.success("Pledge recorded! Keep it up!");
     } catch (err) {
       toast.error("Failed to submit pledge");
       vibrate('error');
@@ -73,16 +49,14 @@ export function DailyPledge() {
   };
   if (!user) return null;
   return (
-    <>
-      <AnimatePresence>
-        {!isPledged && (
+    <div className="w-full mb-6">
+      <AnimatePresence mode="wait">
+        {!isPledged ? (
           <motion.div
             key="pledge-card"
-            initial={{ opacity: 0, y: 20, height: 'auto', marginBottom: 24 }}
-            animate={{ opacity: 1, y: 0, height: 'auto', marginBottom: 24 }}
-            exit={{ opacity: 0, height: 0, marginBottom: 0, overflow: 'hidden' }}
-            transition={{ duration: 0.4, ease: "easeInOut" }}
-            className="w-full"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
           >
             <Card className="bg-gradient-to-br from-violet-500 to-fuchsia-600 border-none shadow-lg shadow-violet-500/20 overflow-hidden relative">
               {/* Background Pattern */}
@@ -95,45 +69,51 @@ export function DailyPledge() {
                 <p className="text-violet-100 mb-6 text-sm max-w-xs">
                   Pledge to stay smoke-free today and keep your streak alive.
                 </p>
-                <Button
-                  onClick={handlePledge}
-                  disabled={isLoading || (!isOnline && !isGuest)}
-                  className="w-full bg-white text-violet-600 hover:bg-white/90 font-bold shadow-lg transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                <Button 
+                  onClick={handlePledge} 
+                  disabled={isLoading}
+                  className="w-full bg-white text-violet-600 hover:bg-white/90 font-bold shadow-lg transition-all active:scale-95"
                 >
-                  {isLoading ? "Committing..." : !isOnline && !isGuest ? (
-                    <span className="flex items-center gap-2"><WifiOff className="w-4 h-4" /> Offline</span>
-                  ) : "I Pledge For Today"}
+                  {isLoading ? "Committing..." : "I Pledge For Today"}
                 </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="quote-card"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          >
+            <Card className="bg-card border-border/50 shadow-sm overflow-hidden relative">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2 text-emerald-500 dark:text-emerald-400">
+                    <CheckCircle2 className="w-5 h-5" />
+                    <span className="font-bold text-sm">Pledged for Today</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 px-3 py-1 rounded-full">
+                    <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-500" />
+                    <span className="text-xs font-bold text-orange-600 dark:text-orange-400">
+                      {streak} Day Streak
+                    </span>
+                  </div>
+                </div>
+                <div className="relative pl-4 border-l-4 border-violet-200 dark:border-violet-900/50 py-1">
+                  <Quote className="absolute -top-2 -left-2 w-4 h-4 text-violet-300 dark:text-violet-800 fill-violet-300 dark:fill-violet-800" />
+                  <p className="text-foreground font-medium italic text-lg leading-relaxed mb-2">
+                    "{dailyQuote.text}"
+                  </p>
+                  <p className="text-sm text-muted-foreground font-medium">
+                    — {dailyQuote.author}
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
         )}
       </AnimatePresence>
-      {/* Success Modal */}
-      <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
-        <DialogContent className="sm:max-w-sm border-none bg-transparent shadow-none p-0 flex items-center justify-center pointer-events-none">
-          <DialogTitle className="sr-only">Pledge Successful</DialogTitle>
-          <DialogDescription className="sr-only">You have successfully pledged for today.</DialogDescription>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/20 flex flex-col items-center text-center w-full max-w-[300px]"
-          >
-            <div className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30 mb-6 animate-in zoom-in duration-300">
-              <CheckCircle2 className="w-10 h-10 text-white stroke-[3]" />
-            </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Pledged for Today!</h2>
-            <p className="text-muted-foreground mb-6">Keep going strong.</p>
-            <div className="flex items-center gap-2 bg-orange-100 dark:bg-orange-900/30 px-4 py-2 rounded-full">
-              <Flame className="w-5 h-5 text-orange-500 fill-orange-500" />
-              <span className="text-lg font-bold text-orange-600 dark:text-orange-400">
-                {streak} Day Streak
-              </span>
-            </div>
-          </motion.div>
-        </DialogContent>
-      </Dialog>
-    </>
+    </div>
   );
 }
