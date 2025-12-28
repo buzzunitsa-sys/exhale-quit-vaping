@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Wind, Calendar, DollarSign, Zap, Target, Beaker } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Wind, Calendar, DollarSign, Zap, Target, Beaker, Droplets } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,9 +25,11 @@ const nicotineStepSchema = z.object({
 const usageStepSchema = z.object({
   costPerUnit: z.coerce.number().min(0.01, "Cost must be greater than 0"),
   unitsPerWeek: z.coerce.number().min(0.1, "Usage must be greater than 0"),
-  puffsPerUnit: z.coerce.number().min(1, "Puffs per unit must be at least 1").default(200),
   volumePerUnit: z.coerce.number().min(0.1, "Volume must be greater than 0").default(1.0),
   currency: z.string().default("USD"),
+});
+const liquidStepSchema = z.object({
+  mlPerPuff: z.coerce.number().min(0.001, "Must be greater than 0").default(0.05),
 });
 const goalsStepSchema = z.object({
   quitDate: z.string().min(1, "Quit date is required"),
@@ -36,8 +38,9 @@ const goalsStepSchema = z.object({
 type EmailForm = z.infer<typeof emailSchema>;
 type NicotineForm = z.infer<typeof nicotineStepSchema>;
 type UsageForm = z.infer<typeof usageStepSchema>;
+type LiquidForm = z.infer<typeof liquidStepSchema>;
 type GoalsForm = z.infer<typeof goalsStepSchema>;
-type Step = 'login' | 'intro' | 'nicotine' | 'usage' | 'goals';
+type Step = 'login' | 'intro' | 'nicotine' | 'usage' | 'liquid' | 'goals';
 export function OnboardingPage() {
   const [step, setStep] = useState<Step>('login');
   // Temporary state to hold wizard data before final submission
@@ -79,6 +82,7 @@ export function OnboardingPage() {
       costPerUnit: 0,
       unitsPerWeek: 0,
       puffsPerUnit: 200,
+      mlPerPuff: 0.05,
       dailyLimit: 0,
       currency: 'USD',
       nicotineStrength: 50, // Default 5%
@@ -105,6 +109,10 @@ export function OnboardingPage() {
   };
   const handleUsageSubmit = (data: UsageForm) => {
     setWizardData(prev => ({ ...prev, ...data }));
+    setStep('liquid');
+  };
+  const handleLiquidSubmit = (data: LiquidForm) => {
+    setWizardData(prev => ({ ...prev, ...data }));
     setStep('goals');
   };
   const handleGoalsSubmit = async (data: GoalsForm) => {
@@ -128,7 +136,8 @@ export function OnboardingPage() {
   const goBack = () => {
     if (step === 'nicotine') setStep('intro');
     if (step === 'usage') setStep('nicotine');
-    if (step === 'goals') setStep('usage');
+    if (step === 'liquid') setStep('usage');
+    if (step === 'goals') setStep('liquid');
   };
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background flex items-center justify-center p-4 transition-colors duration-300">
@@ -155,24 +164,31 @@ export function OnboardingPage() {
             />
           )}
           {step === 'nicotine' && (
-            <NicotineStep 
-              key="nicotine" 
-              onSubmit={handleNicotineSubmit} 
-              onBack={goBack} 
+            <NicotineStep
+              key="nicotine"
+              onSubmit={handleNicotineSubmit}
+              onBack={goBack}
             />
           )}
           {step === 'usage' && (
-            <UsageStep 
-              key="usage" 
-              onSubmit={handleUsageSubmit} 
-              onBack={goBack} 
+            <UsageStep
+              key="usage"
+              onSubmit={handleUsageSubmit}
+              onBack={goBack}
+            />
+          )}
+          {step === 'liquid' && (
+            <LiquidStep
+              key="liquid"
+              onSubmit={handleLiquidSubmit}
+              onBack={goBack}
             />
           )}
           {step === 'goals' && (
-            <GoalsStep 
-              key="goals" 
-              onSubmit={handleGoalsSubmit} 
-              onBack={goBack} 
+            <GoalsStep
+              key="goals"
+              onSubmit={handleGoalsSubmit}
+              onBack={goBack}
             />
           )}
         </AnimatePresence>
@@ -278,7 +294,7 @@ function NicotineStep({ onSubmit, onBack }: { onSubmit: (data: NicotineForm) => 
       exit={{ opacity: 0, x: -20 }}
       className="flex flex-col h-full"
     >
-      <WizardHeader step={1} total={3} onBack={onBack} />
+      <WizardHeader step={1} total={4} onBack={onBack} />
       <div className="space-y-6 flex-1">
         <h2 className="text-3xl font-bold text-foreground leading-tight">
           What's your e-liquid's nicotine strength?
@@ -310,8 +326,8 @@ function NicotineStep({ onSubmit, onBack }: { onSubmit: (data: NicotineForm) => 
             >
               Use Default
             </button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="h-12 px-8 rounded-full bg-sky-500 hover:bg-sky-600 text-white font-semibold shadow-lg shadow-sky-500/20"
             >
               NEXT
@@ -329,7 +345,6 @@ function UsageStep({ onSubmit, onBack }: { onSubmit: (data: UsageForm) => void, 
       currency: 'USD',
       costPerUnit: 0,
       unitsPerWeek: 0,
-      puffsPerUnit: 200,
       volumePerUnit: 1.0
     }
   });
@@ -339,7 +354,7 @@ function UsageStep({ onSubmit, onBack }: { onSubmit: (data: UsageForm) => void, 
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
     >
-      <WizardHeader step={2} total={3} onBack={onBack} />
+      <WizardHeader step={2} total={4} onBack={onBack} />
       <h2 className="text-2xl font-bold text-foreground mb-6">Usage Habits</h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
@@ -372,38 +387,22 @@ function UsageStep({ onSubmit, onBack }: { onSubmit: (data: UsageForm) => void, 
             {errors.unitsPerWeek && <p className="text-sm text-red-500">{errors.unitsPerWeek.message}</p>}
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2 text-foreground">
-              <Zap className="w-4 h-4 text-violet-500" />
-              Puffs per Unit
-            </Label>
-            <Input
-              type="number"
-              step="1"
-              placeholder="e.g. 200"
-              {...register('puffsPerUnit')}
-              className="h-12 bg-background border-input text-foreground focus-visible:ring-sky-500"
-            />
-            {errors.puffsPerUnit && <p className="text-sm text-red-500">{errors.puffsPerUnit.message}</p>}
-          </div>
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2 text-foreground">
-              <Beaker className="w-4 h-4 text-violet-500" />
-              Volume (ml)
-            </Label>
-            <Input
-              type="number"
-              step="0.1"
-              placeholder="e.g. 1.0"
-              {...register('volumePerUnit')}
-              className="h-12 bg-background border-input text-foreground focus-visible:ring-sky-500"
-            />
-            {errors.volumePerUnit && <p className="text-sm text-red-500">{errors.volumePerUnit.message}</p>}
-          </div>
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2 text-foreground">
+            <Beaker className="w-4 h-4 text-violet-500" />
+            Volume per Unit (ml)
+          </Label>
+          <Input
+            type="number"
+            step="0.1"
+            placeholder="e.g. 1.0"
+            {...register('volumePerUnit')}
+            className="h-12 bg-background border-input text-foreground focus-visible:ring-sky-500"
+          />
+          {errors.volumePerUnit && <p className="text-sm text-red-500">{errors.volumePerUnit.message}</p>}
         </div>
         <p className="text-xs text-muted-foreground">
-          Puffs per unit is usually around 200 for a standard pod, or 5000+ for disposables. Volume is typically 0.7ml - 2ml for pods.
+          Volume is typically 0.7ml - 2ml for pods, or more for disposables.
         </p>
         <div className="pt-4">
           <Button type="submit" className="w-full h-12 text-lg bg-sky-500 hover:bg-sky-600 text-white rounded-full shadow-lg shadow-sky-500/20">
@@ -411,6 +410,63 @@ function UsageStep({ onSubmit, onBack }: { onSubmit: (data: UsageForm) => void, 
           </Button>
         </div>
       </form>
+    </motion.div>
+  );
+}
+function LiquidStep({ onSubmit, onBack }: { onSubmit: (data: LiquidForm) => void, onBack: () => void }) {
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<LiquidForm>({
+    resolver: zodResolver(liquidStepSchema) as any,
+    defaultValues: { mlPerPuff: 0.05 }
+  });
+  const handleUseDefault = () => {
+    setValue('mlPerPuff', 0.05);
+    handleSubmit(onSubmit)();
+  };
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="flex flex-col h-full"
+    >
+      <WizardHeader step={3} total={4} onBack={onBack} />
+      <div className="space-y-6 flex-1">
+        <h2 className="text-3xl font-bold text-foreground leading-tight">
+          How much e-liquid does one puff use?
+        </h2>
+        <p className="text-lg text-muted-foreground leading-relaxed">
+          We usually use a default value of 0.05 ml per puff. If you're unsure, you can use the default value and adjust later if needed.
+        </p>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 mt-12">
+          <div className="flex items-center justify-center gap-4">
+            <div className="relative w-32">
+              <Input
+                type="number"
+                step="0.01"
+                {...register('mlPerPuff')}
+                className="h-16 text-center text-2xl font-bold bg-background border-input focus-visible:ring-sky-500 rounded-xl"
+              />
+            </div>
+            <span className="text-xl font-medium text-foreground">ml</span>
+          </div>
+          {errors.mlPerPuff && <p className="text-center text-sm text-red-500">{errors.mlPerPuff.message}</p>}
+          <div className="flex items-center justify-between pt-12 mt-auto">
+            <button
+              type="button"
+              onClick={handleUseDefault}
+              className="text-muted-foreground hover:text-foreground font-medium transition-colors"
+            >
+              Use Default
+            </button>
+            <Button
+              type="submit"
+              className="h-12 px-8 rounded-full bg-sky-500 hover:bg-sky-600 text-white font-semibold shadow-lg shadow-sky-500/20"
+            >
+              NEXT
+            </Button>
+          </div>
+        </form>
+      </div>
     </motion.div>
   );
 }
@@ -428,7 +484,7 @@ function GoalsStep({ onSubmit, onBack }: { onSubmit: (data: GoalsForm) => void, 
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
     >
-      <WizardHeader step={3} total={3} onBack={onBack} />
+      <WizardHeader step={4} total={4} onBack={onBack} />
       <h2 className="text-2xl font-bold text-foreground mb-6">Set Your Goals</h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="space-y-2">

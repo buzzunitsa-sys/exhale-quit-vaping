@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { LogOut, Save, User as UserIcon, Palette, Download, RefreshCw, Beaker, Zap } from 'lucide-react';
+import { LogOut, Save, User as UserIcon, Palette, Download, RefreshCw, Beaker, Zap, Droplets } from 'lucide-react';
 import type { User } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -18,11 +18,12 @@ const profileSchema = z.object({
   quitDate: z.string().min(1, "Quit date is required"),
   costPerUnit: z.coerce.number().min(0.01, "Cost must be greater than 0"),
   unitsPerWeek: z.coerce.number().min(0.1, "Usage must be greater than 0"),
-  puffsPerUnit: z.coerce.number().min(1, "Puffs per unit must be at least 1").default(200),
+  puffsPerUnit: z.coerce.number().min(1, "Puffs per unit must be at least 1").optional(),
   dailyLimit: z.coerce.number().min(0, "Limit cannot be negative").optional(),
   currency: z.string().default("USD"),
   nicotineStrength: z.coerce.number().min(0, "Strength must be positive").default(50),
   volumePerUnit: z.coerce.number().min(0.1, "Volume must be positive").default(1.0),
+  mlPerPuff: z.coerce.number().min(0.001, "Must be positive").default(0.05),
 });
 type ProfileForm = z.infer<typeof profileSchema>;
 export function ProfilePage() {
@@ -42,6 +43,7 @@ export function ProfilePage() {
       currency: user?.profile?.currency || 'USD',
       nicotineStrength: user?.profile?.nicotineStrength || 50,
       volumePerUnit: user?.profile?.volumePerUnit || 1.0,
+      mlPerPuff: user?.profile?.mlPerPuff || 0.05,
     }
   });
   const handleLogout = () => {
@@ -213,18 +215,21 @@ export function ProfilePage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="puffs" className="text-foreground">Puffs per Device/Pod</Label>
+                <Label htmlFor="mlPerPuff" className="flex items-center gap-2 text-foreground">
+                  <Droplets className="w-3 h-3 text-violet-500" />
+                  Liquid per Puff (ml)
+                </Label>
                 <Input
-                  id="puffs"
+                  id="mlPerPuff"
                   type="number"
-                  step="1"
-                  {...register('puffsPerUnit')}
+                  step="0.01"
+                  {...register('mlPerPuff')}
                   className="bg-background border-input text-foreground focus-visible:ring-violet-500"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Used to calculate cost per puff.
+                  Used for precise cost and nicotine tracking. Default is 0.05ml.
                 </p>
-                {errors.puffsPerUnit && <p className="text-sm text-red-500">{errors.puffsPerUnit.message}</p>}
+                {errors.mlPerPuff && <p className="text-sm text-red-500">{errors.mlPerPuff.message}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="limit" className="text-foreground">Daily Puff Goal (Optional)</Label>
@@ -274,7 +279,7 @@ export function ProfilePage() {
           Log Out
         </Button>
         <div className="text-center pt-4 pb-8">
-          <p className="text-xs text-muted-foreground">Built with ❤�� by Aurelia | Your AI Co-founder</p>
+          <p className="text-xs text-muted-foreground">Built with ❤️ by Aurelia | Your AI Co-founder</p>
         </div>
       </div>
     </div>

@@ -7,7 +7,8 @@ export interface QuitProfile {
   quitDate: string; // ISO string
   costPerUnit: number;
   unitsPerWeek: number;
-  puffsPerUnit?: number; // New field for cost per puff calculation
+  puffsPerUnit?: number; // Legacy/Fallback field
+  mlPerPuff?: number; // New field for precise tracking (default ~0.05)
   dailyLimit?: number; // New field for tapering goal
   currency: string;
   motivation?: string;

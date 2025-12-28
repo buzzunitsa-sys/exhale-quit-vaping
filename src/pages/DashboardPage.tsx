@@ -48,25 +48,36 @@ export function DashboardPage() {
     const journal = user.journal || [];
     const todayEntries = journal.filter(entry => isSameDay(entry.timestamp, now));
     const puffsToday = todayEntries.reduce((sum, entry) => sum + (entry.puffs || 0), 0);
-    // Cost calculations
-    const puffsPerUnit = user.profile.puffsPerUnit || 200;
-    const costPerPuff = user.profile.costPerUnit / puffsPerUnit;
-    const costWastedToday = puffsToday * costPerPuff;
-    // Nicotine calculations
-    // Fallback logic: if new fields missing, assume 5% (50mg/ml) and 1ml volume approx
+    // Profile Data
+    const costPerUnit = user.profile.costPerUnit;
+    const volumePerUnit = user.profile.volumePerUnit || 1.0;
+    const mlPerPuff = user.profile.mlPerPuff || 0.05;
     const strength = user.profile.nicotineStrength ?? 50; // mg/ml
-    const volume = user.profile.volumePerUnit ?? 1.0; // ml
-    const totalNicotinePerUnit = strength * volume; // Total mg in one unit/pod
-    const nicotinePerPuff = totalNicotinePerUnit / puffsPerUnit;
+    const unitsPerWeek = user.profile.unitsPerWeek;
+    const puffsPerUnitFallback = user.profile.puffsPerUnit || 200;
+    // Cost Calculation Logic
+    // Priority: Calculate cost per ml, then cost per puff based on mlPerPuff
+    let costPerPuff = 0;
+    if (volumePerUnit > 0) {
+      const costPerMl = costPerUnit / volumePerUnit;
+      costPerPuff = costPerMl * mlPerPuff;
+    } else {
+      // Fallback to legacy puffsPerUnit if volume is missing (unlikely with new onboarding)
+      costPerPuff = costPerUnit / puffsPerUnitFallback;
+    }
+    const costWastedToday = puffsToday * costPerPuff;
+    // Nicotine Calculation Logic
+    // nicotine (mg) = strength (mg/ml) * volume (ml)
+    const nicotinePerPuff = strength * mlPerPuff;
     const nicotineUsedToday = puffsToday * nicotinePerPuff;
     // Baseline daily cost = (units per week * cost per unit) / 7
-    const dailyBaselineCost = (user.profile.unitsPerWeek * user.profile.costPerUnit) / 7;
+    const dailyBaselineCost = (unitsPerWeek * costPerUnit) / 7;
     const projectedDailySavings = Math.max(0, dailyBaselineCost - costWastedToday);
     // Total Lifetime Savings Calculation
     const quitDate = new Date(user.profile.quitDate);
     const secondsElapsed = Math.max(0, differenceInSeconds(now, quitDate));
     const weeksElapsed = secondsElapsed / (60 * 60 * 24 * 7);
-    const theoreticalMaxSavings = weeksElapsed * user.profile.unitsPerWeek * user.profile.costPerUnit;
+    const theoreticalMaxSavings = weeksElapsed * unitsPerWeek * costPerUnit;
     // Calculate total cost of all slips in history
     const totalPuffsAllTime = journal.reduce((sum, entry) => sum + (entry.puffs || 0), 0);
     const totalCostWastedAllTime = totalPuffsAllTime * costPerPuff;
@@ -120,29 +131,29 @@ export function DashboardPage() {
             </p>
           </div>
           <div className="flex gap-3">
-            <ShareButton 
+            <ShareButton
               secondsFree={0} // Not using time free for share context anymore in this view
               moneySaved={totalMoneySaved}
               currency={user.profile.currency}
             />
             {/* SOS Breathing Button */}
-            <Link 
-              to="/breathe" 
+            <Link
+              to="/breathe"
               onClick={() => vibrate('medium')}
               className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center group"
               title="SOS Breathing"
             >
               <Wind className="w-6 h-6 text-sky-200 group-hover:text-white transition-colors" />
             </Link>
-            <Link 
-              to="/achievements" 
+            <Link
+              to="/achievements"
               onClick={() => vibrate('light')}
               className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
             >
               <Crown className="w-6 h-6 text-yellow-300 fill-yellow-300" />
             </Link>
-            <Link 
-              to="/profile" 
+            <Link
+              to="/profile"
               onClick={() => vibrate('light')}
               className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
             >
@@ -159,7 +170,7 @@ export function DashboardPage() {
       <div className="px-4 -mt-12 space-y-4 relative z-10">
         {/* Daily Pledge Card */}
         <DailyPledge />
-        <DailyTracker 
+        <DailyTracker
           puffsToday={puffsToday}
           costWasted={costWastedToday}
           nicotineUsed={nicotineUsedToday}
@@ -173,7 +184,7 @@ export function DashboardPage() {
           <HourlyChart entries={user.journal} />
         </div>
         <div className="w-full h-[200px] rounded-3xl min-w-0">
-          <SavingsChart 
+          <SavingsChart
             currentSavings={totalMoneySaved}
             dailySavings={dailyBaselineCost}
             currency={user.profile.currency}
