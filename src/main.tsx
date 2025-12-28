@@ -16,6 +16,7 @@ import { HealthPage } from '@/pages/HealthPage'
 import { AchievementsPage } from '@/pages/AchievementsPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { JournalPage } from '@/pages/JournalPage'
+import { BreathingPage } from '@/pages/BreathingPage'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 const router = createBrowserRouter([
   {
@@ -46,6 +47,10 @@ const router = createBrowserRouter([
       {
         path: "/profile",
         element: <ProfilePage />,
+      },
+      {
+        path: "/breathe",
+        element: <BreathingPage />,
       },
     ]
   }
