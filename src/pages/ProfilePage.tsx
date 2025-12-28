@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { LogOut, Save, User as UserIcon, Palette, Download, RefreshCw, Beaker, Zap, Droplets } from 'lucide-react';
+import { LogOut, Save, User as UserIcon, Palette, Download, RefreshCw, Beaker, Zap, Droplets, Target } from 'lucide-react';
 import type { User } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -24,6 +24,10 @@ const profileSchema = z.object({
   nicotineStrength: z.coerce.number().min(0, "Strength must be positive").default(50),
   volumePerUnit: z.coerce.number().min(0.1, "Volume must be positive").default(1.0),
   mlPerPuff: z.coerce.number().min(0.001, "Must be positive").default(0.05),
+  savingsGoal: z.object({
+    name: z.string().optional(),
+    cost: z.coerce.number().min(0).optional(),
+  }).optional(),
 });
 type ProfileForm = z.infer<typeof profileSchema>;
 export function ProfilePage() {
@@ -44,6 +48,10 @@ export function ProfilePage() {
       nicotineStrength: user?.profile?.nicotineStrength || 50,
       volumePerUnit: user?.profile?.volumePerUnit || 1.0,
       mlPerPuff: user?.profile?.mlPerPuff || 0.05,
+      savingsGoal: {
+        name: user?.profile?.savingsGoal?.name || "",
+        cost: user?.profile?.savingsGoal?.cost || 0,
+      }
     }
   });
   const handleLogout = () => {
@@ -53,10 +61,15 @@ export function ProfilePage() {
   };
   const onSubmit = async (data: ProfileForm) => {
     if (!user) return;
+    // Clean up savings goal if empty
+    let profileData = { ...data };
+    if (!profileData.savingsGoal?.name || !profileData.savingsGoal?.cost) {
+        delete profileData.savingsGoal;
+    }
     try {
       const updatedUser = await api<User>(`/api/user/${user.id}/profile`, {
         method: 'POST',
-        body: JSON.stringify({ profile: data }),
+        body: JSON.stringify({ profile: profileData }),
       });
       setUser(updatedUser);
       if (updatedUser.profile) {
@@ -149,7 +162,7 @@ export function ProfilePage() {
               <CardTitle className="text-lg text-foreground">Usage Plan Settings</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="quitDate" className="text-foreground">Start Date</Label>
                 <Input
@@ -245,6 +258,38 @@ export function ProfilePage() {
                   Set a daily limit to help you taper off.
                 </p>
                 {errors.dailyLimit && <p className="text-sm text-red-500">{errors.dailyLimit.message}</p>}
+              </div>
+              {/* Financial Goal Section */}
+              <div className="pt-4 border-t border-border/50">
+                <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <Target className="w-4 h-4 text-indigo-500" />
+                  Financial Goal
+                </h3>
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="goalName" className="text-foreground">Goal Name</Label>
+                    <Input
+                      id="goalName"
+                      placeholder="e.g. New Bike, Vacation"
+                      {...register('savingsGoal.name')}
+                      className="bg-background border-input text-foreground focus-visible:ring-indigo-500"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="goalCost" className="text-foreground">Goal Cost</Label>
+                    <Input
+                      id="goalCost"
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...register('savingsGoal.cost')}
+                      className="bg-background border-input text-foreground focus-visible:ring-indigo-500"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Set a target to visualize what you're saving for.
+                  </p>
+                </div>
               </div>
               <Button type="submit" className="w-full bg-gradient-to-r from-sky-500 to-violet-600 hover:opacity-90 transition-opacity text-white" disabled={isSubmitting}>
                 <Save className="w-4 h-4 mr-2" />

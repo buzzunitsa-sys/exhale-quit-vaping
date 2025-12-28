@@ -11,13 +11,11 @@ import {
 import { addDays, format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp } from 'lucide-react';
-
 interface SavingsChartProps {
   currentSavings: number;
   dailySavings: number;
   currency: string;
 }
-
 export function SavingsChart({ currentSavings, dailySavings, currency }: SavingsChartProps) {
   const data = useMemo(() => {
     const points = [];
@@ -33,9 +31,7 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
     }
     return points;
   }, [currentSavings, dailySavings]);
-
   const projectedTotal = data[data.length - 1].savings;
-
   return (
     <Card className="bg-card border border-border/50 shadow-sm transition-colors duration-300">
       <CardHeader className="pb-2">
@@ -114,4 +110,3 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
     </Card>
   );
 }
-//

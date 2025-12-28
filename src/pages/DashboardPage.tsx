@@ -10,6 +10,7 @@ import { SavingsChart } from '@/components/SavingsChart';
 import { WeeklyProgress } from '@/components/ui/weekly-progress';
 import { ShareButton } from '@/components/ui/share-button';
 import { DailyPledge } from '@/components/DailyPledge';
+import { SavingsGoalCard } from '@/components/SavingsGoalCard';
 import { useHaptic } from '@/hooks/use-haptic';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
@@ -170,6 +171,14 @@ export function DashboardPage() {
       <div className="px-4 -mt-12 space-y-4 relative z-10">
         {/* Daily Pledge Card */}
         <DailyPledge />
+        {/* Savings Goal Card (if configured) */}
+        {user.profile.savingsGoal && user.profile.savingsGoal.cost > 0 && (
+          <SavingsGoalCard
+            savedAmount={totalMoneySaved}
+            goal={user.profile.savingsGoal}
+            currency={user.profile.currency}
+          />
+        )}
         <DailyTracker
           puffsToday={puffsToday}
           costWasted={costWastedToday}

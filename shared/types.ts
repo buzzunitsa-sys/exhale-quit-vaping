@@ -3,6 +3,10 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
 }
+export interface SavingsGoal {
+  name: string;
+  cost: number;
+}
 export interface QuitProfile {
   quitDate: string; // ISO string
   costPerUnit: number;
@@ -14,6 +18,7 @@ export interface QuitProfile {
   motivation?: string;
   nicotineStrength?: number; // mg/ml (e.g., 50 for 5%, 20 for 2%)
   volumePerUnit?: number; // ml per pod/device (e.g., 0.7, 2.0, 10.0)
+  savingsGoal?: SavingsGoal; // New field for financial motivation
 }
 export interface JournalEntry {
   id: string;
@@ -33,8 +38,7 @@ export interface User {
   lastPledgeDate?: string; // YYYY-MM-DD
   pledgeStreak?: number;
 }
-// Keeping Chat types for compatibility with existing template structure if needed,
-// though we aren't using them for the main features yet.
+// Keeping Chat types for compatibility with existing template structure if needed
 export interface Chat {
   id: string;
   title: string;
