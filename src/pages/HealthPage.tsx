@@ -1,15 +1,18 @@
 import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { StatsChart } from '@/components/ui/stats-chart';
 import { StatsSummary } from '@/components/ui/stats-summary';
+import { RecoveryTimeline } from '@/components/RecoveryTimeline';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/lib/store';
 import { getChartData, getSummaryStats, type TimeRange } from '@/lib/stats-utils';
+import { BarChart3, Activity } from 'lucide-react';
+type ViewMode = 'stats' | 'recovery';
 export function HealthPage() {
+  const [viewMode, setViewMode] = useState<ViewMode>('stats');
   const [activeTab, setActiveTab] = useState<TimeRange>('WEEKLY');
   const user = useAppStore(s => s.user);
-  // Fix: Memoize journal to prevent unstable dependency in subsequent useMemos
-  // This resolves the react-hooks/exhaustive-deps warning
+  // Memoize journal to prevent unstable dependency
   const journal = useMemo(() => user?.journal || [], [user?.journal]);
   const chartData = useMemo(() => {
     return getChartData(journal, activeTab);
@@ -19,42 +22,101 @@ export function HealthPage() {
   }, [journal]);
   return (
     <div className="min-h-screen bg-slate-50 pb-24 flex flex-col">
-      {/* Blue Gradient Header Section - Updated for Blue Dominance */}
-      <div className="bg-gradient-to-br from-sky-500 via-blue-500 to-indigo-500 pt-8 pb-16 px-4 relative z-0">
-        {/* Tabs */}
-        <div className="flex justify-center mb-8">
-          <div className="flex items-center gap-2 bg-white/10 p-1 rounded-full backdrop-blur-md">
-            {(['DAILY', 'WEEKLY', 'MONTHLY'] as TimeRange[]).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={cn(
-                  "px-6 py-2 rounded-full text-xs font-bold transition-all duration-200",
-                  activeTab === tab
-                    ? "bg-white text-indigo-600 shadow-sm" // Updated active text color to purple hint
-                    : "text-white hover:bg-white/10"
-                )}
-              >
-                {tab}
-              </button>
-            ))}
+      {/* Header Section */}
+      <div className="bg-gradient-to-br from-sky-500 via-blue-500 to-indigo-500 pt-8 pb-8 px-4 relative z-0 rounded-b-[40px] shadow-lg shadow-blue-200/50">
+        <h1 className="text-2xl font-bold text-white text-center mb-6">Health & Progress</h1>
+        {/* View Toggle */}
+        <div className="flex justify-center mb-6">
+          <div className="bg-black/20 p-1 rounded-xl flex gap-1 backdrop-blur-md">
+            <button
+              onClick={() => setViewMode('stats')}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200",
+                viewMode === 'stats' 
+                  ? "bg-white text-blue-600 shadow-sm" 
+                  : "text-white/80 hover:bg-white/10"
+              )}
+            >
+              <BarChart3 className="w-4 h-4" />
+              Statistics
+            </button>
+            <button
+              onClick={() => setViewMode('recovery')}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200",
+                viewMode === 'recovery' 
+                  ? "bg-white text-blue-600 shadow-sm" 
+                  : "text-white/80 hover:bg-white/10"
+              )}
+            >
+              <Activity className="w-4 h-4" />
+              Recovery
+            </button>
           </div>
         </div>
-        {/* Chart Area */}
-        <div className="mb-8">
-          <StatsChart data={chartData} />
-        </div>
+        {/* Conditional Header Content: Time Range Tabs (Only for Stats) */}
+        <AnimatePresence mode="wait">
+          {viewMode === 'stats' && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="flex justify-center mb-6">
+                <div className="flex items-center gap-2 bg-white/10 p-1 rounded-full backdrop-blur-md">
+                  {(['DAILY', 'WEEKLY', 'MONTHLY'] as TimeRange[]).map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={cn(
+                        "px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-200",
+                        activeTab === tab
+                          ? "bg-white text-indigo-600 shadow-sm"
+                          : "text-white hover:bg-white/10"
+                      )}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Chart Area */}
+              <div className="mb-8 min-h-[250px]">
+                <StatsChart data={chartData} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-      {/* Bottom Sheet Content Area */}
-      <div className="flex-1 bg-slate-50 rounded-t-[40px] -mt-12 relative z-10 px-4 pt-8 space-y-6">
-        {/* Stats Summary Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <StatsSummary stats={summaryStats} />
-        </motion.div>
+      {/* Main Content Area */}
+      <div className={cn(
+        "flex-1 bg-slate-50 px-4 space-y-6 relative z-10 transition-all duration-300",
+        viewMode === 'stats' ? "-mt-6" : "pt-6"
+      )}>
+        <AnimatePresence mode="wait">
+          {viewMode === 'stats' ? (
+            <motion.div
+              key="stats"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.2 }}
+            >
+              <StatsSummary stats={summaryStats} />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="recovery"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.2 }}
+            >
+              <RecoveryTimeline />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

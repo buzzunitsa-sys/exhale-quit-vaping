@@ -26,6 +26,7 @@ export function StatsChart({ data }: StatsChartProps) {
       <div className="absolute top-0 left-4 bg-slate-800/50 text-white text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm z-10">
         {new Date().getFullYear()}
       </div>
+      {/* ResponsiveContainer needs explicit parent height which is set by h-[300px] above */}
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart
           data={data}
