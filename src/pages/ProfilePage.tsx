@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { LogOut, Save, User as UserIcon, Palette } from 'lucide-react';
+import { LogOut, Save, User as UserIcon, Palette, Download, RefreshCw } from 'lucide-react';
 import type { User } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -57,11 +57,44 @@ export function ProfilePage() {
       toast.error(err instanceof Error ? err.message : "Failed to update settings");
     }
   };
+  const handleExport = () => {
+    if (!user) return;
+    try {
+      const dataStr = JSON.stringify(user, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      const exportFileDefaultName = `exhale-data-${new Date().toISOString().slice(0, 10)}.json`;
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+      toast.success("Data exported successfully");
+    } catch (err) {
+      toast.error("Failed to export data");
+    }
+  };
+  const handleReset = async () => {
+    if (!user) return;
+    const confirmed = window.confirm(
+      "Are you sure you want to reset your progress? This will clear your journal and reset your quit date to NOW. This action cannot be undone."
+    );
+    if (confirmed) {
+      try {
+        const updatedUser = await api<User>(`/api/user/${user.id}/reset`, {
+          method: 'POST',
+        });
+        setUser(updatedUser);
+        toast.success("Progress reset successfully. A fresh start!");
+        navigate('/dashboard');
+      } catch (err) {
+        toast.error("Failed to reset progress");
+      }
+    }
+  };
   if (!user) return null;
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background pb-24 transition-colors duration-300">
-      <PageHeader
-        title="Profile & Settings"
+      <PageHeader 
+        title="Profile & Settings" 
         subtitle="Manage your quit plan and account preferences."
       />
       <div className="px-4 space-y-6 relative z-10">
@@ -148,12 +181,33 @@ export function ProfilePage() {
             </form>
           </CardContent>
         </Card>
+        {/* Data Management */}
+        <Card className="border border-border/50 shadow-sm bg-card transition-colors duration-300">
+          <CardHeader>
+              <CardTitle className="text-lg text-foreground">Data Management</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Button variant="outline" onClick={handleExport} className="w-full">
+                <Download className="w-4 h-4 mr-2" />
+                Export Data
+              </Button>
+              <Button variant="ghost" onClick={handleReset} className="w-full text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Reset Progress
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground text-center">
+              Exporting downloads your data as JSON. Resetting clears your journal and restarts your timer.
+            </p>
+          </CardContent>
+        </Card>
         <Button variant="destructive" className="w-full" onClick={handleLogout}>
           <LogOut className="w-4 h-4 mr-2" />
           Log Out
         </Button>
         <div className="text-center pt-4 pb-8">
-          <p className="text-xs text-muted-foreground">Built with ❤️ by Aurelia | Your AI Co-founder</p>
+          <p className="text-xs text-muted-foreground">Built with ❤��� by Aurelia | Your AI Co-founder</p>
         </div>
       </div>
     </div>

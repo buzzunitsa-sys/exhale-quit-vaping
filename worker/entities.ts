@@ -15,6 +15,19 @@ export class UserEntity extends IndexedEntity<User> {
       journal: [entry, ...(s.journal || [])] // Prepend new entry
     }));
   }
+  async resetProgress(): Promise<User> {
+    return this.mutate(s => {
+      const now = new Date().toISOString();
+      return {
+        ...s,
+        journal: [], // Clear journal
+        profile: s.profile ? {
+          ...s.profile,
+          quitDate: now // Reset quit date to now
+        } : undefined
+      };
+    });
+  }
 }
 // CHAT BOARD ENTITY: Kept for template compatibility
 export type ChatBoardState = Chat & { messages: ChatMessage[] };

@@ -21,11 +21,11 @@ export function DashboardPage() {
   // Calculate slips for today
   const puffsTakenToday = useMemo(() => {
     if (!user?.journal) return 0;
-    const today = new Date();
+    // Use 'now' from state to ensure it updates with the timer and is consistent
     return user.journal
-      .filter(entry => isSameDay(entry.timestamp, today))
+      .filter(entry => isSameDay(entry.timestamp, now))
       .reduce((sum, entry) => sum + (entry.puffs || 0), 0);
-  }, [user?.journal, now]); // Re-calc if journal changes or day changes (via now)
+  }, [user?.journal, now]);
   if (!user?.profile) return null;
   const quitDate = new Date(user.profile.quitDate);
   const secondsElapsed = differenceInSeconds(now, quitDate);

@@ -55,6 +55,13 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const updatedUser = await userEntity.addJournalEntry(entry);
     return ok(c, updatedUser);
   });
+  app.post('/api/user/:id/reset', async (c) => {
+    const id = c.req.param('id');
+    const userEntity = new UserEntity(c.env, id);
+    if (!await userEntity.exists()) return notFound(c, 'User not found');
+    const updatedUser = await userEntity.resetProgress();
+    return ok(c, updatedUser);
+  });
   // --- LEGACY / TEMPLATE ROUTES (Kept for compatibility if needed) ---
   // CHATS
   app.get('/api/chats', async (c) => {
