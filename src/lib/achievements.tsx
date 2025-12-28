@@ -1,6 +1,6 @@
 import React from 'react';
-import { Star, Zap, Shield, Target, Award, Crown, Scale, Clock, Heart, Flame, Medal, CheckCircle2, BookOpen, Wind } from 'lucide-react';
-import type { Achievement } from '@/types/app';
+import { Star, Zap, Shield, Target, Award, Crown, Scale, Clock, Heart, CheckCircle2, Wind, Medal } from 'lucide-react';
+import type { Achievement, JournalEntry } from '@/types/app';
 export const ACHIEVEMENTS: Achievement[] = [
   // Time Based
   {
@@ -168,10 +168,12 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'breathe',
     title: 'Just Breathe',
-    description: 'Used the SOS breathing exercise',
+    description: 'Completed an SOS breathing exercise',
     type: 'health',
     icon: <Wind className="w-6 h-6" />,
-    condition: () => false, // Triggered manually in BreathingPage if we tracked it, for now placeholder or needs state
+    condition: ({ journal }) => {
+      return journal?.some(entry => entry.trigger === "Breathing Exercise") ?? false;
+    },
   }
 ];
 export function getUnlockedAchievements(stats: {
@@ -180,6 +182,7 @@ export function getUnlockedAchievements(stats: {
   podsAvoided: number;
   dailyLimit?: number;
   puffsToday?: number;
+  journal?: JournalEntry[];
 }): string[] {
   return ACHIEVEMENTS.filter(a => a.condition(stats)).map(a => a.id);
 }

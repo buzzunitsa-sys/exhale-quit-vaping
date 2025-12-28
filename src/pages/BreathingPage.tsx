@@ -5,11 +5,39 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Check } from 'lucide-react';
 import { useHaptic } from '@/hooks/use-haptic';
 import { motion } from 'framer-motion';
+import { api } from '@/lib/api-client';
+import { useAppStore } from '@/lib/store';
+import { toast } from 'sonner';
+import type { User, JournalEntry } from '@shared/types';
 export function BreathingPage() {
   const navigate = useNavigate();
   const { vibrate } = useHaptic();
-  const handleExit = () => {
+  const user = useAppStore(s => s.user);
+  const setUser = useAppStore(s => s.setUser);
+  const handleExit = async () => {
     vibrate('success');
+    if (user) {
+      // Log the breathing session
+      const entry: JournalEntry = {
+        id: crypto.randomUUID(),
+        timestamp: Date.now(),
+        intensity: 0, // Not a craving, but a relief action
+        trigger: "Breathing Exercise",
+        note: "Completed SOS breathing session"
+      };
+      try {
+        const updatedUser = await api<User>(`/api/user/${user.id}/journal`, {
+          method: 'POST',
+          body: JSON.stringify({ entry }),
+        });
+        setUser(updatedUser);
+        toast.success("Session logged. Great job!");
+      } catch (err) {
+        console.error("Failed to log breathing session", err);
+        // Don't block exit on error, just warn
+        toast.error("Could not log session, but great job breathing!");
+      }
+    }
     navigate('/dashboard');
   };
   return (

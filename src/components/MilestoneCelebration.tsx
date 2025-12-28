@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Trophy, Star, Heart, X } from 'lucide-react';
+import { Trophy, Heart } from 'lucide-react';
 import { RANKS, getUserRank } from '@/lib/ranks';
 import { RECOVERY_MILESTONES } from '@/data/recovery-milestones';
 import { ACHIEVEMENTS } from '@/lib/achievements';
@@ -35,7 +35,7 @@ export function MilestoneCelebration() {
     const todayEntries = journal.filter(entry => isSameDay(entry.timestamp, now));
     const puffsToday = todayEntries.reduce((sum, entry) => sum + (entry.puffs || 0), 0);
     const dailyLimit = user.profile.dailyLimit || 0;
-    return { secondsElapsed, moneySaved, podsAvoided, dailyLimit, puffsToday };
+    return { secondsElapsed, moneySaved, podsAvoided, dailyLimit, puffsToday, journal };
   }, [user]);
   // Check for new milestones
   useEffect(() => {
@@ -81,7 +81,8 @@ export function MilestoneCelebration() {
       moneySaved: stats.moneySaved,
       podsAvoided: stats.podsAvoided,
       dailyLimit: stats.dailyLimit,
-      puffsToday: stats.puffsToday
+      puffsToday: stats.puffsToday,
+      journal: stats.journal
     }));
     unlockedAchievements.forEach(a => {
       if (!seenAchievements.includes(a.id)) {
@@ -119,8 +120,8 @@ export function MilestoneCelebration() {
           angle: 60,
           spread: 55,
           origin: { x: 0 },
-          colors: next.type === 'rank' ? ['#fbbf24', '#f59e0b'] : 
-                 next.type === 'health' ? ['#ef4444', '#f87171'] : 
+          colors: next.type === 'rank' ? ['#fbbf24', '#f59e0b'] :
+                 next.type === 'health' ? ['#ef4444', '#f87171'] :
                  ['#8b5cf6', '#a78bfa']
         });
         confetti({
@@ -128,8 +129,8 @@ export function MilestoneCelebration() {
           angle: 120,
           spread: 55,
           origin: { x: 1 },
-          colors: next.type === 'rank' ? ['#fbbf24', '#f59e0b'] : 
-                 next.type === 'health' ? ['#ef4444', '#f87171'] : 
+          colors: next.type === 'rank' ? ['#fbbf24', '#f59e0b'] :
+                 next.type === 'health' ? ['#ef4444', '#f87171'] :
                  ['#8b5cf6', '#a78bfa']
         });
         if (Date.now() < end) {
@@ -178,7 +179,7 @@ export function MilestoneCelebration() {
               <p id="celebration-desc" className="text-muted-foreground mb-8 text-lg leading-relaxed">
                 {current.description}
               </p>
-              <Button 
+              <Button
                 onClick={handleDismiss}
                 className={`w-full h-12 text-lg font-bold text-white shadow-lg transition-transform active:scale-95 ${current.color?.replace('bg-', 'bg-gradient-to-r from-').replace('500', '500 to-white/20') || 'bg-primary'}`}
               >

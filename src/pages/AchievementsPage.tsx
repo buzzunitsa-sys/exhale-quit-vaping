@@ -6,7 +6,7 @@ import { Trophy } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
 import { ACHIEVEMENTS } from '@/lib/achievements';
-import confetti from 'canvas-confetti';
+import { ShareButton } from '@/components/ui/share-button';
 import { cn } from '@/lib/utils';
 export function AchievementsPage() {
   const user = useAppStore(s => s.user);
@@ -26,12 +26,15 @@ export function AchievementsPage() {
   const todayEntries = journal.filter(entry => isSameDay(entry.timestamp, now));
   const puffsToday = todayEntries.reduce((sum, entry) => sum + (entry.puffs || 0), 0);
   const dailyLimit = user?.profile?.dailyLimit || 0;
-  const stats = { secondsFree: secondsElapsed, moneySaved, podsAvoided, dailyLimit, puffsToday };
+  const stats = {
+    secondsFree: secondsElapsed,
+    moneySaved,
+    podsAvoided,
+    dailyLimit,
+    puffsToday,
+    journal // Pass journal for "Just Breathe" achievement
+  };
   const unlockedCount = ACHIEVEMENTS.filter(a => a.condition(stats)).length;
-  // Trigger confetti on mount if user has achievements (optional, maybe too noisy if global celebration exists)
-  // Keeping it subtle here or removing if MilestoneCelebration handles it.
-  // Let's keep a small burst if they open the page and have unlocked something recently?
-  // For now, we'll rely on the visual shimmer and the global celebration for the "event".
   if (!user?.profile) return null;
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background pb-24 transition-colors duration-300">
@@ -39,13 +42,20 @@ export function AchievementsPage() {
         title="Achievements"
         subtitle="Your trophy case of freedom."
         rightElement={
-          <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-2xl text-center">
-            <span className="block text-2xl font-bold text-white leading-none">
-                {unlockedCount}
-            </span>
-            <span className="text-[10px] font-medium text-sky-100 uppercase tracking-wider">
-                UNLOCKED
-            </span>
+          <div className="flex items-center gap-2">
+            <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-2xl text-center">
+              <span className="block text-2xl font-bold text-white leading-none">
+                  {unlockedCount}
+              </span>
+              <span className="text-[10px] font-medium text-sky-100 uppercase tracking-wider">
+                  UNLOCKED
+              </span>
+            </div>
+            <ShareButton
+              customTitle="My Exhale Achievements"
+              customText={`I've unlocked ${unlockedCount} achievements on Exhale! �� #QuitVaping #ExhaleApp`}
+              className="h-12 w-12 rounded-2xl"
+            />
           </div>
         }
       />

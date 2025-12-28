@@ -1,5 +1,5 @@
-import type { User, QuitProfile } from '@shared/types';
-export type { User, QuitProfile };
+import type { User, QuitProfile, JournalEntry } from '@shared/types';
+export type { User, QuitProfile, JournalEntry };
 export interface DashboardStats {
   timeFree: {
     days: number;
@@ -29,12 +29,13 @@ export interface Achievement {
   id: string;
   title: string;
   description: string;
-  condition: (stats: { 
-    secondsFree: number; 
-    moneySaved: number; 
+  condition: (stats: {
+    secondsFree: number;
+    moneySaved: number;
     podsAvoided: number;
     dailyLimit?: number;
     puffsToday?: number;
+    journal?: JournalEntry[];
   }) => boolean;
   icon: React.ReactNode;
   type: AchievementType;
