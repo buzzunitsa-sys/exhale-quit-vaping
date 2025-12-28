@@ -50,10 +50,10 @@ export function DashboardPage() {
         </div>
       </div>
       {/* Main Content - Overlapping Header */}
-      <div className="px-4 -mt-12 space-y-4">
+      <div className="px-4 -mt-12 space-y-4 relative z-10">
         <TimerDisplay secondsElapsed={secondsElapsed} />
         <PuffCounter puffs={puffsAvoided} nicotine={nicotineAvoided} limit={0} />
-        <HourlyChart />
+        <HourlyChart entries={user.journal} />
       </div>
     </div>
   );

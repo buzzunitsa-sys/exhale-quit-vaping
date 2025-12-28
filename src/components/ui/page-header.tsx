@@ -16,7 +16,7 @@ export function PageHeader({
 }: PageHeaderProps) {
   return (
     <div className={cn(
-      "bg-gradient-to-br from-sky-500 via-blue-600 to-violet-600 rounded-b-[40px] pt-8 pb-16 px-6 text-white shadow-lg shadow-violet-200/50 mb-[-2rem] relative z-0",
+      "bg-gradient-to-b from-sky-400 to-cyan-300 rounded-b-[40px] pt-8 pb-16 px-6 text-white shadow-lg shadow-sky-200/50 mb-[-2rem] relative z-0",
       className
     )}>
       <div className="flex justify-between items-start mb-2">

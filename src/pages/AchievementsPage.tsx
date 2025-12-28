@@ -4,6 +4,7 @@ import { differenceInSeconds } from 'date-fns';
 import { motion } from 'framer-motion';
 import { Trophy, Medal, Star, Award, Crown, Zap, Shield, Target } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
 import type { Achievement } from '@/types/app';
 const ACHIEVEMENTS: Achievement[] = [
   {
@@ -72,20 +73,22 @@ export function AchievementsPage() {
   const unlockedCount = ACHIEVEMENTS.filter(a => a.condition(stats)).length;
   if (!user?.profile) return null;
   return (
-    <div className="p-4 space-y-6 pt-8 md:pt-12 pb-24">
-      <header className="mb-8 flex justify-between items-end">
-        <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Achievements</h2>
-            <p className="text-slate-500">Your trophy case of freedom.</p>
-        </div>
-        <div className="text-right">
-            <span className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-bling-cyan to-bling-purple">
+    <div className="min-h-screen bg-slate-50 pb-24">
+      <PageHeader 
+        title="Achievements" 
+        subtitle="Your trophy case of freedom."
+        rightElement={
+          <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-2xl text-center">
+            <span className="block text-2xl font-bold text-white leading-none">
                 {unlockedCount}
             </span>
-            <span className="text-slate-400 text-sm">/{ACHIEVEMENTS.length}</span>
-        </div>
-      </header>
-      <div className="grid grid-cols-2 gap-4">
+            <span className="text-[10px] font-medium text-sky-100 uppercase tracking-wider">
+                UNLOCKED
+            </span>
+          </div>
+        }
+      />
+      <div className="px-4 grid grid-cols-2 gap-4 relative z-10">
         {ACHIEVEMENTS.map((achievement, index) => {
           const isUnlocked = achievement.condition(stats);
           return (
@@ -97,8 +100,8 @@ export function AchievementsPage() {
               whileHover={isUnlocked ? { scale: 1.03 } : {}}
             >
               <Card className={`h-full border-none shadow-sm transition-all duration-300 relative overflow-hidden ${
-                isUnlocked
-                  ? 'bg-gradient-to-br from-bling-cyan/20 to-bling-purple/20 shadow-lg shadow-bling-purple/10 border border-bling-cyan/30'
+                isUnlocked 
+                  ? 'bg-gradient-to-br from-bling-cyan/20 to-bling-purple/20 shadow-lg shadow-bling-purple/10 border border-bling-cyan/30' 
                   : 'bg-slate-100 dark:bg-slate-800/50 opacity-70 grayscale'
               }`}>
                 {/* Shimmer effect for unlocked cards */}
@@ -107,8 +110,8 @@ export function AchievementsPage() {
                 )}
                 <CardContent className="p-5 flex flex-col items-center text-center gap-3 h-full justify-center relative z-20">
                   <div className={`p-3 rounded-full transition-all duration-500 ${
-                    isUnlocked
-                      ? 'bg-gradient-to-br from-bling-cyan to-bling-purple text-white shadow-lg shadow-bling-purple/30 scale-110'
+                    isUnlocked 
+                      ? 'bg-gradient-to-br from-bling-cyan to-bling-purple text-white shadow-lg shadow-bling-purple/30 scale-110' 
                       : 'bg-slate-200 text-slate-400 dark:bg-slate-700'
                   }`}>
                     {isUnlocked ? achievement.icon : <Trophy className="w-6 h-6" />}
