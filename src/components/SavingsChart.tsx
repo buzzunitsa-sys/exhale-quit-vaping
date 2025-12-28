@@ -49,7 +49,8 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
         <div className="mb-4">
           <p className="text-sm text-muted-foreground">Projected Total</p>
           <p className="text-2xl font-bold text-slate-900 dark:text-white">
-            {currency === 'USD' ? '$' : ''}{projectedTotal.toFixed(2)}
+            {currency === 'USD' ? '$' : currency + ' '}
+            {projectedTotal.toFixed(2)}
           </p>
         </div>
         <div className="h-[200px] w-full">
@@ -62,18 +63,18 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.5} />
-              <XAxis 
-                dataKey="date" 
-                tick={{ fontSize: 10, fill: '#94a3b8' }} 
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 10, fill: '#94a3b8' }}
                 axisLine={false}
                 tickLine={false}
                 interval={6}
               />
-              <YAxis 
-                hide 
-                domain={['auto', 'auto']} 
+              <YAxis
+                hide
+                domain={['auto', 'auto']}
               />
-              <Tooltip 
+              <Tooltip
                 cursor={{ stroke: '#10b981', strokeWidth: 1, strokeDasharray: '3 3' }}
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
@@ -81,20 +82,23 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
                     return (
                       <div className="bg-slate-900 text-white text-xs p-2 rounded-lg shadow-xl border border-slate-700">
                         <p className="font-bold mb-1">{d.fullDate}</p>
-                        <p>Savings: <span className="font-bold text-emerald-400">{currency === 'USD' ? '$' : ''}{d.savings.toFixed(2)}</span></p>
+                        <p>Savings: <span className="font-bold text-emerald-400">
+                          {currency === 'USD' ? '$' : currency + ' '}
+                          {d.savings.toFixed(2)}
+                        </span></p>
                       </div>
                     );
                   }
                   return null;
                 }}
               />
-              <Area 
-                type="monotone" 
-                dataKey="savings" 
-                stroke="#10b981" 
+              <Area
+                type="monotone"
+                dataKey="savings"
+                stroke="#10b981"
                 strokeWidth={2}
-                fillOpacity={1} 
-                fill="url(#colorSavings)" 
+                fillOpacity={1}
+                fill="url(#colorSavings)"
               />
             </AreaChart>
           </ResponsiveContainer>
