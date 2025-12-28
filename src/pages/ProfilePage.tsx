@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,12 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { LogOut, Save, User as UserIcon, Palette, Download, RefreshCw, Beaker, Zap, Droplets, Target } from 'lucide-react';
+import { LogOut, Save, User as UserIcon, Palette, Download, RefreshCw, Beaker, Zap, Droplets, Target, Globe } from 'lucide-react';
 import type { User } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { PageHeader } from '@/components/ui/page-header';
+import { COUNTRIES } from '@/lib/constants';
 const profileSchema = z.object({
   quitDate: z.string().min(1, "Quit date is required"),
   costPerUnit: z.coerce.number().min(0.01, "Cost must be greater than 0"),
@@ -21,6 +23,7 @@ const profileSchema = z.object({
   puffsPerUnit: z.coerce.number().min(1, "Puffs per unit must be at least 1").optional(),
   dailyLimit: z.coerce.number().min(0, "Limit cannot be negative").optional(),
   currency: z.string().default("USD"),
+  country: z.string().optional(),
   nicotineStrength: z.coerce.number().min(0, "Strength must be positive").default(50),
   volumePerUnit: z.coerce.number().min(0.1, "Volume must be positive").default(1.0),
   mlPerPuff: z.coerce.number().min(0.001, "Must be positive").default(0.05),
@@ -36,7 +39,7 @@ export function ProfilePage() {
   const updateProfile = useAppStore(s => s.updateProfile);
   const logout = useAppStore(s => s.logout);
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ProfileForm>({
+  const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema) as any,
     defaultValues: {
       quitDate: user?.profile?.quitDate || new Date().toISOString().slice(0, 16),
@@ -45,6 +48,7 @@ export function ProfilePage() {
       puffsPerUnit: user?.profile?.puffsPerUnit || 200,
       dailyLimit: user?.profile?.dailyLimit || 0,
       currency: user?.profile?.currency || 'USD',
+      country: user?.profile?.country || 'US',
       nicotineStrength: user?.profile?.nicotineStrength || 50,
       volumePerUnit: user?.profile?.volumePerUnit || 1.0,
       mlPerPuff: user?.profile?.mlPerPuff || 0.05,
@@ -113,6 +117,16 @@ export function ProfilePage() {
       }
     }
   };
+  const handleCountryChange = (code: string) => {
+    setValue('country', code);
+    const country = COUNTRIES.find(c => c.code === code);
+    if (country) {
+      setValue('currency', country.currencyCode);
+    }
+  };
+  const selectedCountryCode = watch('country');
+  const selectedCurrency = watch('currency');
+  const currencySymbol = COUNTRIES.find(c => c.currencyCode === selectedCurrency)?.currency || '$';
   if (!user) return null;
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background pb-24 transition-colors duration-300">
@@ -173,9 +187,39 @@ export function ProfilePage() {
                 />
                 {errors.quitDate && <p className="text-sm text-red-500">{errors.quitDate.message}</p>}
               </div>
+              {/* Country & Currency Selection */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2 text-foreground">
+                    <Globe className="w-4 h-4 text-violet-500" />
+                    Country
+                  </Label>
+                  <Select value={selectedCountryCode} onValueChange={handleCountryChange}>
+                    <SelectTrigger className="bg-background border-input text-foreground">
+                      <SelectValue placeholder="Select Country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COUNTRIES.map(c => (
+                        <SelectItem key={c.code} value={c.code}>
+                          {c.name} ({c.currency})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="currency" className="text-foreground">Currency Code</Label>
+                  <Input
+                    id="currency"
+                    {...register('currency')}
+                    className="bg-background border-input text-foreground focus-visible:ring-violet-500"
+                  />
+                  <p className="text-xs text-muted-foreground">Automatically set by country, but editable.</p>
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="cost" className="text-foreground">Cost per Unit</Label>
+                  <Label htmlFor="cost" className="text-foreground">Cost per Unit ({currencySymbol})</Label>
                   <Input
                     id="cost"
                     type="number"
@@ -276,7 +320,7 @@ export function ProfilePage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="goalCost" className="text-foreground">Goal Cost</Label>
+                    <Label htmlFor="goalCost" className="text-foreground">Goal Cost ({currencySymbol})</Label>
                     <Input
                       id="goalCost"
                       type="number"

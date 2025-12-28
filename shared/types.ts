@@ -15,6 +15,7 @@ export interface QuitProfile {
   mlPerPuff?: number; // New field for precise tracking (default ~0.05)
   dailyLimit?: number; // New field for tapering goal
   currency: string;
+  country?: string; // New field for localization (ISO code e.g., 'ZA', 'US')
   motivation?: string;
   nicotineStrength?: number; // mg/ml (e.g., 50 for 5%, 20 for 2%)
   volumePerUnit?: number; // ml per pod/device (e.g., 0.7, 2.0, 10.0)
