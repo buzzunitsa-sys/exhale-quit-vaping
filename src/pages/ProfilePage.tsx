@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { LogOut, Save, User as UserIcon, Palette, RefreshCw, Beaker, Zap, Droplets, Target, Globe, LogIn } from 'lucide-react';
+import { LogOut, Save, User as UserIcon, Palette, RefreshCw, Beaker, Zap, Droplets, Target, Globe, LogIn, Download, Upload, FileJson } from 'lucide-react';
 import type { User } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -41,6 +41,7 @@ export function ProfilePage() {
   const logout = useAppStore(s => s.logout);
   const isGuest = useAppStore(s => s.isGuest);
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema) as any,
     defaultValues: {
@@ -112,6 +113,49 @@ export function ProfilePage() {
         toast.error("Failed to reset progress");
       }
     }
+  };
+  const handleExport = () => {
+    if (!user) return;
+    const dataStr = JSON.stringify(user, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `exhale-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success("Backup downloaded successfully");
+  };
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        // Basic validation
+        if (!json.profile || !json.journal) {
+          throw new Error("Invalid backup file format");
+        }
+        const updatedUser = await api<User>(`/api/user/${user.id}/data/import`, {
+          method: 'POST',
+          body: JSON.stringify(json),
+        });
+        setUser(updatedUser);
+        toast.success("Data imported successfully!");
+        // Reset file input
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      } catch (err) {
+        console.error("Import failed", err);
+        toast.error("Failed to import data. Invalid file.");
+      }
+    };
+    reader.readAsText(file);
   };
   const handleCountryChange = (code: string) => {
     if (isGuest) return;
@@ -196,7 +240,7 @@ export function ProfilePage() {
                   type="datetime-local" 
                   {...register('quitDate')} 
                   disabled={isGuest}
-                  className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
+                  className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
                 />
                 {errors.quitDate && <p className="text-sm text-red-500">{errors.quitDate.message}</p>}
               </div>
@@ -226,7 +270,7 @@ export function ProfilePage() {
                     id="currency" 
                     {...register('currency')} 
                     disabled={isGuest}
-                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
+                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
                   />
                   <p className="text-xs text-muted-foreground">Automatically set by country, but editable.</p>
                 </div>
@@ -240,7 +284,7 @@ export function ProfilePage() {
                     step="0.01" 
                     {...register('costPerUnit')} 
                     disabled={isGuest}
-                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
+                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
                   />
                   {errors.costPerUnit && <p className="text-sm text-red-500">{errors.costPerUnit.message}</p>}
                 </div>
@@ -252,7 +296,7 @@ export function ProfilePage() {
                     step="0.1" 
                     {...register('unitsPerWeek')} 
                     disabled={isGuest}
-                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
+                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
                   />
                   {errors.unitsPerWeek && <p className="text-sm text-red-500">{errors.unitsPerWeek.message}</p>}
                 </div>
@@ -269,7 +313,7 @@ export function ProfilePage() {
                     step="0.1" 
                     {...register('nicotineStrength')} 
                     disabled={isGuest}
-                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
+                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
                   />
                   {errors.nicotineStrength && <p className="text-sm text-red-500">{errors.nicotineStrength.message}</p>}
                 </div>
@@ -284,7 +328,7 @@ export function ProfilePage() {
                     step="0.1" 
                     {...register('volumePerUnit')} 
                     disabled={isGuest}
-                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
+                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
                   />
                   {errors.volumePerUnit && <p className="text-sm text-red-500">{errors.volumePerUnit.message}</p>}
                 </div>
@@ -300,7 +344,7 @@ export function ProfilePage() {
                   step="0.01" 
                   {...register('mlPerPuff')} 
                   disabled={isGuest}
-                  className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
+                  className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
                 />
                 <p className="text-xs text-muted-foreground">
                   Used for precise cost and nicotine tracking. Default is 0.05ml.
@@ -313,10 +357,10 @@ export function ProfilePage() {
                   id="limit" 
                   type="number" 
                   step="1" 
-                  placeholder="e.g. 20 (Leave 0 for no limit)" 
+                  placeholder="e.g. 20 (Leave 0 for no limit)"
                   {...register('dailyLimit')} 
                   disabled={isGuest}
-                  className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
+                  className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
                 />
                 <p className="text-xs text-muted-foreground">
                   Set a daily limit to help you taper off.
@@ -334,10 +378,10 @@ export function ProfilePage() {
                     <Label htmlFor="goalName" className="text-foreground">Goal Name</Label>
                     <Input 
                       id="goalName" 
-                      placeholder="e.g. New Bike, Vacation" 
-                      {...register('savingsGoal.name')} 
+                      placeholder="e.g. New Bike, Vacation"
+                      {...register('savingsGoal.name')}
                       disabled={isGuest}
-                      className="bg-background border-input text-foreground focus-visible:ring-indigo-500 disabled:opacity-70" 
+                      className="bg-background border-input text-foreground focus-visible:ring-indigo-500 disabled:opacity-70"
                     />
                   </div>
                   <div className="space-y-2">
@@ -346,10 +390,10 @@ export function ProfilePage() {
                       id="goalCost" 
                       type="number" 
                       step="0.01" 
-                      placeholder="0.00" 
-                      {...register('savingsGoal.cost')} 
+                      placeholder="0.00"
+                      {...register('savingsGoal.cost')}
                       disabled={isGuest}
-                      className="bg-background border-input text-foreground focus-visible:ring-indigo-500 disabled:opacity-70" 
+                      className="bg-background border-input text-foreground focus-visible:ring-indigo-500 disabled:opacity-70"
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -370,16 +414,38 @@ export function ProfilePage() {
         {!isGuest && (
           <Card className="border border-border/50 shadow-sm bg-card transition-colors duration-300">
             <CardHeader>
-                <CardTitle className="text-lg text-foreground">Data Management</CardTitle>
+                <CardTitle className="text-lg text-foreground flex items-center gap-2">
+                  <FileJson className="w-5 h-5 text-emerald-500" />
+                  Data Management
+                </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <Button variant="ghost" onClick={handleReset} className="w-full text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Reset Progress
-              </Button>
-              <p className="text-xs text-muted-foreground text-center">
-                Resetting clears your journal and restarts your timer.
-              </p>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <Button variant="outline" onClick={handleExport} className="w-full gap-2 border-emerald-200 hover:bg-emerald-50 dark:border-emerald-900/30 dark:hover:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400">
+                  <Download className="w-4 h-4" />
+                  Export Data
+                </Button>
+                <Button variant="outline" onClick={handleImportClick} className="w-full gap-2 border-blue-200 hover:bg-blue-50 dark:border-blue-900/30 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400">
+                  <Upload className="w-4 h-4" />
+                  Import Data
+                </Button>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  className="hidden" 
+                  accept=".json" 
+                  onChange={handleFileChange}
+                />
+              </div>
+              <div className="pt-4 border-t border-border/50">
+                <Button variant="ghost" onClick={handleReset} className="w-full text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Reset Progress
+                </Button>
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  Resetting clears your journal and restarts your timer.
+                </p>
+              </div>
             </CardContent>
           </Card>
         )}

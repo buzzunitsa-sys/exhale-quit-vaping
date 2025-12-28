@@ -67,6 +67,22 @@ export class UserEntity extends IndexedEntity<User> {
       };
     });
   }
+  async importData(data: Partial<User>): Promise<User> {
+    return this.mutate(current => {
+      // Security: Force preserve the original ID and Email of the entity
+      // This prevents a user from overwriting their identity with someone else's backup
+      // if they somehow managed to send a request to the wrong DO (though routing prevents this mostly)
+      const safeData = {
+        ...data,
+        id: current.id,
+        email: current.email
+      };
+      return {
+        ...current,
+        ...safeData
+      };
+    });
+  }
 }
 // CHAT BOARD ENTITY: Kept for template compatibility
 export type ChatBoardState = Chat & { messages: ChatMessage[] };

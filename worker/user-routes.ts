@@ -79,6 +79,15 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const updatedUser = await userEntity.submitPledge(date);
     return ok(c, updatedUser);
   });
+  app.post('/api/user/:id/data/import', async (c) => {
+    const id = c.req.param('id');
+    const data = await c.req.json<Partial<User>>();
+    if (!data) return bad(c, 'No data provided');
+    const userEntity = new UserEntity(c.env, id);
+    if (!await userEntity.exists()) return notFound(c, 'User not found');
+    const updatedUser = await userEntity.importData(data);
+    return ok(c, updatedUser);
+  });
   // --- LEGACY / TEMPLATE ROUTES (Kept for compatibility if needed) ---
   // CHATS
   app.get('/api/chats', async (c) => {

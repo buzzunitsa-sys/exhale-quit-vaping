@@ -5,6 +5,7 @@ import { StatsSummary } from '@/components/ui/stats-summary';
 import { RecoveryTimeline } from '@/components/RecoveryTimeline';
 import { TriggerChart } from '@/components/TriggerChart';
 import { RecentHistory } from '@/components/RecentHistory';
+import { HistoryCalendar } from '@/components/HistoryCalendar';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/lib/store';
 import { api } from '@/lib/api-client';
@@ -17,8 +18,8 @@ import {
   getTriggerDistribution,
   type TimeRange
 } from '@/lib/stats-utils';
-import { BarChart3, Activity } from 'lucide-react';
-type ViewMode = 'stats' | 'recovery';
+import { BarChart3, Activity, CalendarDays } from 'lucide-react';
+type ViewMode = 'stats' | 'recovery' | 'history';
 export function HealthPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('stats');
   const [activeTab, setActiveTab] = useState<TimeRange>('WEEKLY');
@@ -69,11 +70,11 @@ export function HealthPage() {
         <h1 className="text-2xl font-bold text-white text-center mb-6">Health & Progress</h1>
         {/* View Toggle */}
         <div className="flex justify-center mb-6">
-          <div className="bg-black/20 p-1 rounded-xl flex gap-1 backdrop-blur-md">
+          <div className="bg-black/20 p-1 rounded-xl flex gap-1 backdrop-blur-md overflow-x-auto max-w-full">
             <button
               onClick={() => setViewMode('stats')}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200",
+                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap",
                 viewMode === 'stats'
                   ? "bg-white text-blue-600 shadow-sm"
                   : "text-white/80 hover:bg-white/10"
@@ -83,9 +84,21 @@ export function HealthPage() {
               Statistics
             </button>
             <button
+              onClick={() => setViewMode('history')}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap",
+                viewMode === 'history'
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-white/80 hover:bg-white/10"
+              )}
+            >
+              <CalendarDays className="w-4 h-4" />
+              History
+            </button>
+            <button
               onClick={() => setViewMode('recovery')}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200",
+                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap",
                 viewMode === 'recovery'
                   ? "bg-white text-blue-600 shadow-sm"
                   : "text-white/80 hover:bg-white/10"
@@ -150,6 +163,22 @@ export function HealthPage() {
                 <TriggerChart data={triggerData} />
                 <RecentHistory entries={journal} onDelete={handleDeleteEntry} />
               </div>
+            </motion.div>
+          ) : viewMode === 'history' ? (
+            <motion.div
+              key="history"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-6"
+            >
+              <HistoryCalendar 
+                entries={journal} 
+                dailyLimit={user?.profile?.dailyLimit} 
+                createdAt={user?.createdAt || Date.now()} 
+              />
+              <RecentHistory entries={journal} onDelete={handleDeleteEntry} />
             </motion.div>
           ) : (
             <motion.div
