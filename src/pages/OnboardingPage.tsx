@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Calendar, DollarSign, Wind, Zap, Target } from 'lucide-react';
+import { ArrowRight, Calendar, DollarSign, Wind, Zap, Target, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,20 +27,23 @@ const profileSchema = z.object({
 });
 type EmailForm = z.infer<typeof emailSchema>;
 type ProfileForm = z.infer<typeof profileSchema>;
+type Step = 'login' | 'intro' | 'profile';
 export function OnboardingPage() {
-  const [step, setStep] = useState<'login' | 'profile'>('login');
+  const [step, setStep] = useState<Step>('login');
   const setUser = useAppStore(s => s.setUser);
   const updateProfile = useAppStore(s => s.updateProfile);
   const user = useAppStore(s => s.user);
   const navigate = useNavigate();
-  // If user exists but no profile, jump to profile step
+  // If user exists but no profile, jump to intro/profile step logic
+  // If user has profile, redirect to dashboard
   React.useEffect(() => {
-    if (user && !user.profile) {
-      setStep('profile');
-    } else if (user?.profile) {
-        navigate('/dashboard');
+    if (user?.profile) {
+      navigate('/dashboard');
+    } else if (user && step === 'login') {
+      // If we have a user but no profile and are on login step, move to intro
+      setStep('intro');
     }
-  }, [user, navigate]);
+  }, [user, navigate, step]);
   const handleLogin = async (data: EmailForm) => {
     try {
       const user = await api<User>('/api/auth/login', {
@@ -52,11 +55,36 @@ export function OnboardingPage() {
         toast.success("Welcome back!");
         navigate('/dashboard');
       } else {
-        setStep('profile');
-        toast.success("Account created! Let's set up your plan.");
+        setStep('intro');
+        toast.success("Account created!");
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Login failed");
+    }
+  };
+  const handleSkipDefaults = async () => {
+    if (!user) return;
+    const defaultProfile = {
+      quitDate: new Date().toISOString(),
+      costPerUnit: 0,
+      unitsPerWeek: 0,
+      puffsPerUnit: 200,
+      dailyLimit: 0,
+      currency: 'USD'
+    };
+    try {
+      const updatedUser = await api<User>(`/api/user/${user.id}/profile`, {
+        method: 'POST',
+        body: JSON.stringify({ profile: defaultProfile }),
+      });
+      setUser(updatedUser);
+      if (updatedUser.profile) {
+        updateProfile(updatedUser.profile);
+      }
+      toast.success("Profile set to defaults. You can edit this later!");
+      navigate('/dashboard');
+    } catch (err) {
+      toast.error("Failed to set default profile");
     }
   };
   const handleProfileSubmit = async (data: ProfileForm) => {
@@ -79,17 +107,28 @@ export function OnboardingPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background flex items-center justify-center p-4 transition-colors duration-300">
       <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-sky-500 to-violet-600 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg shadow-sky-500/30">
-            <Wind className="text-white w-8 h-8" />
+        {/* Logo Header - Only show on Login and Profile steps, Intro has its own header style */}
+        {step !== 'intro' && (
+          <div className="mb-8 text-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-sky-500 to-violet-600 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg shadow-sky-500/30">
+              <Wind className="text-white w-8 h-8" />
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight mb-2 bg-clip-text text-transparent bg-gradient-to-r from-sky-500 to-violet-600">Exhale</h1>
+            <p className="text-muted-foreground">Track your usage. Regain control.</p>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2 bg-clip-text text-transparent bg-gradient-to-r from-sky-500 to-violet-600">Exhale</h1>
-          <p className="text-muted-foreground">Track your usage. Regain control.</p>
-        </div>
+        )}
         <AnimatePresence mode="wait">
-          {step === 'login' ? (
+          {step === 'login' && (
             <LoginForm key="login" onSubmit={handleLogin} />
-          ) : (
+          )}
+          {step === 'intro' && (
+            <IntroStep 
+              key="intro" 
+              onNext={() => setStep('profile')} 
+              onSkip={handleSkipDefaults} 
+            />
+          )}
+          {step === 'profile' && (
             <ProfileWizard key="profile" onSubmit={handleProfileSubmit} />
           )}
         </AnimatePresence>
@@ -127,6 +166,43 @@ function LoginForm({ onSubmit }: { onSubmit: (data: EmailForm) => void }) {
           </form>
         </CardContent>
       </Card>
+    </motion.div>
+  );
+}
+function IntroStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="space-y-8 pt-8"
+    >
+      <div className="space-y-4">
+        <h2 className="text-4xl font-bold tracking-tight text-foreground leading-tight">
+          Before you start tracking your first puff...
+        </h2>
+        <p className="text-lg text-muted-foreground leading-relaxed">
+          Let's customize a few settings that help us track your nicotine intake and tailor your quit plan.
+        </p>
+        <p className="text-base text-muted-foreground">
+          You can adjust these anytime in the app settings.
+        </p>
+      </div>
+      <div className="space-y-4 pt-4">
+        <Button 
+          onClick={onNext}
+          className="w-full h-14 text-lg font-semibold bg-sky-500 hover:bg-sky-600 text-white rounded-full shadow-lg shadow-sky-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+        >
+          LET'S START
+        </Button>
+        <Button 
+          variant="ghost" 
+          onClick={onSkip}
+          className="w-full text-muted-foreground hover:text-foreground hover:bg-transparent"
+        >
+          Skip and use defaults
+        </Button>
+      </div>
     </motion.div>
   );
 }
@@ -206,7 +282,7 @@ function ProfileWizard({ onSubmit }: { onSubmit: (data: ProfileForm) => void }) 
                 className="h-12 bg-background border-input text-foreground focus-visible:ring-sky-500"
               />
               <p className="text-xs text-muted-foreground">
-                Used to calculate cost per puff. (Pod ��� 200, Disposable ≈ 5000)
+                Used to calculate cost per puff. (Pod ≈ 200, Disposable ≈ 5000)
               </p>
               {errors.puffsPerUnit && <p className="text-sm text-red-500">{errors.puffsPerUnit.message}</p>}
             </div>

@@ -155,10 +155,10 @@ export function DashboardPage() {
           dailyLimit={user.profile.dailyLimit}
           onQuickLog={handleQuickLog}
         />
-        <div className="w-full overflow-hidden rounded-3xl">
+        <div className="w-full h-[200px] overflow-hidden rounded-3xl">
           <HourlyChart entries={user.journal} />
         </div>
-        <div className="w-full overflow-hidden rounded-3xl">
+        <div className="w-full h-[200px] overflow-hidden rounded-3xl">
           <SavingsChart
             currentSavings={totalMoneySaved}
             dailySavings={dailyBaselineCost}

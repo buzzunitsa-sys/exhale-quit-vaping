@@ -28,10 +28,12 @@ export function StatsChart({ data }: StatsChartProps) {
         {new Date().getFullYear()}
       </div>
       {/* Explicit wrapper div for ResponsiveContainer to prevent width(-1) errors */}
-      <div style={{ width: '100%', height: 300 }}>
+      <div style={{ width: '100%', height: 300, minWidth: '100%', minHeight: 300 }}>
         <ResponsiveContainer
           width="100%"
           height="100%"
+          minWidth={0}
+          minHeight={0}
         >
           <ComposedChart
             data={data}

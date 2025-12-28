@@ -82,7 +82,7 @@ export function HealthPage() {
                 </div>
               </div>
               {/* Chart Area */}
-              <div className="mb-8 min-h-[250px]">
+              <div className="mb-8 h-[300px]">
                 <StatsChart data={chartData} />
               </div>
             </motion.div>
