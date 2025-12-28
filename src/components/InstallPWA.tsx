@@ -1,45 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Download, Share, PlusSquare } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { useInstallPrompt } from '@/hooks/use-install-prompt';
 export function InstallPWA() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isIOS, setIsIOS] = useState(false);
-  const [isStandalone, setIsStandalone] = useState(false);
-  const [showIOSInstructions, setShowIOSInstructions] = useState(false);
-  useEffect(() => {
-    // Check if standalone
-    const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
-    setIsStandalone(isStandaloneMode);
-    // Check if iOS
-    const userAgent = window.navigator.userAgent.toLowerCase();
-    const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
-    setIsIOS(isIosDevice);
-    // Listen for install prompt
-    const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
-  }, []);
-  const handleInstallClick = async () => {
-    if (deferredPrompt) {
-      await deferredPrompt.prompt();
-      const choiceResult = await deferredPrompt.userChoice;
-      if (choiceResult.outcome === 'accepted') {
-        setDeferredPrompt(null);
-      }
-    } else if (isIOS) {
-      setShowIOSInstructions(true);
-    }
-  };
-  // If already installed or not installable (and not iOS), hide component
-  if (isStandalone) return null;
-  if (!deferredPrompt && !isIOS) return null;
+  const { 
+    isInstallable, 
+    isStandalone, 
+    promptInstall, 
+    showIOSInstructions, 
+    setShowIOSInstructions 
+  } = useInstallPrompt();
+  // If already installed or not installable, hide component
+  if (isStandalone || !isInstallable) return null;
   return (
     <>
       <Card className="border border-border/50 shadow-sm bg-card transition-colors duration-300">
@@ -53,7 +27,7 @@ export function InstallPWA() {
           <p className="text-sm text-muted-foreground mb-4">
             Install Exhale on your home screen for quick access and a better experience.
           </p>
-          <Button onClick={handleInstallClick} className="w-full bg-sky-500 hover:bg-sky-600 text-white">
+          <Button onClick={promptInstall} className="w-full bg-sky-500 hover:bg-sky-600 text-white">
             Add to Home Screen
           </Button>
         </CardContent>

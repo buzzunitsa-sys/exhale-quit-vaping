@@ -37,7 +37,7 @@ export function HourlyChart({ entries = [] }: HourlyChartProps) {
           </span>
         )}
       </div>
-      <div className="h-[200px] w-full relative">
+      <div className="h-[200px] w-full relative min-w-0 overflow-hidden">
         <div style={{ width: '100%', height: '100%' }}>
           <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <AreaChart data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
@@ -48,16 +48,16 @@ export function HourlyChart({ entries = [] }: HourlyChartProps) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.3} />
-              <XAxis
-                  dataKey="hour"
-                  axisLine={false}
-                  tickLine={false}
+              <XAxis 
+                  dataKey="hour" 
+                  axisLine={false} 
+                  tickLine={false} 
                   tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
                   interval={3} // Show every 4th label to avoid clutter
                   tickFormatter={(hour) => hour === 0 ? '12am' : hour === 12 ? '12pm' : hour > 12 ? `${hour - 12}pm` : `${hour}am`}
                   dy={10}
               />
-              <Tooltip
+              <Tooltip 
                 cursor={{ stroke: 'var(--border)', strokeWidth: 1 }}
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
@@ -72,13 +72,13 @@ export function HourlyChart({ entries = [] }: HourlyChartProps) {
                   return null;
                 }}
               />
-              <Area
-                type="monotone"
-                dataKey="val"
-                stroke="#0ea5e9"
-                strokeWidth={2}
-                fillOpacity={1}
-                fill="url(#colorVal)"
+              <Area 
+                type="monotone" 
+                dataKey="val" 
+                stroke="#0ea5e9" 
+                strokeWidth={2} 
+                fillOpacity={1} 
+                fill="url(#colorVal)" 
               />
             </AreaChart>
           </ResponsiveContainer>

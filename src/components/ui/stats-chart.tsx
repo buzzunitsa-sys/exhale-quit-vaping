@@ -22,7 +22,7 @@ export function StatsChart({ data }: StatsChartProps) {
     );
   }
   return (
-    <div className="w-full h-[300px] relative">
+    <div className="w-full h-[300px] relative min-w-0 overflow-hidden">
       {/* Year Label */}
       <div className="absolute top-0 left-4 bg-slate-800/50 text-white text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm z-10">
         {new Date().getFullYear()}
@@ -54,7 +54,7 @@ export function StatsChart({ data }: StatsChartProps) {
               domain={[0, 'auto']}
               tickCount={5}
             />
-            <Tooltip
+            <Tooltip 
               content={({ active, payload }) => {
                 if (active && payload && payload.length) {
                   const d = payload[0].payload as ChartDataPoint;
@@ -89,7 +89,7 @@ export function StatsChart({ data }: StatsChartProps) {
               dataKey="puffsTaken" 
               name="Actual Puffs" 
               fill="#ef4444" 
-              radius={[4, 4, 0, 0]}
+              radius={[4, 4, 0, 0]} 
               barSize={20}
               opacity={0.8}
             />

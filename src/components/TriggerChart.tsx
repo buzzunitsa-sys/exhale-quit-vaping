@@ -38,7 +38,7 @@ export function TriggerChart({ data }: TriggerChartProps) {
       </CardHeader>
       <CardContent>
         {/* Explicit wrapper div for ResponsiveContainer to prevent width(-1) errors */}
-        <div style={{ width: '100%', height: 250 }} className="mt-2">
+        <div style={{ width: '100%', height: 250 }} className="mt-2 min-w-0 overflow-hidden">
           <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
                 <Pie
@@ -55,7 +55,7 @@ export function TriggerChart({ data }: TriggerChartProps) {
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Pie>
-                <Tooltip
+                <Tooltip 
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       const d = payload[0].payload as TriggerDataPoint;

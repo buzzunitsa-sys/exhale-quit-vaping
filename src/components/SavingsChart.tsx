@@ -53,7 +53,7 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
             {projectedTotal.toFixed(2)}
           </p>
         </div>
-        <div className="h-[200px] w-full">
+        <div className="h-[200px] w-full min-w-0 overflow-hidden">
           {/* Explicit wrapper div for ResponsiveContainer to prevent width(-1) errors */}
           <div style={{ width: '100%', height: '100%' }}>
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
@@ -65,18 +65,18 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 10, fill: '#94a3b8' }}
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 10, fill: '#94a3b8' }} 
                   axisLine={false}
                   tickLine={false}
                   interval={6}
                 />
-                <YAxis
-                  hide
+                <YAxis 
+                  hide 
                   domain={['auto', 'auto']}
                 />
-                <Tooltip
+                <Tooltip 
                   cursor={{ stroke: '#10b981', strokeWidth: 1, strokeDasharray: '3 3' }}
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
@@ -94,13 +94,13 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
                     return null;
                   }}
                 />
-                <Area
-                  type="monotone"
-                  dataKey="savings"
-                  stroke="#10b981"
-                  strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#colorSavings)"
+                <Area 
+                  type="monotone" 
+                  dataKey="savings" 
+                  stroke="#10b981" 
+                  strokeWidth={2} 
+                  fillOpacity={1} 
+                  fill="url(#colorSavings)" 
                 />
               </AreaChart>
             </ResponsiveContainer>

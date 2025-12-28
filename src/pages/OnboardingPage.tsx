@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Wind, Calendar, DollarSign, Zap, Beaker, Globe } from 'lucide-react';
+import { ArrowLeft, Wind, Calendar, DollarSign, Zap, Beaker, Globe, Download, Share, PlusSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,6 +17,8 @@ import type { User, QuitProfile } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { COUNTRIES, type Country } from '@/lib/constants';
+import { useInstallPrompt } from '@/hooks/use-install-prompt';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 // --- Schemas ---
 const emailSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -188,6 +190,7 @@ function LoginForm({ onSubmit }: { onSubmit: (data: EmailForm) => void }) {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<EmailForm>({
     resolver: zodResolver(emailSchema) as any
   });
+  const { isInstallable, promptInstall, showIOSInstructions, setShowIOSInstructions } = useInstallPrompt();
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
       <Card className="border border-border/50 shadow-xl bg-card transition-colors duration-300">
@@ -201,9 +204,46 @@ function LoginForm({ onSubmit }: { onSubmit: (data: EmailForm) => void }) {
             <Button type="submit" className="w-full h-12 text-lg bg-gradient-to-r from-sky-500 to-violet-600 hover:opacity-90 transition-opacity text-white" disabled={isSubmitting}>
               {isSubmitting ? "Signing in..." : "Get Started"}
             </Button>
+            {isInstallable && (
+              <div className="pt-2 border-t border-border/50 mt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={promptInstall}
+                  className="w-full gap-2 text-muted-foreground hover:text-foreground"
+                >
+                  <Download className="w-4 h-4" />
+                  Install App
+                </Button>
+              </div>
+            )}
           </form>
         </CardContent>
       </Card>
+      <Dialog open={showIOSInstructions} onOpenChange={setShowIOSInstructions}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Install on iOS</DialogTitle>
+            <DialogDescription>
+              Follow these steps to add Exhale to your home screen:
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center gap-3">
+              <div className="bg-secondary p-2 rounded-md">
+                <Share className="w-5 h-5" />
+              </div>
+              <p className="text-sm">1. Tap the <strong>Share</strong> button in your browser menu.</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="bg-secondary p-2 rounded-md">
+                <PlusSquare className="w-5 h-5" />
+              </div>
+              <p className="text-sm">2. Scroll down and tap <strong>Add to Home Screen</strong>.</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }
@@ -353,7 +393,7 @@ function UsageStep({ onSubmit, onBack, currency }: { onSubmit: (data: UsageForm)
   const symbol = COUNTRIES.find(c => c.currencyCode === currency)?.currency || '$';
   const { register, handleSubmit, formState: { errors } } = useForm<UsageForm>({
     resolver: zodResolver(usageStepSchema) as any,
-    defaultValues: {
+    defaultValues: { 
       currency: currency,
       costPerUnit: 0,
       unitsPerWeek: 0,

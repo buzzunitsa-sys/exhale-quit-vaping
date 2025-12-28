@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useAppStore } from '@/lib/store';
 import { format, isSameDay, differenceInSeconds } from 'date-fns';
-import { Crown, Settings2 } from 'lucide-react';
+import { Crown, Settings2, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DateStrip } from '@/components/ui/date-strip';
 import { DailyTracker } from '@/components/ui/daily-tracker';
@@ -21,11 +21,16 @@ import { toast } from 'sonner';
 import type { User, JournalEntry } from '@shared/types';
 import { getWeeklyConsistency } from '@/lib/stats-utils';
 import { getUserRank } from '@/lib/ranks';
+import { useInstallPrompt } from '@/hooks/use-install-prompt';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Share, PlusSquare } from 'lucide-react';
 export function DashboardPage() {
   const user = useAppStore(s => s.user);
   const setUser = useAppStore(s => s.setUser);
   const [now, setNow] = useState(new Date());
   const { vibrate } = useHaptic();
+  const { isInstallable, promptInstall, showIOSInstructions, setShowIOSInstructions } = useInstallPrompt();
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
@@ -144,20 +149,31 @@ export function DashboardPage() {
             </div>
           </div>
           <div className="flex gap-3">
-            <ShareButton
-              secondsFree={secondsElapsed}
+            {isInstallable && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={promptInstall}
+                className="bg-white/20 hover:bg-white/30 text-white rounded-xl backdrop-blur-sm transition-all duration-200"
+                title="Install App"
+              >
+                <Download className="w-5 h-5" />
+              </Button>
+            )}
+            <ShareButton 
+              secondsFree={secondsElapsed} 
               moneySaved={totalMoneySaved}
               currency={user.profile.currency}
             />
-            <Link
-              to="/achievements"
+            <Link 
+              to="/achievements" 
               onClick={() => vibrate('light')}
               className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
             >
               <Crown className="w-6 h-6 text-yellow-300 fill-yellow-300" />
             </Link>
-            <Link
-              to="/profile"
+            <Link 
+              to="/profile" 
               onClick={() => vibrate('light')}
               className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
             >
@@ -175,7 +191,7 @@ export function DashboardPage() {
         {/* Daily Pledge Button */}
         <DailyPledge />
         {/* Daily Tracker (Puff Count) */}
-        <DailyTracker
+        <DailyTracker 
           puffsToday={puffsToday}
           costWasted={costWastedToday}
           nicotineUsed={nicotineUsedToday}
@@ -187,8 +203,8 @@ export function DashboardPage() {
         {/* Quote Carousel */}
         <QuoteCarousel />
         {/* Time Since Last Puff */}
-        <TimeSinceLastPuff
-          journal={user.journal || []}
+        <TimeSinceLastPuff 
+          journal={user.journal || []} 
           quitDate={user.profile.quitDate}
         />
         {/* Breathing Card */}
@@ -196,26 +212,51 @@ export function DashboardPage() {
         {/* Weekly Progress */}
         <WeeklyProgress data={weeklyConsistency} />
         {/* Hourly Chart */}
-        <div className="w-full h-[250px] rounded-3xl">
+        <div className="w-full h-[250px] rounded-3xl min-w-0 overflow-hidden">
           <HourlyChart entries={user.journal} />
         </div>
         {/* Savings Goal Card (if configured) */}
         {user.profile.savingsGoal && user.profile.savingsGoal.cost > 0 && (
-          <SavingsGoalCard
-            savedAmount={totalMoneySaved}
+          <SavingsGoalCard 
+            savedAmount={totalMoneySaved} 
             goal={user.profile.savingsGoal}
             currency={user.profile.currency}
           />
         )}
         {/* Savings Chart */}
-        <div className="w-full h-[250px] rounded-3xl">
-          <SavingsChart
-            currentSavings={totalMoneySaved}
+        <div className="w-full h-[250px] rounded-3xl min-w-0 overflow-hidden">
+          <SavingsChart 
+            currentSavings={totalMoneySaved} 
             dailySavings={dailyBaselineCost}
             currency={user.profile.currency}
           />
         </div>
       </div>
+      {/* iOS Install Instructions Dialog */}
+      <Dialog open={showIOSInstructions} onOpenChange={setShowIOSInstructions}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Install on iOS</DialogTitle>
+            <DialogDescription>
+              Follow these steps to add Exhale to your home screen:
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center gap-3">
+              <div className="bg-secondary p-2 rounded-md">
+                <Share className="w-5 h-5" />
+              </div>
+              <p className="text-sm">1. Tap the <strong>Share</strong> button in your browser menu.</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="bg-secondary p-2 rounded-md">
+                <PlusSquare className="w-5 h-5" />
+              </div>
+              <p className="text-sm">2. Scroll down and tap <strong>Add to Home Screen</strong>.</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
