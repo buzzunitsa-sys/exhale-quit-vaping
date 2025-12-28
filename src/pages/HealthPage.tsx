@@ -4,8 +4,7 @@ import { differenceInSeconds } from 'date-fns';
 import { motion } from 'framer-motion';
 import { Heart, Wind, Brain, Activity, Smile, Zap, CheckCircle2, Circle, Lock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
-import 'react-circular-progressbar/dist/styles.css';
+import { CircularProgress } from '@/components/ui/circular-progress';
 import type { HealthMilestone } from '@/types/app';
 const MILESTONES: HealthMilestone[] = [
   {
@@ -90,7 +89,6 @@ export function HealthPage() {
           let progress = 0;
           if (isCompleted) progress = 100;
           else if (isNext) {
-             // Calculate progress for current milestone
              const prevDuration = index === 0 ? 0 : MILESTONES[index - 1].durationSeconds;
              const totalDuration = milestone.durationSeconds - prevDuration;
              const currentElapsed = secondsElapsed - prevDuration;
@@ -107,23 +105,21 @@ export function HealthPage() {
               {/* Icon/Status Indicator */}
               <div className="absolute left-0 top-0 w-12 h-12 flex items-center justify-center bg-slate-50 dark:bg-slate-950 rounded-full border-4 border-slate-50 dark:border-slate-950">
                 {isCompleted ? (
-                  <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
+                  <div className="w-10 h-10 bg-gradient-to-br from-bling-cyan to-bling-purple rounded-full flex items-center justify-center text-white shadow-lg shadow-bling-purple/30">
                     <CheckCircle2 className="w-6 h-6" />
                   </div>
                 ) : isNext ? (
                   <div className="w-10 h-10 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center">
-                    <div className="w-10 h-10">
-                        <CircularProgressbar
-                            value={progress}
-                            styles={buildStyles({
-                                pathColor: '#10B981',
-                                trailColor: '#e2e8f0',
-                            })}
-                        />
-                    </div>
-                    <div className="absolute inset-0 flex items-center justify-center text-emerald-600">
-                        {milestone.icon}
-                    </div>
+                    <CircularProgress 
+                        value={progress} 
+                        size={40} 
+                        strokeWidth={4} 
+                        showGradient={true}
+                    >
+                        <div className="text-bling-purple">
+                            {milestone.icon}
+                        </div>
+                    </CircularProgress>
                   </div>
                 ) : (
                   <div className="w-10 h-10 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-400">
@@ -131,14 +127,14 @@ export function HealthPage() {
                   </div>
                 )}
               </div>
-              <Card className={`border-none shadow-sm transition-colors ${isCompleted ? 'bg-emerald-50/50 dark:bg-emerald-900/10' : 'bg-white dark:bg-slate-900'}`}>
+              <Card className={`border-none shadow-sm transition-colors ${isCompleted ? 'bg-bling-cyan/5 dark:bg-bling-purple/10' : 'bg-white dark:bg-slate-900'}`}>
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start mb-1">
-                    <h3 className={`font-semibold ${isCompleted ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}`}>
+                    <h3 className={`font-semibold ${isCompleted ? 'text-bling-purple dark:text-bling-cyan' : 'text-slate-900 dark:text-white'}`}>
                       {milestone.title}
                     </h3>
                     {isNext && (
-                        <span className="text-xs font-medium text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full">
+                        <span className="text-xs font-medium text-bling-purple bg-bling-purple/10 px-2 py-0.5 rounded-full">
                             In Progress
                         </span>
                     )}

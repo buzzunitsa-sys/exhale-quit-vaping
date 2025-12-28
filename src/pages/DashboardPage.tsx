@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAppStore } from '@/lib/store';
 import { CircularProgress } from '@/components/ui/circular-progress';
 import { Card, CardContent } from '@/components/ui/card';
-import { differenceInSeconds, differenceInDays } from 'date-fns';
+import { differenceInSeconds } from 'date-fns';
 import { Wallet, Wind, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { SavingsChart } from '@/components/SavingsChart';
@@ -35,15 +35,20 @@ export function DashboardPage() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Freedom Dashboard</h2>
           <p className="text-slate-500">Keep going, you're doing great!</p>
         </div>
-        <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-lg font-bold text-emerald-600">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-bling-cyan to-bling-purple flex items-center justify-center text-lg font-bold text-white shadow-lg shadow-bling-purple/30">
           {user.name?.[0] || user.email[0].toUpperCase()}
         </div>
       </header>
       {/* Main Timer */}
       <div className="flex flex-col items-center justify-center py-8">
-        <CircularProgress value={Math.min((secondsElapsed / (24 * 60 * 60)) * 100, 100)} size={280} strokeWidth={12}>
+        <CircularProgress 
+            value={Math.min((secondsElapsed / (24 * 60 * 60)) * 100, 100)} 
+            size={280} 
+            strokeWidth={12}
+            showGradient={true}
+        >
           <div className="flex flex-col items-center text-center">
-            <div className="text-5xl font-mono font-bold tracking-tighter text-slate-900 dark:text-white">
+            <div className="text-5xl font-mono font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-bling-cyan to-bling-purple">
               {days}
             </div>
             <div className="text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Days Free</div>
@@ -58,13 +63,13 @@ export function DashboardPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-4">
         <StatCard
-          icon={<Wallet className="w-5 h-5 text-emerald-500" />}
+          icon={<Wallet className="w-5 h-5 text-bling-purple" />}
           label="Money Saved"
           value={`${moneySaved.toFixed(2)}`}
           delay={0.1}
         />
         <StatCard
-          icon={<Wind className="w-5 h-5 text-sky-500" />}
+          icon={<Wind className="w-5 h-5 text-bling-cyan" />}
           label="Pods Avoided"
           value={podsAvoided.toString()}
           delay={0.2}
@@ -76,10 +81,10 @@ export function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.25 }}
       >
-        <SavingsChart 
-          currentSavings={moneySaved} 
-          dailySavings={dailySavings} 
-          currency={user.profile.currency} 
+        <SavingsChart
+          currentSavings={moneySaved}
+          dailySavings={dailySavings}
+          currency={user.profile.currency}
         />
       </motion.div>
       {/* Motivation Card */}
@@ -88,7 +93,7 @@ export function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <Card className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-none shadow-lg shadow-indigo-500/20">
+        <Card className="bg-gradient-to-br from-bling-cyan to-bling-purple text-white border-none shadow-lg shadow-bling-purple/30">
           <CardContent className="p-6">
             <div className="flex items-start gap-4">
               <div className="p-3 bg-white/10 rounded-xl backdrop-blur-sm">

@@ -78,10 +78,10 @@ export function OnboardingPage() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <div className="w-12 h-12 bg-emerald-500 rounded-xl mx-auto mb-4 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            <Wind className="text-white w-6 h-6" />
+          <div className="w-16 h-16 bg-gradient-to-br from-bling-cyan to-bling-purple rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg shadow-bling-purple/30">
+            <Wind className="text-white w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight mb-2">Exhale</h1>
+          <h1 className="text-3xl font-bold tracking-tight mb-2 bg-clip-text text-transparent bg-gradient-to-r from-bling-cyan to-bling-purple">Exhale</h1>
           <p className="text-muted-foreground">Your journey to freedom begins here.</p>
         </div>
         <AnimatePresence mode="wait">
@@ -115,11 +115,11 @@ function LoginForm({ onSubmit }: { onSubmit: (data: EmailForm) => void }) {
                 type="email"
                 placeholder="you@example.com"
                 {...register('email')}
-                className="h-12"
+                className="h-12 focus-visible:ring-bling-purple"
               />
               {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
             </div>
-            <Button type="submit" className="w-full h-12 text-lg bg-emerald-600 hover:bg-emerald-700" disabled={isSubmitting}>
+            <Button type="submit" className="w-full h-12 text-lg bg-gradient-to-r from-bling-cyan to-bling-purple hover:opacity-90 transition-opacity" disabled={isSubmitting}>
               {isSubmitting ? "Signing in..." : "Get Started"}
             </Button>
           </form>
@@ -149,20 +149,20 @@ function ProfileWizard({ onSubmit }: { onSubmit: (data: ProfileForm) => void }) 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-emerald-500" />
+                <Calendar className="w-4 h-4 text-bling-purple" />
                 When did you quit?
               </Label>
               <Input
                 type="datetime-local"
                 {...register('quitDate')}
-                className="h-12"
+                className="h-12 focus-visible:ring-bling-purple"
               />
               {errors.quitDate && <p className="text-sm text-red-500">{errors.quitDate.message}</p>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-emerald-500" />
+                  <DollarSign className="w-4 h-4 text-bling-purple" />
                   Cost per pod/pack
                 </Label>
                 <Input
@@ -170,13 +170,13 @@ function ProfileWizard({ onSubmit }: { onSubmit: (data: ProfileForm) => void }) 
                   step="0.01"
                   placeholder="0.00"
                   {...register('costPerUnit')}
-                  className="h-12"
+                  className="h-12 focus-visible:ring-bling-purple"
                 />
                 {errors.costPerUnit && <p className="text-sm text-red-500">{errors.costPerUnit.message}</p>}
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
-                  <Wind className="w-4 h-4 text-emerald-500" />
+                  <Wind className="w-4 h-4 text-bling-purple" />
                   Pods per week
                 </Label>
                 <Input
@@ -184,12 +184,12 @@ function ProfileWizard({ onSubmit }: { onSubmit: (data: ProfileForm) => void }) 
                   step="0.1"
                   placeholder="0"
                   {...register('unitsPerWeek')}
-                  className="h-12"
+                  className="h-12 focus-visible:ring-bling-purple"
                 />
                 {errors.unitsPerWeek && <p className="text-sm text-red-500">{errors.unitsPerWeek.message}</p>}
               </div>
             </div>
-            <Button type="submit" className="w-full h-12 text-lg bg-emerald-600 hover:bg-emerald-700" disabled={isSubmitting}>
+            <Button type="submit" className="w-full h-12 text-lg bg-gradient-to-r from-bling-cyan to-bling-purple hover:opacity-90 transition-opacity" disabled={isSubmitting}>
               {isSubmitting ? "Saving..." : "Start Tracking"} <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </form>

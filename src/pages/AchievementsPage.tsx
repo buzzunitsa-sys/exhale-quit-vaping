@@ -4,7 +4,6 @@ import { differenceInSeconds } from 'date-fns';
 import { motion } from 'framer-motion';
 import { Trophy, Medal, Star, Award, Crown, Zap, Shield, Target } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import confetti from 'canvas-confetti';
 import type { Achievement } from '@/types/app';
 const ACHIEVEMENTS: Achievement[] = [
   {
@@ -59,39 +58,18 @@ const ACHIEVEMENTS: Achievement[] = [
 export function AchievementsPage() {
   const user = useAppStore(s => s.user);
   const [now, setNow] = useState(new Date());
-  const [shownConfetti, setShownConfetti] = useState(false);
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
   // Safe calculation of stats even if user is not fully loaded yet
-  // This prevents conditional hook execution errors
   const quitDate = user?.profile ? new Date(user.profile.quitDate) : new Date();
   const secondsElapsed = differenceInSeconds(now, quitDate);
   const weeksElapsed = secondsElapsed / (60 * 60 * 24 * 7);
   const moneySaved = user?.profile ? weeksElapsed * user.profile.unitsPerWeek * user.profile.costPerUnit : 0;
   const podsAvoided = user?.profile ? Math.floor(weeksElapsed * user.profile.unitsPerWeek) : 0;
   const stats = { secondsFree: secondsElapsed, moneySaved, podsAvoided };
-  // Calculate unlocked count for confetti trigger
   const unlockedCount = ACHIEVEMENTS.filter(a => a.condition(stats)).length;
-  useEffect(() => {
-    // Only trigger if we have a valid user profile
-    if (!user?.profile) return;
-    // Simple confetti trigger on load if user has achievements
-    // In a real app, we'd track 'newly unlocked' specifically
-    if (unlockedCount > 0 && !shownConfetti) {
-      const random = Math.random();
-      if (random > 0.7) { // Don't show every single time, just sometimes for delight
-        confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 }
-        });
-        setShownConfetti(true);
-      }
-    }
-  }, [unlockedCount, shownConfetti, user]);
-  // Now we can safely return null if no user
   if (!user?.profile) return null;
   return (
     <div className="p-4 space-y-6 pt-8 md:pt-12 pb-24">
@@ -101,7 +79,9 @@ export function AchievementsPage() {
             <p className="text-slate-500">Your trophy case of freedom.</p>
         </div>
         <div className="text-right">
-            <span className="text-3xl font-bold text-emerald-600">{unlockedCount}</span>
+            <span className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-bling-cyan to-bling-purple">
+                {unlockedCount}
+            </span>
             <span className="text-slate-400 text-sm">/{ACHIEVEMENTS.length}</span>
         </div>
       </header>
@@ -116,14 +96,14 @@ export function AchievementsPage() {
               transition={{ delay: index * 0.05 }}
             >
               <Card className={`h-full border-none shadow-sm transition-all duration-300 ${
-                isUnlocked 
-                  ? 'bg-gradient-to-br from-white to-emerald-50 dark:from-slate-900 dark:to-emerald-900/20 shadow-md' 
+                isUnlocked
+                  ? 'bg-gradient-to-br from-bling-cyan/10 to-bling-purple/10 shadow-md border border-bling-cyan/20'
                   : 'bg-slate-100 dark:bg-slate-800/50 opacity-70 grayscale'
               }`}>
                 <CardContent className="p-5 flex flex-col items-center text-center gap-3 h-full justify-center">
                   <div className={`p-3 rounded-full ${
-                    isUnlocked 
-                      ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-400' 
+                    isUnlocked
+                      ? 'bg-gradient-to-br from-bling-cyan to-bling-purple text-white shadow-lg shadow-bling-purple/30'
                       : 'bg-slate-200 text-slate-400 dark:bg-slate-700'
                   }`}>
                     {isUnlocked ? achievement.icon : <Trophy className="w-6 h-6" />}
