@@ -100,9 +100,9 @@ export function HealthPage() {
         <AnimatePresence mode="wait">
           {viewMode === 'stats' && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
             >
               <div className="flex justify-center mb-6">
                 <div className="flex items-center gap-2 bg-white/10 p-1 rounded-full backdrop-blur-md">

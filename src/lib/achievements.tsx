@@ -1,12 +1,21 @@
 import React from 'react';
-import { Star, Zap, Shield, Target, Award, Crown, Scale, Clock, Heart, CheckCircle2, Wind, Medal } from 'lucide-react';
+import { Star, Zap, Shield, Target, Award, Crown, Scale, Clock, Heart, CheckCircle2, Wind, Medal, Flag } from 'lucide-react';
 import type { Achievement, JournalEntry } from '@/types/app';
 export const ACHIEVEMENTS: Achievement[] = [
+  // Initial Milestone
+  {
+    id: 'commitment',
+    title: 'The Journey Begins',
+    description: 'Take the first step by creating your profile and starting your timer.',
+    type: 'time',
+    icon: <Flag className="w-6 h-6" />,
+    condition: () => true, // Always unlocked once the user exists
+  },
   // Time Based
   {
     id: '12hours',
     title: 'First Night',
-    description: '12 hours smoke-free',
+    description: 'Stay smoke-free for 12 hours.',
     type: 'time',
     icon: <Clock className="w-6 h-6" />,
     condition: ({ secondsFree }) => secondsFree >= 12 * 60 * 60,
@@ -14,7 +23,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: '1day',
     title: 'First Step',
-    description: 'Stay smoke-free for 24 hours',
+    description: 'Complete 24 hours without vaping.',
     type: 'time',
     icon: <Star className="w-6 h-6" />,
     condition: ({ secondsFree }) => secondsFree >= 24 * 60 * 60,
@@ -22,7 +31,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: '48hours',
     title: 'Double Down',
-    description: '48 hours without nicotine',
+    description: 'Reach 48 hours smoke-free.',
     type: 'time',
     icon: <Zap className="w-6 h-6" />,
     condition: ({ secondsFree }) => secondsFree >= 48 * 60 * 60,
@@ -30,7 +39,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: '3days',
     title: 'Chemical Free',
-    description: '3 days - Nicotine is leaving your system',
+    description: 'Pass the 3-day mark (72 hours) to clear nicotine from your body.',
     type: 'health',
     icon: <Heart className="w-6 h-6" />,
     condition: ({ secondsFree }) => secondsFree >= 3 * 24 * 60 * 60,
@@ -38,7 +47,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: '1week',
     title: 'Week Warrior',
-    description: 'One full week of freedom',
+    description: 'Achieve one full week of freedom.',
     type: 'time',
     icon: <Shield className="w-6 h-6" />,
     condition: ({ secondsFree }) => secondsFree >= 7 * 24 * 60 * 60,
@@ -46,7 +55,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: '2weeks',
     title: 'Fortitude',
-    description: 'Two weeks strong',
+    description: 'Stay strong for two consecutive weeks.',
     type: 'time',
     icon: <Shield className="w-6 h-6" />,
     condition: ({ secondsFree }) => secondsFree >= 14 * 24 * 60 * 60,
@@ -54,7 +63,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: '1month',
     title: 'Master of Self',
-    description: 'One month smoke-free',
+    description: 'Complete one full month smoke-free.',
     type: 'time',
     icon: <Crown className="w-6 h-6" />,
     condition: ({ secondsFree }) => secondsFree >= 30 * 24 * 60 * 60,
@@ -62,7 +71,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: '3months',
     title: 'Quarter Year',
-    description: '3 months of clean lungs',
+    description: 'Reach 3 months (90 days) of clean lungs.',
     type: 'time',
     icon: <Award className="w-6 h-6" />,
     condition: ({ secondsFree }) => secondsFree >= 90 * 24 * 60 * 60,
@@ -70,7 +79,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: '6months',
     title: 'Half Marathon',
-    description: '6 months smoke-free',
+    description: 'Stay smoke-free for 6 months.',
     type: 'time',
     icon: <Medal className="w-6 h-6" />,
     condition: ({ secondsFree }) => secondsFree >= 180 * 24 * 60 * 60,
@@ -87,7 +96,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'save20',
     title: 'Pocket Change',
-    description: 'Save your first $20',
+    description: 'Save your first $20 by not buying vapes.',
     type: 'money',
     icon: <Target className="w-6 h-6" />,
     condition: ({ moneySaved }) => moneySaved >= 20,
@@ -95,7 +104,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'save50',
     title: 'Dinner on Us',
-    description: 'Save $50',
+    description: 'Save a total of $50.',
     type: 'money',
     icon: <Target className="w-6 h-6" />,
     condition: ({ moneySaved }) => moneySaved >= 50,
@@ -103,7 +112,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'save100',
     title: 'Baller',
-    description: 'Save $100 not buying vapes',
+    description: 'Reach $100 in savings.',
     type: 'money',
     icon: <Award className="w-6 h-6" />,
     condition: ({ moneySaved }) => moneySaved >= 100,
@@ -111,7 +120,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'save250',
     title: 'Investment',
-    description: 'Save $250',
+    description: 'Save $250.',
     type: 'money',
     icon: <Target className="w-6 h-6" />,
     condition: ({ moneySaved }) => moneySaved >= 250,
@@ -119,7 +128,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'save500',
     title: 'Big Spender',
-    description: 'Save $500',
+    description: 'Save $500.',
     type: 'money',
     icon: <Award className="w-6 h-6" />,
     condition: ({ moneySaved }) => moneySaved >= 500,
@@ -127,7 +136,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'save1000',
     title: 'Grand Savings',
-    description: 'Save $1,000',
+    description: 'Save $1,000.',
     type: 'money',
     icon: <Crown className="w-6 h-6" />,
     condition: ({ moneySaved }) => moneySaved >= 1000,
@@ -136,7 +145,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'taper',
     title: 'Taper Master',
-    description: 'Stay under your daily limit today',
+    description: 'Stay under your daily limit for a full day.',
     type: 'health',
     icon: <Scale className="w-6 h-6" />,
     condition: ({ dailyLimit, puffsToday }) => (dailyLimit ?? 0) > 0 && (puffsToday ?? 0) <= (dailyLimit ?? 0),
@@ -144,7 +153,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'pods1',
     title: 'Pod Skipper',
-    description: 'Avoided 1 full pod/disposable',
+    description: 'Avoid the equivalent of 1 full pod or disposable.',
     type: 'health',
     icon: <CheckCircle2 className="w-6 h-6" />,
     condition: ({ podsAvoided }) => podsAvoided >= 1,
@@ -152,7 +161,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'pods5',
     title: 'Pack Saver',
-    description: 'Avoided 5 pods/disposables',
+    description: 'Avoid 5 pods/disposables.',
     type: 'health',
     icon: <CheckCircle2 className="w-6 h-6" />,
     condition: ({ podsAvoided }) => podsAvoided >= 5,
@@ -160,7 +169,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'pods10',
     title: 'Bulk Avoider',
-    description: 'Avoided 10 pods/disposables',
+    description: 'Avoid 10 pods/disposables.',
     type: 'health',
     icon: <CheckCircle2 className="w-6 h-6" />,
     condition: ({ podsAvoided }) => podsAvoided >= 10,
@@ -168,7 +177,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'breathe',
     title: 'Just Breathe',
-    description: 'Completed an SOS breathing exercise',
+    description: 'Complete an SOS breathing exercise session.',
     type: 'health',
     icon: <Wind className="w-6 h-6" />,
     condition: ({ journal }) => {

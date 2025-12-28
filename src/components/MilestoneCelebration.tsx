@@ -85,18 +85,39 @@ export function MilestoneCelebration() {
       puffsToday: stats.puffsToday,
       journal: stats.journal
     }));
-    unlockedAchievements.forEach(a => {
-      if (!seenAchievements.includes(a.id)) {
-        newItems.push({
-          id: a.id,
-          type: 'achievement',
-          title: 'Achievement Unlocked!',
-          description: a.title,
-          icon: <Trophy className="w-12 h-12 text-violet-500" />,
-          color: 'bg-violet-500'
+    // Logic to prevent spam on first load
+    const isFirstRun = seenAchievements.length === 0;
+    if (isFirstRun && unlockedAchievements.length > 1) {
+        // Mark all as seen immediately to prevent future spam
+        const allIds = unlockedAchievements.map(a => a.id);
+        localStorage.setItem(`exhale_seen_achievements_${user.id}`, JSON.stringify(allIds));
+        // Only show 'commitment' if it exists in the unlocked list
+        const commitment = unlockedAchievements.find(a => a.id === 'commitment');
+        if (commitment) {
+             newItems.push({
+                id: commitment.id,
+                type: 'achievement',
+                title: 'Achievement Unlocked!',
+                description: commitment.title,
+                icon: <Trophy className="w-12 h-12 text-violet-500" />,
+                color: 'bg-violet-500'
+            });
+        }
+    } else {
+        // Normal behavior
+        unlockedAchievements.forEach(a => {
+          if (!seenAchievements.includes(a.id)) {
+            newItems.push({
+              id: a.id,
+              type: 'achievement',
+              title: 'Achievement Unlocked!',
+              description: a.title,
+              icon: <Trophy className="w-12 h-12 text-violet-500" />,
+              color: 'bg-violet-500'
+            });
+          }
         });
-      }
-    });
+    }
     // Only update queue if we found new items that aren't already in the queue or current
     if (newItems.length > 0) {
       setQueue(prev => {
@@ -121,8 +142,8 @@ export function MilestoneCelebration() {
           angle: 60,
           spread: 55,
           origin: { x: 0 },
-          colors: next.type === 'rank' ? ['#fbbf24', '#f59e0b'] :
-                 next.type === 'health' ? ['#ef4444', '#f87171'] :
+          colors: next.type === 'rank' ? ['#fbbf24', '#f59e0b'] : 
+                 next.type === 'health' ? ['#ef4444', '#f87171'] : 
                  ['#8b5cf6', '#a78bfa']
         });
         confetti({
@@ -130,8 +151,8 @@ export function MilestoneCelebration() {
           angle: 120,
           spread: 55,
           origin: { x: 1 },
-          colors: next.type === 'rank' ? ['#fbbf24', '#f59e0b'] :
-                 next.type === 'health' ? ['#ef4444', '#f87171'] :
+          colors: next.type === 'rank' ? ['#fbbf24', '#f59e0b'] : 
+                 next.type === 'health' ? ['#ef4444', '#f87171'] : 
                  ['#8b5cf6', '#a78bfa']
         });
         if (Date.now() < end) {
@@ -194,13 +215,13 @@ export function MilestoneCelebration() {
                 {current.description}
               </p>
               <div className="flex gap-3 w-full">
-                <Button
+                <Button 
                   onClick={handleDismiss}
                   className={`flex-1 h-12 text-lg font-bold text-white shadow-lg transition-transform active:scale-95 ${current.color?.replace('bg-', 'bg-gradient-to-r from-').replace('500', '500 to-white/20') || 'bg-primary'}`}
                 >
                   Awesome!
                 </Button>
-                <ShareButton
+                <ShareButton 
                   customTitle={shareTitle}
                   customText={shareText}
                   className="h-12 w-12 rounded-xl bg-secondary hover:bg-secondary/80 text-foreground"
