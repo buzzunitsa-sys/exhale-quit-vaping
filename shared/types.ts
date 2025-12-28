@@ -3,18 +3,26 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
 }
-
-// Minimal real-world chat example types (shared by frontend and worker)
-export interface User {
-  id: string;
-  name: string;
+export interface QuitProfile {
+  quitDate: string; // ISO string
+  costPerUnit: number;
+  unitsPerWeek: number;
+  currency: string;
+  motivation?: string;
 }
-
+export interface User {
+  id: string; // email
+  email: string;
+  name?: string;
+  profile?: QuitProfile;
+  createdAt: number;
+}
+// Keeping Chat types for compatibility with existing template structure if needed, 
+// though we aren't using them for the main features yet.
 export interface Chat {
   id: string;
   title: string;
 }
-
 export interface ChatMessage {
   id: string;
   chatId: string;
