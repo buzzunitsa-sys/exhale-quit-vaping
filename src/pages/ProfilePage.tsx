@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { LogOut, Save, User as UserIcon, Palette, RefreshCw, Beaker, Zap, Droplets, Target, Globe } from 'lucide-react';
+import { LogOut, Save, User as UserIcon, Palette, RefreshCw, Beaker, Zap, Droplets, Target, Globe, LogIn } from 'lucide-react';
 import type { User } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -39,6 +39,7 @@ export function ProfilePage() {
   const setUser = useAppStore(s => s.setUser);
   const updateProfile = useAppStore(s => s.updateProfile);
   const logout = useAppStore(s => s.logout);
+  const isGuest = useAppStore(s => s.isGuest);
   const navigate = useNavigate();
   const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema) as any,
@@ -64,8 +65,16 @@ export function ProfilePage() {
     navigate('/');
     toast.success("Logged out successfully");
   };
+  const handleSignUp = () => {
+    logout(); // Clear guest session
+    navigate('/'); // Go to onboarding
+  };
   const onSubmit = async (data: ProfileForm) => {
     if (!user) return;
+    if (isGuest) {
+      toast.info("Sign in to save changes");
+      return;
+    }
     // Clean up savings goal if empty
     let profileData = { ...data };
     if (!profileData.savingsGoal?.name || !profileData.savingsGoal?.cost) {
@@ -87,6 +96,7 @@ export function ProfilePage() {
   };
   const handleReset = async () => {
     if (!user) return;
+    if (isGuest) return;
     const confirmed = window.confirm(
       "Are you sure you want to reset your progress? This will clear your journal and reset your quit date to NOW. This action cannot be undone."
     );
@@ -104,6 +114,7 @@ export function ProfilePage() {
     }
   };
   const handleCountryChange = (code: string) => {
+    if (isGuest) return;
     setValue('country', code);
     const country = COUNTRIES.find(c => c.code === code);
     if (country) {
@@ -118,9 +129,22 @@ export function ProfilePage() {
     <div className="min-h-screen bg-slate-50 dark:bg-background pb-24 transition-colors duration-300">
       <PageHeader 
         title="Profile & Settings" 
-        subtitle="Manage your usage plan and account preferences."
+        subtitle={isGuest ? "Preview Mode - Sign in to customize" : "Manage your usage plan and account preferences."}
       />
       <div className="px-4 space-y-6 relative z-10">
+        {isGuest && (
+          <Card className="border-violet-200 bg-violet-50 dark:bg-violet-900/20 dark:border-violet-800">
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="bg-violet-100 dark:bg-violet-800 p-2 rounded-full">
+                <UserIcon className="w-6 h-6 text-violet-600 dark:text-violet-300" />
+              </div>
+              <div>
+                <h3 className="font-bold text-violet-900 dark:text-violet-100">Guest Profile</h3>
+                <p className="text-sm text-violet-700 dark:text-violet-300">You are viewing sample data. Settings are read-only.</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
         {/* Appearance Section */}
         <Card className="border border-border/50 shadow-sm bg-card transition-colors duration-300">
           <CardHeader>
@@ -137,8 +161,8 @@ export function ProfilePage() {
               <ThemeToggle className="static bg-secondary hover:bg-secondary/80 text-foreground" />
           </CardContent>
         </Card>
-        {/* App Installation Section */}
-        <InstallPWA />
+        {/* App Installation Section - Hide for Guest */}
+        {!isGuest && <InstallPWA />}
         {/* Account Details */}
         <Card className="border border-border/50 shadow-sm bg-card transition-colors duration-300">
           <CardHeader>
@@ -171,7 +195,8 @@ export function ProfilePage() {
                   id="quitDate" 
                   type="datetime-local" 
                   {...register('quitDate')} 
-                  className="bg-background border-input text-foreground focus-visible:ring-violet-500"
+                  disabled={isGuest}
+                  className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
                 />
                 {errors.quitDate && <p className="text-sm text-red-500">{errors.quitDate.message}</p>}
               </div>
@@ -182,8 +207,8 @@ export function ProfilePage() {
                     <Globe className="w-4 h-4 text-violet-500" />
                     Country
                   </Label>
-                  <Select value={selectedCountryCode} onValueChange={handleCountryChange}>
-                    <SelectTrigger className="bg-background border-input text-foreground">
+                  <Select value={selectedCountryCode} onValueChange={handleCountryChange} disabled={isGuest}>
+                    <SelectTrigger className="bg-background border-input text-foreground disabled:opacity-70">
                       <SelectValue placeholder="Select Country" />
                     </SelectTrigger>
                     <SelectContent>
@@ -200,7 +225,8 @@ export function ProfilePage() {
                   <Input 
                     id="currency" 
                     {...register('currency')} 
-                    className="bg-background border-input text-foreground focus-visible:ring-violet-500"
+                    disabled={isGuest}
+                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
                   />
                   <p className="text-xs text-muted-foreground">Automatically set by country, but editable.</p>
                 </div>
@@ -213,7 +239,8 @@ export function ProfilePage() {
                     type="number" 
                     step="0.01" 
                     {...register('costPerUnit')} 
-                    className="bg-background border-input text-foreground focus-visible:ring-violet-500"
+                    disabled={isGuest}
+                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
                   />
                   {errors.costPerUnit && <p className="text-sm text-red-500">{errors.costPerUnit.message}</p>}
                 </div>
@@ -224,7 +251,8 @@ export function ProfilePage() {
                     type="number" 
                     step="0.1" 
                     {...register('unitsPerWeek')} 
-                    className="bg-background border-input text-foreground focus-visible:ring-violet-500"
+                    disabled={isGuest}
+                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
                   />
                   {errors.unitsPerWeek && <p className="text-sm text-red-500">{errors.unitsPerWeek.message}</p>}
                 </div>
@@ -240,7 +268,8 @@ export function ProfilePage() {
                     type="number" 
                     step="0.1" 
                     {...register('nicotineStrength')} 
-                    className="bg-background border-input text-foreground focus-visible:ring-violet-500"
+                    disabled={isGuest}
+                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
                   />
                   {errors.nicotineStrength && <p className="text-sm text-red-500">{errors.nicotineStrength.message}</p>}
                 </div>
@@ -254,7 +283,8 @@ export function ProfilePage() {
                     type="number" 
                     step="0.1" 
                     {...register('volumePerUnit')} 
-                    className="bg-background border-input text-foreground focus-visible:ring-violet-500"
+                    disabled={isGuest}
+                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
                   />
                   {errors.volumePerUnit && <p className="text-sm text-red-500">{errors.volumePerUnit.message}</p>}
                 </div>
@@ -269,7 +299,8 @@ export function ProfilePage() {
                   type="number" 
                   step="0.01" 
                   {...register('mlPerPuff')} 
-                  className="bg-background border-input text-foreground focus-visible:ring-violet-500"
+                  disabled={isGuest}
+                  className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
                 />
                 <p className="text-xs text-muted-foreground">
                   Used for precise cost and nicotine tracking. Default is 0.05ml.
@@ -282,9 +313,10 @@ export function ProfilePage() {
                   id="limit" 
                   type="number" 
                   step="1" 
-                  placeholder="e.g. 20 (Leave 0 for no limit)"
+                  placeholder="e.g. 20 (Leave 0 for no limit)" 
                   {...register('dailyLimit')} 
-                  className="bg-background border-input text-foreground focus-visible:ring-violet-500"
+                  disabled={isGuest}
+                  className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
                 />
                 <p className="text-xs text-muted-foreground">
                   Set a daily limit to help you taper off.
@@ -302,9 +334,10 @@ export function ProfilePage() {
                     <Label htmlFor="goalName" className="text-foreground">Goal Name</Label>
                     <Input 
                       id="goalName" 
-                      placeholder="e.g. New Bike, Vacation"
+                      placeholder="e.g. New Bike, Vacation" 
                       {...register('savingsGoal.name')} 
-                      className="bg-background border-input text-foreground focus-visible:ring-indigo-500"
+                      disabled={isGuest}
+                      className="bg-background border-input text-foreground focus-visible:ring-indigo-500 disabled:opacity-70" 
                     />
                   </div>
                   <div className="space-y-2">
@@ -313,9 +346,10 @@ export function ProfilePage() {
                       id="goalCost" 
                       type="number" 
                       step="0.01" 
-                      placeholder="0.00"
+                      placeholder="0.00" 
                       {...register('savingsGoal.cost')} 
-                      className="bg-background border-input text-foreground focus-visible:ring-indigo-500"
+                      disabled={isGuest}
+                      className="bg-background border-input text-foreground focus-visible:ring-indigo-500 disabled:opacity-70" 
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -323,32 +357,43 @@ export function ProfilePage() {
                   </p>
                 </div>
               </div>
-              <Button type="submit" className="w-full bg-gradient-to-r from-sky-500 to-violet-600 hover:opacity-90 transition-opacity text-white" disabled={isSubmitting}>
-                <Save className="w-4 h-4 mr-2" />
-                {isSubmitting ? "Saving..." : "Save Changes"}
-              </Button>
+              {!isGuest && (
+                <Button type="submit" className="w-full bg-gradient-to-r from-sky-500 to-violet-600 hover:opacity-90 transition-opacity text-white" disabled={isSubmitting}>
+                  <Save className="w-4 h-4 mr-2" />
+                  {isSubmitting ? "Saving..." : "Save Changes"}
+                </Button>
+              )}
             </form>
           </CardContent>
         </Card>
-        {/* Data Management */}
-        <Card className="border border-border/50 shadow-sm bg-card transition-colors duration-300">
-          <CardHeader>
-              <CardTitle className="text-lg text-foreground">Data Management</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button variant="ghost" onClick={handleReset} className="w-full text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Reset Progress
-            </Button>
-            <p className="text-xs text-muted-foreground text-center">
-              Resetting clears your journal and restarts your timer.
-            </p>
-          </CardContent>
-        </Card>
-        <Button variant="destructive" className="w-full" onClick={handleLogout}>
-          <LogOut className="w-4 h-4 mr-2" />
-          Log Out
-        </Button>
+        {/* Data Management - Hide for Guest */}
+        {!isGuest && (
+          <Card className="border border-border/50 shadow-sm bg-card transition-colors duration-300">
+            <CardHeader>
+                <CardTitle className="text-lg text-foreground">Data Management</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button variant="ghost" onClick={handleReset} className="w-full text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Reset Progress
+              </Button>
+              <p className="text-xs text-muted-foreground text-center">
+                Resetting clears your journal and restarts your timer.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+        {isGuest ? (
+          <Button onClick={handleSignUp} className="w-full bg-violet-600 hover:bg-violet-700 text-white">
+            <LogIn className="w-4 h-4 mr-2" />
+            Sign Up / Login
+          </Button>
+        ) : (
+          <Button variant="destructive" className="w-full" onClick={handleLogout}>
+            <LogOut className="w-4 h-4 mr-2" />
+            Log Out
+          </Button>
+        )}
         <div className="text-center pt-4 pb-8">
           <p className="text-xs text-muted-foreground">Built with ❤️ by Aurelia | Your AI Co-founder</p>
         </div>

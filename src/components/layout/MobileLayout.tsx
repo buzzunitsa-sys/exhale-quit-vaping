@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import type { User, JournalEntry } from '@shared/types';
 import { useHaptic } from '@/hooks/use-haptic';
 import { Button } from '@/components/ui/button';
+import { GuestBanner } from '@/components/GuestBanner';
 interface MobileLayoutProps {
   children?: React.ReactNode;
   className?: string;
@@ -17,6 +18,7 @@ interface MobileLayoutProps {
 export function MobileLayout({ children, className }: MobileLayoutProps) {
   const user = useAppStore(s => s.user);
   const setUser = useAppStore(s => s.setUser);
+  const isGuest = useAppStore(s => s.isGuest);
   const [isLogOpen, setIsLogOpen] = useState(false);
   const location = useLocation();
   const { vibrate } = useHaptic();
@@ -43,6 +45,14 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
       toast.error("Failed to log entry");
     }
   };
+  const handleFabClick = () => {
+    vibrate('medium');
+    if (isGuest) {
+      toast.info("Sign in to log cravings");
+      return;
+    }
+    setIsLogOpen(true);
+  };
   return (
     <div className="min-h-[100dvh] bg-slate-50 dark:bg-background flex flex-col transition-colors duration-300">
       <main className={cn("flex-1 pb-24 md:pb-0 md:pl-64", className)}>
@@ -50,6 +60,8 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
             {children || <Outlet />}
         </div>
       </main>
+      {/* Guest Banner */}
+      <GuestBanner />
       {/* Desktop Sidebar (Hidden on Mobile) */}
       {showNav && (
         <aside className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 border-r border-border bg-card flex-col p-6 z-50">
@@ -68,10 +80,7 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
           {/* Desktop Log Button */}
           <div className="pt-6 border-t border-border">
             <Button 
-              onClick={() => {
-                vibrate('medium');
-                setIsLogOpen(true);
-              }}
+              onClick={handleFabClick}
               className="w-full bg-gradient-to-r from-sky-500 to-violet-600 hover:opacity-90 text-white shadow-lg shadow-violet-500/20"
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -97,11 +106,8 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
             </NavLink>
             {/* Center: FAB (Log Craving) */}
             <div className="absolute left-1/2 -translate-x-1/2 -top-6">
-              <button
-                onClick={() => {
-                  vibrate('medium');
-                  setIsLogOpen(true);
-                }}
+              <button 
+                onClick={handleFabClick}
                 className="w-14 h-14 rounded-full bg-gradient-to-r from-sky-500 to-violet-600 hover:opacity-90 text-white shadow-lg shadow-violet-500/30 flex items-center justify-center transition-transform active:scale-95"
               >
                 <Plus className="w-8 h-8" />
@@ -138,8 +144,8 @@ export function MobileLayout({ children, className }: MobileLayoutProps) {
 }
 function NavItem({ icon, label, to, onClick }: { icon: React.ReactNode, label: string, to: string, onClick?: () => void }) {
   return (
-    <NavLink
-      to={to}
+    <NavLink 
+      to={to} 
       onClick={onClick}
       className={({ isActive }) => cn(
         "flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-200 group",

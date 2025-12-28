@@ -13,6 +13,7 @@ import { useHaptic } from '@/hooks/use-haptic';
 export function DailyPledge() {
   const user = useAppStore(s => s.user);
   const setUser = useAppStore(s => s.setUser);
+  const isGuest = useAppStore(s => s.isGuest);
   const [isLoading, setIsLoading] = useState(false);
   const { vibrate } = useHaptic();
   const today = new Date();
@@ -20,6 +21,10 @@ export function DailyPledge() {
   const isPledged = user?.lastPledgeDate === todayStr;
   const streak = user?.pledgeStreak || 0;
   const handlePledge = async () => {
+    if (isGuest) {
+      toast.info("Sign in to make a pledge");
+      return;
+    }
     if (!user) return;
     setIsLoading(true);
     vibrate('medium');
@@ -67,12 +72,12 @@ export function DailyPledge() {
                 <p className="text-violet-100 mb-6 text-sm max-w-xs">
                   Pledge to stay smoke-free today and keep your streak alive.
                 </p>
-                <Button
+                <Button 
                   onClick={handlePledge}
                   disabled={isLoading}
                   className="w-full bg-white text-violet-600 hover:bg-white/90 font-bold shadow-lg transition-all active:scale-95"
                 >
-                  {isLoading ? "Committing..." : "I Pledge For Today"}
+                  {isLoading ? "Committing..." : isGuest ? "Sign in to Pledge" : "I Pledge For Today"}
                 </Button>
               </CardContent>
             </Card>

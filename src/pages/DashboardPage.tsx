@@ -28,6 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export function DashboardPage() {
   const user = useAppStore(s => s.user);
   const setUser = useAppStore(s => s.setUser);
+  const isGuest = useAppStore(s => s.isGuest);
   const [now, setNow] = useState(new Date());
   const { vibrate } = useHaptic();
   const { 
@@ -109,6 +110,10 @@ export function DashboardPage() {
     };
   }, [user?.journal, user?.profile, now, user?.createdAt]);
   const handleQuickLog = async () => {
+    if (isGuest) {
+      toast.info("Sign in to log puffs");
+      return;
+    }
     if (!user) return;
     const newEntry: JournalEntry = {
       id: crypto.randomUUID(),
@@ -156,9 +161,9 @@ export function DashboardPage() {
           </div>
           <div className="flex gap-3">
             {!isStandalone && (
-              <Button
-                variant="ghost"
-                size="icon"
+              <Button 
+                variant="ghost" 
+                size="icon" 
                 onClick={promptInstall}
                 className="bg-white/20 hover:bg-white/30 text-white rounded-xl backdrop-blur-sm transition-all duration-200"
                 title="Install App"
@@ -213,8 +218,8 @@ export function DashboardPage() {
         <QuoteCarousel />
         {/* Time Since Last Puff */}
         <TimeSinceLastPuff 
-          journal={user.journal || []}
-          quitDate={user.profile.quitDate}
+          journal={user.journal || []} 
+          quitDate={user.profile.quitDate} 
         />
         {/* Breathing Card */}
         <BreathingCard />
@@ -227,7 +232,7 @@ export function DashboardPage() {
         {/* Savings Goal Card (if configured) */}
         {user.profile.savingsGoal && user.profile.savingsGoal.cost > 0 && (
           <SavingsGoalCard 
-            savedAmount={totalMoneySaved}
+            savedAmount={totalMoneySaved} 
             goal={user.profile.savingsGoal}
             currency={user.profile.currency}
           />
@@ -235,8 +240,8 @@ export function DashboardPage() {
         {/* Savings Chart */}
         <div className="w-full h-[250px] rounded-3xl min-w-0 overflow-hidden">
           <SavingsChart 
-            currentSavings={totalMoneySaved}
-            dailySavings={dailyBaselineCost}
+            currentSavings={totalMoneySaved} 
+            dailySavings={dailyBaselineCost} 
             currency={user.profile.currency}
           />
         </div>

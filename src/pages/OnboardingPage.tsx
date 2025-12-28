@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Wind, Calendar, DollarSign, Beaker, Globe, Download, Share, PlusSquare, MoreVertical } from 'lucide-react';
+import { ArrowLeft, Wind, Calendar, DollarSign, Beaker, Globe, Download, Share, PlusSquare, MoreVertical, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -191,6 +191,13 @@ function LoginForm({ onSubmit }: { onSubmit: (data: EmailForm) => void }) {
     resolver: zodResolver(emailSchema) as any
   });
   const { isInstallable, promptInstall, showInstructions, setShowInstructions, isIOS } = useInstallPrompt();
+  const loginAsGuest = useAppStore(s => s.loginAsGuest);
+  const navigate = useNavigate();
+  const handleGuestLogin = () => {
+    loginAsGuest();
+    navigate('/dashboard');
+    toast.success("Welcome to Guest Mode!");
+  };
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
       <Card className="border border-border/50 shadow-xl bg-card transition-colors duration-300">
@@ -204,11 +211,28 @@ function LoginForm({ onSubmit }: { onSubmit: (data: EmailForm) => void }) {
             <Button type="submit" className="w-full h-12 text-lg bg-gradient-to-r from-sky-500 to-violet-600 hover:opacity-90 transition-opacity text-white" disabled={isSubmitting}>
               {isSubmitting ? "Signing in..." : "Get Started"}
             </Button>
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border/50" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Or</span>
+              </div>
+            </div>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={handleGuestLogin}
+              className="w-full h-12 text-base gap-2 border-sky-200 hover:bg-sky-50 dark:border-sky-900/30 dark:hover:bg-sky-900/20 text-sky-600 dark:text-sky-400"
+            >
+              <Eye className="w-4 h-4" />
+              View Demo
+            </Button>
             {isInstallable && (
               <div className="pt-2 border-t border-border/50 mt-4">
-                <Button
-                  type="button"
-                  variant="outline"
+                <Button 
+                  type="button" 
+                  variant="ghost" 
                   onClick={promptInstall}
                   className="w-full gap-2 text-muted-foreground hover:text-foreground"
                 >
@@ -413,7 +437,7 @@ function UsageStep({ onSubmit, onBack, currency }: { onSubmit: (data: UsageForm)
   const symbol = COUNTRIES.find(c => c.currencyCode === currency)?.currency || '$';
   const { register, handleSubmit, formState: { errors } } = useForm<UsageForm>({
     resolver: zodResolver(usageStepSchema) as any,
-    defaultValues: {
+    defaultValues: { 
       currency: currency,
       costPerUnit: 0,
       unitsPerWeek: 0,
