@@ -1,7 +1,7 @@
 import React from 'react';
 import { CircularProgress } from '@/components/ui/circular-progress';
 import { Button } from '@/components/ui/button';
-import { Plus, TrendingDown, TrendingUp, Zap, DollarSign, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Plus, TrendingDown, TrendingUp, Zap, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 interface DailyTrackerProps {
   puffsToday: number;
@@ -58,7 +58,7 @@ export function DailyTracker({
               {dailyLimit > 0 && (
                 <div className={cn(
                   "flex items-center gap-1.5 mt-2 text-xs font-bold px-2 py-1 rounded-full",
-                  isOverLimit ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400" : 
+                  isOverLimit ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400" :
                   "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
                 )}>
                   {isOverLimit ? (
@@ -89,6 +89,7 @@ export function DailyTracker({
         </div>
       </div>
       <div className="grid grid-cols-3 gap-4 mt-10 pt-6 border-t border-border/50">
+        {/* Cost Wasted */}
         <div className="flex flex-col items-center text-center">
           <div className="bg-red-50 dark:bg-red-900/20 p-2 rounded-full mb-2">
             <TrendingDown className="w-4 h-4 text-red-500" />
@@ -101,6 +102,7 @@ export function DailyTracker({
             WASTED
           </span>
         </div>
+        {/* Nicotine Used */}
         <div className="flex flex-col items-center text-center border-x border-border/50">
           <div className="bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded-full mb-2">
             <Zap className="w-4 h-4 text-yellow-500" />
@@ -112,6 +114,7 @@ export function DailyTracker({
             NICOTINE
           </span>
         </div>
+        {/* Projected Savings (Daily) */}
         <div className="flex flex-col items-center text-center">
           <div className="bg-emerald-50 dark:bg-emerald-900/20 p-2 rounded-full mb-2">
             <TrendingUp className="w-4 h-4 text-emerald-500" />
