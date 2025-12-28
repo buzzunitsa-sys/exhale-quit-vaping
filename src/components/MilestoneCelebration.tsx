@@ -4,12 +4,11 @@ import { differenceInSeconds, isSameDay } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Trophy, Heart } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Trophy, Star, Heart, X } from 'lucide-react';
 import { RANKS, getUserRank } from '@/lib/ranks';
 import { RECOVERY_MILESTONES } from '@/data/recovery-milestones';
 import { ACHIEVEMENTS } from '@/lib/achievements';
-import { ShareButton } from '@/components/ui/share-button';
 type CelebrationType = 'rank' | 'health' | 'achievement';
 interface CelebrationItem {
   id: string;
@@ -36,106 +35,67 @@ export function MilestoneCelebration() {
     const todayEntries = journal.filter(entry => isSameDay(entry.timestamp, now));
     const puffsToday = todayEntries.reduce((sum, entry) => sum + (entry.puffs || 0), 0);
     const dailyLimit = user.profile.dailyLimit || 0;
-    return { 
-      secondsElapsed, 
-      moneySaved, 
-      podsAvoided, 
-      dailyLimit, 
-      puffsToday, 
-      journal,
-      userCreatedAt: user.createdAt 
-    };
+    return { secondsElapsed, moneySaved, podsAvoided, dailyLimit, puffsToday };
   }, [user]);
   // Check for new milestones
   useEffect(() => {
     if (!stats || !user) return;
     const newItems: CelebrationItem[] = [];
-    // --- 1. Check Achievements (First Run Logic) ---
+    // 1. Check Ranks
+    const hoursFree = stats.secondsElapsed / 3600;
+    const { current: currentRank } = getUserRank(hoursFree);
+    const lastSeenRankId = localStorage.getItem(`exhale_seen_rank_${user.id}`);
+    // Find index of current rank and last seen rank
+    const currentRankIndex = RANKS.findIndex(r => r.id === currentRank.id);
+    const lastSeenRankIndex = lastSeenRankId ? RANKS.findIndex(r => r.id === lastSeenRankId) : -1;
+    if (currentRankIndex > lastSeenRankIndex) {
+      // User has leveled up!
+      newItems.push({
+        id: currentRank.id,
+        type: 'rank',
+        title: `New Rank: ${currentRank.title}`,
+        description: currentRank.description,
+        icon: <currentRank.icon className="w-12 h-12 text-yellow-400" />,
+        color: 'bg-yellow-500'
+      });
+    }
+    // 2. Check Health Milestones
+    const seenMilestones = JSON.parse(localStorage.getItem(`exhale_seen_milestones_${user.id}`) || '[]');
+    const unlockedMilestones = RECOVERY_MILESTONES.filter(m => stats.secondsElapsed >= m.durationSeconds);
+    unlockedMilestones.forEach(m => {
+      if (!seenMilestones.includes(m.id)) {
+        newItems.push({
+          id: m.id,
+          type: 'health',
+          title: 'Health Milestone Reached!',
+          description: m.title, // Use title as description for the card
+          icon: <Heart className="w-12 h-12 text-red-500" />,
+          color: 'bg-red-500'
+        });
+      }
+    });
+    // 3. Check Achievements
     const seenAchievements = JSON.parse(localStorage.getItem(`exhale_seen_achievements_${user.id}`) || '[]');
     const unlockedAchievements = ACHIEVEMENTS.filter(a => a.condition({
       secondsFree: stats.secondsElapsed,
       moneySaved: stats.moneySaved,
       podsAvoided: stats.podsAvoided,
       dailyLimit: stats.dailyLimit,
-      puffsToday: stats.puffsToday,
-      journal: stats.journal,
-      userCreatedAt: stats.userCreatedAt
+      puffsToday: stats.puffsToday
     }));
-    // Detect First Run: No achievements seen yet.
-    const isFirstRun = seenAchievements.length === 0;
-    if (isFirstRun) {
-        // Mark ALL unlocked achievements as seen immediately
-        const allIds = unlockedAchievements.map(a => a.id);
-        localStorage.setItem(`exhale_seen_achievements_${user.id}`, JSON.stringify(allIds));
-        // Also mark Ranks and Health as seen to prevent spam from them too
-        // Ranks
-        const hoursFree = stats.secondsElapsed / 3600;
-        const { current: currentRank } = getUserRank(hoursFree);
-        localStorage.setItem(`exhale_seen_rank_${user.id}`, currentRank.id);
-        // Health
-        const unlockedMilestones = RECOVERY_MILESTONES.filter(m => stats.secondsElapsed >= m.durationSeconds);
-        const milestoneIds = unlockedMilestones.map(m => m.id);
-        localStorage.setItem(`exhale_seen_milestones_${user.id}`, JSON.stringify(milestoneIds));
-        // ONLY queue 'commitment' if it is unlocked (it usually is for any user)
-        const commitment = unlockedAchievements.find(a => a.id === 'commitment');
-        if (commitment) {
-             newItems.push({
-                id: commitment.id,
-                type: 'achievement',
-                title: 'Achievement Unlocked!',
-                description: commitment.title,
-                icon: <Trophy className="w-12 h-12 text-violet-500" />,
-                color: 'bg-violet-500'
-            });
-        }
-    } else {
-        // --- Normal Behavior (Not First Run) ---
-        // 1. Ranks
-        const hoursFree = stats.secondsElapsed / 3600;
-        const { current: currentRank } = getUserRank(hoursFree);
-        const lastSeenRankId = localStorage.getItem(`exhale_seen_rank_${user.id}`);
-        const currentRankIndex = RANKS.findIndex(r => r.id === currentRank.id);
-        const lastSeenRankIndex = lastSeenRankId ? RANKS.findIndex(r => r.id === lastSeenRankId) : -1;
-        if (currentRankIndex > lastSeenRankIndex) {
-            newItems.push({
-                id: currentRank.id,
-                type: 'rank',
-                title: `New Rank: ${currentRank.title}`,
-                description: currentRank.description,
-                icon: <currentRank.icon className="w-12 h-12 text-yellow-400" />,
-                color: 'bg-yellow-500'
-            });
-        }
-        // 2. Health Milestones
-        const seenMilestones = JSON.parse(localStorage.getItem(`exhale_seen_milestones_${user.id}`) || '[]');
-        const unlockedMilestones = RECOVERY_MILESTONES.filter(m => stats.secondsElapsed >= m.durationSeconds);
-        unlockedMilestones.forEach(m => {
-            if (!seenMilestones.includes(m.id)) {
-                newItems.push({
-                    id: m.id,
-                    type: 'health',
-                    title: 'Health Milestone Reached!',
-                    description: m.title,
-                    icon: <Heart className="w-12 h-12 text-red-500" />,
-                    color: 'bg-red-500'
-                });
-            }
+    unlockedAchievements.forEach(a => {
+      if (!seenAchievements.includes(a.id)) {
+        newItems.push({
+          id: a.id,
+          type: 'achievement',
+          title: 'Achievement Unlocked!',
+          description: a.title,
+          icon: <Trophy className="w-12 h-12 text-violet-500" />,
+          color: 'bg-violet-500'
         });
-        // 3. Achievements
-        unlockedAchievements.forEach(a => {
-            if (!seenAchievements.includes(a.id)) {
-                newItems.push({
-                    id: a.id,
-                    type: 'achievement',
-                    title: 'Achievement Unlocked!',
-                    description: a.title,
-                    icon: <Trophy className="w-12 h-12 text-violet-500" />,
-                    color: 'bg-violet-500'
-                });
-            }
-        });
-    }
-    // Update queue
+      }
+    });
+    // Only update queue if we found new items that aren't already in the queue or current
     if (newItems.length > 0) {
       setQueue(prev => {
         const existingIds = new Set([...prev.map(i => i.id), current?.id]);
@@ -143,7 +103,7 @@ export function MilestoneCelebration() {
         return [...prev, ...uniqueNewItems];
       });
     }
-  }, [stats, user, current?.id]); // Dependencies
+  }, [stats, user, current?.id]);
   // Process Queue
   useEffect(() => {
     if (!current && queue.length > 0) {
@@ -186,38 +146,19 @@ export function MilestoneCelebration() {
       localStorage.setItem(`exhale_seen_rank_${user.id}`, current.id);
     } else if (current.type === 'health') {
       const seen = JSON.parse(localStorage.getItem(`exhale_seen_milestones_${user.id}`) || '[]');
-      if (!seen.includes(current.id)) {
-          localStorage.setItem(`exhale_seen_milestones_${user.id}`, JSON.stringify([...seen, current.id]));
-      }
+      localStorage.setItem(`exhale_seen_milestones_${user.id}`, JSON.stringify([...seen, current.id]));
     } else if (current.type === 'achievement') {
       const seen = JSON.parse(localStorage.getItem(`exhale_seen_achievements_${user.id}`) || '[]');
-      if (!seen.includes(current.id)) {
-          localStorage.setItem(`exhale_seen_achievements_${user.id}`, JSON.stringify([...seen, current.id]));
-      }
+      localStorage.setItem(`exhale_seen_achievements_${user.id}`, JSON.stringify([...seen, current.id]));
     }
     setCurrent(null);
   };
   if (!current) return null;
-  // Construct share text based on milestone type
-  let shareTitle = "Exhale Milestone";
-  let shareText = "I'm making progress on my journey to quit vaping with Exhale!";
-  if (current.type === 'rank') {
-    shareTitle = `New Rank: ${current.title.replace('New Rank: ', '')}`;
-    shareText = `I just reached the ${current.title.replace('New Rank: ', '')} rank on Exhale! 🏆 #QuitVaping #ExhaleApp`;
-  } else if (current.type === 'health') {
-    shareTitle = "Health Milestone";
-    shareText = `My body is healing! ${current.description} ❤️ #QuitVaping #ExhaleApp`;
-  } else if (current.type === 'achievement') {
-    shareTitle = "Achievement Unlocked";
-    shareText = `I just unlocked the "${current.description}" achievement on Exhale! 🌟 #QuitVaping #ExhaleApp`;
-  }
   return (
     <AnimatePresence>
       <Dialog open={!!current} onOpenChange={(open) => !open && handleDismiss()}>
-        <DialogContent className="sm:max-w-md border-none bg-transparent shadow-none p-0 flex items-center justify-center" aria-describedby="celebration-desc">
-          <DialogTitle className="sr-only">{current.title}</DialogTitle>
-          <DialogDescription className="sr-only">{current.description}</DialogDescription>
-          <motion.div 
+        <DialogContent className="sm:max-w-md border-none bg-transparent shadow-none p-0 flex items-center justify-center">
+          <motion.div
             initial={{ opacity: 0, scale: 0.5, y: 50 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.5, y: 50 }}
@@ -232,22 +173,15 @@ export function MilestoneCelebration() {
               <h2 className="text-2xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
                 {current.title}
               </h2>
-              <p id="celebration-desc" className="text-muted-foreground mb-8 text-lg leading-relaxed">
+              <p className="text-muted-foreground mb-8 text-lg leading-relaxed">
                 {current.description}
               </p>
-              <div className="flex gap-3 w-full">
-                <Button 
-                  onClick={handleDismiss}
-                  className={`flex-1 h-12 text-lg font-bold text-white shadow-lg transition-transform active:scale-95 ${current.color?.replace('bg-', 'bg-gradient-to-r from-').replace('500', '500 to-white/20') || 'bg-primary'}`}
-                >
-                  Awesome!
-                </Button>
-                <ShareButton 
-                  customTitle={shareTitle}
-                  customText={shareText}
-                  className="h-12 w-12 rounded-xl bg-secondary hover:bg-secondary/80 text-foreground"
-                />
-              </div>
+              <Button 
+                onClick={handleDismiss}
+                className={`w-full h-12 text-lg font-bold text-white shadow-lg transition-transform active:scale-95 ${current.color?.replace('bg-', 'bg-gradient-to-r from-').replace('500', '500 to-white/20') || 'bg-primary'}`}
+              >
+                Awesome!
+              </Button>
             </div>
           </motion.div>
         </DialogContent>

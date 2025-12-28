@@ -11,6 +11,7 @@ import { WeeklyProgress } from '@/components/ui/weekly-progress';
 import { ShareButton } from '@/components/ui/share-button';
 import { DailyPledge } from '@/components/DailyPledge';
 import { SavingsGoalCard } from '@/components/SavingsGoalCard';
+import { MilestoneCelebration } from '@/components/MilestoneCelebration';
 import { useHaptic } from '@/hooks/use-haptic';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
@@ -130,6 +131,7 @@ export function DashboardPage() {
   const RankIcon = currentRank.icon;
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background pb-32 transition-colors duration-300">
+      <MilestoneCelebration />
       {/* Header Section with Gradient */}
       <div className="bg-gradient-to-br from-sky-500 via-blue-600 to-violet-600 rounded-b-[40px] pt-8 pb-20 px-6 text-white shadow-lg shadow-violet-200/50 dark:shadow-none relative z-0">
         <div className="flex justify-between items-start mb-6">
@@ -147,29 +149,29 @@ export function DashboardPage() {
             </div>
           </div>
           <div className="flex gap-3">
-            <ShareButton
-              secondsFree={secondsElapsed}
-              moneySaved={totalMoneySaved}
+            <ShareButton 
+              secondsFree={secondsElapsed} 
+              moneySaved={totalMoneySaved} 
               currency={user.profile.currency}
             />
             {/* SOS Breathing Button */}
-            <Link
-              to="/breathe"
+            <Link 
+              to="/breathe" 
               onClick={() => vibrate('medium')}
               className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center group"
               title="SOS Breathing"
             >
               <Wind className="w-6 h-6 text-sky-200 group-hover:text-white transition-colors" />
             </Link>
-            <Link
-              to="/achievements"
+            <Link 
+              to="/achievements" 
               onClick={() => vibrate('light')}
               className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
             >
               <Crown className="w-6 h-6 text-yellow-300 fill-yellow-300" />
             </Link>
-            <Link
-              to="/profile"
+            <Link 
+              to="/profile" 
               onClick={() => vibrate('light')}
               className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
             >
@@ -188,13 +190,13 @@ export function DashboardPage() {
         <DailyPledge />
         {/* Savings Goal Card (if configured) */}
         {user.profile.savingsGoal && user.profile.savingsGoal.cost > 0 && (
-          <SavingsGoalCard
-            savedAmount={totalMoneySaved}
+          <SavingsGoalCard 
+            savedAmount={totalMoneySaved} 
             goal={user.profile.savingsGoal}
             currency={user.profile.currency}
           />
         )}
-        <DailyTracker
+        <DailyTracker 
           puffsToday={puffsToday}
           costWasted={costWastedToday}
           nicotineUsed={nicotineUsedToday}
@@ -208,8 +210,8 @@ export function DashboardPage() {
           <HourlyChart entries={user.journal} />
         </div>
         <div className="w-full h-[200px] rounded-3xl min-w-0">
-          <SavingsChart
-            currentSavings={totalMoneySaved}
+          <SavingsChart 
+            currentSavings={totalMoneySaved} 
             dailySavings={dailyBaselineCost}
             currency={user.profile.currency}
           />

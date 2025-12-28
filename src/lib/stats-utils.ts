@@ -58,7 +58,7 @@ export function getChartData(entries: JournalEntry[], range: TimeRange): ChartDa
         fullDate: format(date, 'MMM d, yyyy'),
         puffs: dayEntries.length, // Count of craving entries
         puffsTaken,
-        average: 0 // Placeholder
+        average: 0 // Placeholder, filled below
       };
     });
   } else if (range === 'WEEKLY') {
@@ -92,9 +92,10 @@ export function getChartData(entries: JournalEntry[], range: TimeRange): ChartDa
       };
     });
   }
-  // Calculate moving average of cravings (simple version)
+  // Calculate moving average of cravings (simple version: average of the displayed period)
   const totalCravings = dataPoints.reduce((acc, curr) => acc + curr.puffs, 0);
   const overallAvg = dataPoints.length > 0 ? Math.round(totalCravings / dataPoints.length) : 0;
+  // Apply average to all points (could be enhanced to be a rolling average in future)
   return dataPoints.map(p => ({ ...p, average: overallAvg }));
 }
 export function getSummaryStats(entries: JournalEntry[]): SummaryStats {
