@@ -7,6 +7,7 @@ import { TimerDisplay } from '@/components/ui/timer-display';
 import { DateStrip } from '@/components/ui/date-strip';
 import { PuffCounter } from '@/components/ui/puff-counter';
 import { HourlyChart } from '@/components/ui/hourly-chart';
+import { SavingsChart } from '@/components/SavingsChart';
 export function DashboardPage() {
   const user = useAppStore(s => s.user);
   const [now, setNow] = useState(new Date());
@@ -24,10 +25,13 @@ export function DashboardPage() {
   const podsAvoided = weeksElapsed * user.profile.unitsPerWeek;
   const puffsAvoided = podsAvoided * 200;
   const nicotineAvoided = podsAvoided * 50; // mg
+  // Calculate savings
+  const moneySaved = weeksElapsed * user.profile.unitsPerWeek * user.profile.costPerUnit;
+  const dailySavings = (user.profile.unitsPerWeek * user.profile.costPerUnit) / 7;
   return (
     <div className="min-h-screen bg-slate-50 pb-32">
-      {/* Header Section with Gradient */}
-      <div className="bg-gradient-to-b from-sky-400 to-cyan-300 rounded-b-[40px] pt-8 pb-20 px-6 text-white shadow-lg shadow-sky-200/50">
+      {/* Header Section with Gradient - Blue Dominant with Purple Hint */}
+      <div className="bg-gradient-to-br from-sky-500 via-blue-500 to-indigo-500 rounded-b-[40px] pt-8 pb-20 px-6 text-white shadow-lg shadow-blue-200/50">
         <div className="flex justify-between items-start mb-6">
           <div>
             <h1 className="text-4xl font-bold mb-1">Hello</h1>
@@ -53,6 +57,11 @@ export function DashboardPage() {
       <div className="px-4 -mt-12 space-y-4 relative z-10">
         <TimerDisplay secondsElapsed={secondsElapsed} />
         <PuffCounter puffs={puffsAvoided} nicotine={nicotineAvoided} limit={0} />
+        <SavingsChart 
+          currentSavings={moneySaved} 
+          dailySavings={dailySavings} 
+          currency={user.profile.currency} 
+        />
         <HourlyChart entries={user.journal} />
       </div>
     </div>

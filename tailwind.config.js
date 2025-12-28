@@ -101,14 +101,16 @@ export default {
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
   			},
-            // New Brand Colors
-            'bling-cyan': '#06b6d4', // Cyan 500
-            'bling-purple': '#7c3aed', // Violet 600
+            // New Brand Colors - Blue Dominant with Purple Accent
+            'brand-blue': '#0ea5e9', // Sky 500
+            'brand-purple': '#8b5cf6', // Violet 500
+            'bling-cyan': '#06b6d4', // Kept for backward compat
+            'bling-purple': '#7c3aed', // Kept for backward compat
   		},
   		boxShadow: {
   			soft: '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
-  			glow: '0 0 20px -5px rgba(124, 58, 237, 0.4)', // Updated to purple
-  			'glow-lg': '0 0 40px -10px rgba(124, 58, 237, 0.3)', // Updated to purple
+  			glow: '0 0 20px -5px rgba(139, 92, 246, 0.3)', // Softer purple glow
+  			'glow-lg': '0 0 40px -10px rgba(14, 165, 233, 0.3)', // Blue glow
   			primary: '0 0 20px -5px hsl(var(--primary) / 0.4)',
   			glass: '0 8px 32px 0 rgba(31, 38, 135, 0.37)'
   		},
@@ -130,8 +132,8 @@ export default {
   				'100%': { transform: 'translateX(100%)' }
   			},
   			glow: {
-  				'0%, 100%': { boxShadow: '0 0 20px -5px rgba(124, 58, 237, 0.4)' },
-  				'50%': { boxShadow: '0 0 40px -5px rgba(124, 58, 237, 0.6)' }
+  				'0%, 100%': { boxShadow: '0 0 20px -5px rgba(139, 92, 246, 0.4)' },
+  				'50%': { boxShadow: '0 0 40px -5px rgba(139, 92, 246, 0.6)' }
   			},
   			float: {
   				'0%, 100%': { transform: 'translateY(0px)' },
@@ -157,9 +159,10 @@ export default {
   			'accordion-up': 'accordion-up 0.2s ease-out'
   		},
   		backgroundImage: {
-  			'gradient-rainbow': 'linear-gradient(135deg, #06b6d4 0%, #7c3aed 50%, #ec4899 100%)',
-  			'gradient-primary': 'linear-gradient(135deg, #06b6d4 0%, #7c3aed 100%)', // Cyan to Purple
-            'purple-rain': 'linear-gradient(135deg, #06b6d4 0%, #7c3aed 100%)',
+  			'gradient-rainbow': 'linear-gradient(135deg, #0ea5e9 0%, #3b82f6 50%, #8b5cf6 100%)',
+  			'gradient-primary': 'linear-gradient(135deg, #0ea5e9 0%, #3b82f6 50%, #8b5cf6 100%)', // Sky -> Blue -> Violet
+            'subtle-glow': 'linear-gradient(135deg, #e0f2fe 0%, #ede9fe 100%)', // Very light blue to light purple
+            'purple-rain': 'linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%)', // Kept for compat but updated colors
   			'gradient-mesh': 'radial-gradient(at 40% 20%, hsla(262,83%,58%,0.3) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(189,94%,43%,0.3) 0px, transparent 50%), radial-gradient(at 0% 50%, hsla(262,83%,58%,0.1) 0px, transparent 50%)'
   		}
   	}

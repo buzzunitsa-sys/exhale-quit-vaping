@@ -8,7 +8,9 @@ import { getChartData, getSummaryStats, type TimeRange } from '@/lib/stats-utils
 export function HealthPage() {
   const [activeTab, setActiveTab] = useState<TimeRange>('WEEKLY');
   const user = useAppStore(s => s.user);
-  const journal = user?.journal || [];
+  // Fix: Memoize journal to prevent unstable dependency in subsequent useMemos
+  // This resolves the react-hooks/exhaustive-deps warning
+  const journal = useMemo(() => user?.journal || [], [user?.journal]);
   const chartData = useMemo(() => {
     return getChartData(journal, activeTab);
   }, [journal, activeTab]);
@@ -17,8 +19,8 @@ export function HealthPage() {
   }, [journal]);
   return (
     <div className="min-h-screen bg-slate-50 pb-24 flex flex-col">
-      {/* Blue Gradient Header Section */}
-      <div className="bg-gradient-to-b from-blue-400 to-cyan-300 pt-8 pb-16 px-4 relative z-0">
+      {/* Blue Gradient Header Section - Updated for Blue Dominance */}
+      <div className="bg-gradient-to-br from-sky-500 via-blue-500 to-indigo-500 pt-8 pb-16 px-4 relative z-0">
         {/* Tabs */}
         <div className="flex justify-center mb-8">
           <div className="flex items-center gap-2 bg-white/10 p-1 rounded-full backdrop-blur-md">
@@ -29,7 +31,7 @@ export function HealthPage() {
                 className={cn(
                   "px-6 py-2 rounded-full text-xs font-bold transition-all duration-200",
                   activeTab === tab
-                    ? "bg-white text-blue-500 shadow-sm"
+                    ? "bg-white text-indigo-600 shadow-sm" // Updated active text color to purple hint
                     : "text-white hover:bg-white/10"
                 )}
               >

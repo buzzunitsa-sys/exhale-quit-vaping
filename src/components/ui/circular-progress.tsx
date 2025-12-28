@@ -15,7 +15,7 @@ export function CircularProgress({
   strokeWidth = 8,
   className,
   children,
-  color = "text-bling-cyan",
+  color = "text-brand-blue",
   showGradient = false
 }: CircularProgressProps) {
   const radius = (size - strokeWidth) / 2;
@@ -30,8 +30,8 @@ export function CircularProgress({
       >
         <defs>
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#06b6d4" />
-            <stop offset="100%" stopColor="#7c3aed" />
+            <stop offset="0%" stopColor="#0ea5e9" /> {/* Sky 500 */}
+            <stop offset="100%" stopColor="#8b5cf6" /> {/* Violet 500 */}
           </linearGradient>
         </defs>
         {/* Background Circle */}
