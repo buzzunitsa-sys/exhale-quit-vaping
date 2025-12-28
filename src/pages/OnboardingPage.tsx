@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Wind, Calendar, DollarSign, Zap, Beaker, Globe, Download, Share, PlusSquare } from 'lucide-react';
+import { ArrowLeft, Wind, Calendar, DollarSign, Beaker, Globe, Download, Share, PlusSquare, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,10 +15,10 @@ import { useAppStore } from '@/lib/store';
 import { toast } from 'sonner';
 import type { User, QuitProfile } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
-import { cn } from '@/lib/utils';
 import { COUNTRIES, type Country } from '@/lib/constants';
 import { useInstallPrompt } from '@/hooks/use-install-prompt';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 // --- Schemas ---
 const emailSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -190,7 +190,7 @@ function LoginForm({ onSubmit }: { onSubmit: (data: EmailForm) => void }) {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<EmailForm>({
     resolver: zodResolver(emailSchema) as any
   });
-  const { isInstallable, promptInstall, showIOSInstructions, setShowIOSInstructions } = useInstallPrompt();
+  const { isInstallable, promptInstall, showInstructions, setShowInstructions, isIOS } = useInstallPrompt();
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
       <Card className="border border-border/50 shadow-xl bg-card transition-colors duration-300">
@@ -206,9 +206,9 @@ function LoginForm({ onSubmit }: { onSubmit: (data: EmailForm) => void }) {
             </Button>
             {isInstallable && (
               <div className="pt-2 border-t border-border/50 mt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={promptInstall}
                   className="w-full gap-2 text-muted-foreground hover:text-foreground"
                 >
@@ -220,28 +220,48 @@ function LoginForm({ onSubmit }: { onSubmit: (data: EmailForm) => void }) {
           </form>
         </CardContent>
       </Card>
-      <Dialog open={showIOSInstructions} onOpenChange={setShowIOSInstructions}>
+      <Dialog open={showInstructions} onOpenChange={setShowInstructions}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Install on iOS</DialogTitle>
+            <DialogTitle>Install Exhale</DialogTitle>
             <DialogDescription>
               Follow these steps to add Exhale to your home screen:
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div className="flex items-center gap-3">
-              <div className="bg-secondary p-2 rounded-md">
-                <Share className="w-5 h-5" />
+          <Tabs defaultValue={isIOS ? "ios" : "android"} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="ios">iOS (Safari)</TabsTrigger>
+              <TabsTrigger value="android">Android / Chrome</TabsTrigger>
+            </TabsList>
+            <TabsContent value="ios" className="space-y-4 pt-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-secondary p-2 rounded-md shrink-0">
+                  <Share className="w-5 h-5" />
+                </div>
+                <p className="text-sm">1. Tap the <strong>Share</strong> button in your browser menu.</p>
               </div>
-              <p className="text-sm">1. Tap the <strong>Share</strong> button in your browser menu.</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="bg-secondary p-2 rounded-md">
-                <PlusSquare className="w-5 h-5" />
+              <div className="flex items-center gap-3">
+                <div className="bg-secondary p-2 rounded-md shrink-0">
+                  <PlusSquare className="w-5 h-5" />
+                </div>
+                <p className="text-sm">2. Scroll down and tap <strong>Add to Home Screen</strong>.</p>
               </div>
-              <p className="text-sm">2. Scroll down and tap <strong>Add to Home Screen</strong>.</p>
-            </div>
-          </div>
+            </TabsContent>
+            <TabsContent value="android" className="space-y-4 pt-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-secondary p-2 rounded-md shrink-0">
+                  <MoreVertical className="w-5 h-5" />
+                </div>
+                <p className="text-sm">1. Tap the <strong>Menu</strong> (three dots) button in Chrome.</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="bg-secondary p-2 rounded-md shrink-0">
+                  <Download className="w-5 h-5" />
+                </div>
+                <p className="text-sm">2. Tap <strong>Install App</strong> or <strong>Add to Home screen</strong>.</p>
+              </div>
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
     </motion.div>
@@ -393,7 +413,7 @@ function UsageStep({ onSubmit, onBack, currency }: { onSubmit: (data: UsageForm)
   const symbol = COUNTRIES.find(c => c.currencyCode === currency)?.currency || '$';
   const { register, handleSubmit, formState: { errors } } = useForm<UsageForm>({
     resolver: zodResolver(usageStepSchema) as any,
-    defaultValues: { 
+    defaultValues: {
       currency: currency,
       costPerUnit: 0,
       unitsPerWeek: 0,

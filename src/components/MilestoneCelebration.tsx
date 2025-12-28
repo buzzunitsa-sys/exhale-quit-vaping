@@ -9,6 +9,7 @@ import { Trophy, Heart } from 'lucide-react';
 import { RANKS, getUserRank } from '@/lib/ranks';
 import { RECOVERY_MILESTONES } from '@/data/recovery-milestones';
 import { ACHIEVEMENTS } from '@/lib/achievements';
+import { ShareButton } from '@/components/ui/share-button';
 type CelebrationType = 'rank' | 'health' | 'achievement';
 interface CelebrationItem {
   id: string;
@@ -155,6 +156,19 @@ export function MilestoneCelebration() {
     setCurrent(null);
   };
   if (!current) return null;
+  // Construct share text based on milestone type
+  let shareTitle = "Exhale Milestone";
+  let shareText = "I'm making progress on my journey to quit vaping with Exhale!";
+  if (current.type === 'rank') {
+    shareTitle = `New Rank: ${current.title.replace('New Rank: ', '')}`;
+    shareText = `I just reached the ${current.title.replace('New Rank: ', '')} rank on Exhale! 🏆 #QuitVaping #ExhaleApp`;
+  } else if (current.type === 'health') {
+    shareTitle = "Health Milestone";
+    shareText = `My body is healing! ${current.description} ❤️ #QuitVaping #ExhaleApp`;
+  } else if (current.type === 'achievement') {
+    shareTitle = "Achievement Unlocked";
+    shareText = `I just unlocked the "${current.description}" achievement on Exhale! 🌟 #QuitVaping #ExhaleApp`;
+  }
   return (
     <AnimatePresence>
       <Dialog open={!!current} onOpenChange={(open) => !open && handleDismiss()}>
@@ -179,12 +193,19 @@ export function MilestoneCelebration() {
               <p id="celebration-desc" className="text-muted-foreground mb-8 text-lg leading-relaxed">
                 {current.description}
               </p>
-              <Button
-                onClick={handleDismiss}
-                className={`w-full h-12 text-lg font-bold text-white shadow-lg transition-transform active:scale-95 ${current.color?.replace('bg-', 'bg-gradient-to-r from-').replace('500', '500 to-white/20') || 'bg-primary'}`}
-              >
-                Awesome!
-              </Button>
+              <div className="flex gap-3 w-full">
+                <Button
+                  onClick={handleDismiss}
+                  className={`flex-1 h-12 text-lg font-bold text-white shadow-lg transition-transform active:scale-95 ${current.color?.replace('bg-', 'bg-gradient-to-r from-').replace('500', '500 to-white/20') || 'bg-primary'}`}
+                >
+                  Awesome!
+                </Button>
+                <ShareButton
+                  customTitle={shareTitle}
+                  customText={shareText}
+                  className="h-12 w-12 rounded-xl bg-secondary hover:bg-secondary/80 text-foreground"
+                />
+              </div>
             </div>
           </motion.div>
         </DialogContent>
