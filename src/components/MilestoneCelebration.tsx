@@ -4,11 +4,12 @@ import { differenceInSeconds, isSameDay } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Trophy, Star, Heart, X } from 'lucide-react';
 import { RANKS, getUserRank } from '@/lib/ranks';
 import { RECOVERY_MILESTONES } from '@/data/recovery-milestones';
 import { ACHIEVEMENTS } from '@/lib/achievements';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 type CelebrationType = 'rank' | 'health' | 'achievement';
 interface CelebrationItem {
   id: string;
@@ -157,7 +158,10 @@ export function MilestoneCelebration() {
   return (
     <AnimatePresence>
       <Dialog open={!!current} onOpenChange={(open) => !open && handleDismiss()}>
-        <DialogContent className="sm:max-w-md border-none bg-transparent shadow-none p-0 flex items-center justify-center">
+        <DialogContent className="sm:max-w-md border-none bg-transparent shadow-none p-0 flex items-center justify-center" aria-describedby="celebration-desc">
+          <VisuallyHidden>
+            <DialogTitle>{current.title}</DialogTitle>
+          </VisuallyHidden>
           <motion.div
             initial={{ opacity: 0, scale: 0.5, y: 50 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -173,7 +177,7 @@ export function MilestoneCelebration() {
               <h2 className="text-2xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
                 {current.title}
               </h2>
-              <p className="text-muted-foreground mb-8 text-lg leading-relaxed">
+              <p id="celebration-desc" className="text-muted-foreground mb-8 text-lg leading-relaxed">
                 {current.description}
               </p>
               <Button 

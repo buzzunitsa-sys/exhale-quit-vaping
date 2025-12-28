@@ -12,6 +12,7 @@ import { ShareButton } from '@/components/ui/share-button';
 import { DailyPledge } from '@/components/DailyPledge';
 import { SavingsGoalCard } from '@/components/SavingsGoalCard';
 import { MilestoneCelebration } from '@/components/MilestoneCelebration';
+import { BreathingCard } from '@/components/BreathingCard';
 import { useHaptic } from '@/hooks/use-haptic';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
@@ -151,18 +152,9 @@ export function DashboardPage() {
           <div className="flex gap-3">
             <ShareButton 
               secondsFree={secondsElapsed} 
-              moneySaved={totalMoneySaved} 
+              moneySaved={totalMoneySaved}
               currency={user.profile.currency}
             />
-            {/* SOS Breathing Button */}
-            <Link 
-              to="/breathe" 
-              onClick={() => vibrate('medium')}
-              className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center group"
-              title="SOS Breathing"
-            >
-              <Wind className="w-6 h-6 text-sky-200 group-hover:text-white transition-colors" />
-            </Link>
             <Link 
               to="/achievements" 
               onClick={() => vibrate('light')}
@@ -188,6 +180,8 @@ export function DashboardPage() {
       <div className="px-4 -mt-12 space-y-4 relative z-10">
         {/* Daily Pledge Card */}
         <DailyPledge />
+        {/* SOS Breathing Card */}
+        <BreathingCard />
         {/* Savings Goal Card (if configured) */}
         {user.profile.savingsGoal && user.profile.savingsGoal.cost > 0 && (
           <SavingsGoalCard 
