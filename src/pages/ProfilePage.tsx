@@ -19,6 +19,7 @@ const profileSchema = z.object({
   costPerUnit: z.coerce.number().min(0.01, "Cost must be greater than 0"),
   unitsPerWeek: z.coerce.number().min(0.1, "Usage must be greater than 0"),
   puffsPerUnit: z.coerce.number().min(1, "Puffs per unit must be at least 1").default(200),
+  dailyLimit: z.coerce.number().min(0, "Limit cannot be negative").optional(),
   currency: z.string().default("USD"),
 });
 type ProfileForm = z.infer<typeof profileSchema>;
@@ -35,6 +36,7 @@ export function ProfilePage() {
       costPerUnit: user?.profile?.costPerUnit || 0,
       unitsPerWeek: user?.profile?.unitsPerWeek || 0,
       puffsPerUnit: user?.profile?.puffsPerUnit || 200,
+      dailyLimit: user?.profile?.dailyLimit || 0,
       currency: user?.profile?.currency || 'USD',
     }
   });
@@ -95,8 +97,8 @@ export function ProfilePage() {
   if (!user) return null;
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background pb-24 transition-colors duration-300">
-      <PageHeader 
-        title="Profile & Settings" 
+      <PageHeader
+        title="Profile & Settings"
         subtitle="Manage your usage plan and account preferences."
       />
       <div className="px-4 space-y-6 relative z-10">
@@ -189,6 +191,21 @@ export function ProfilePage() {
                   Used to calculate cost per puff.
                 </p>
                 {errors.puffsPerUnit && <p className="text-sm text-red-500">{errors.puffsPerUnit.message}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="limit" className="text-foreground">Daily Puff Goal (Optional)</Label>
+                <Input
+                  id="limit"
+                  type="number"
+                  step="1"
+                  placeholder="e.g. 20 (Leave 0 for no limit)"
+                  {...register('dailyLimit')}
+                  className="bg-background border-input text-foreground focus-visible:ring-violet-500"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Set a daily limit to help you taper off.
+                </p>
+                {errors.dailyLimit && <p className="text-sm text-red-500">{errors.dailyLimit.message}</p>}
               </div>
               <Button type="submit" className="w-full bg-gradient-to-r from-sky-500 to-violet-600 hover:opacity-90 transition-opacity text-white" disabled={isSubmitting}>
                 <Save className="w-4 h-4 mr-2" />

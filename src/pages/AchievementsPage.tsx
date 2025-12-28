@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useAppStore } from '@/lib/store';
-import { differenceInSeconds } from 'date-fns';
+import { differenceInSeconds, isSameDay } from 'date-fns';
 import { motion } from 'framer-motion';
-import { Trophy, Star, Award, Crown, Zap, Shield, Target } from 'lucide-react';
+import { Trophy, Star, Award, Crown, Zap, Shield, Target, Scale } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
 import type { Achievement } from '@/types/app';
@@ -57,6 +57,14 @@ const ACHIEVEMENTS: Achievement[] = [
     icon: <Crown className="w-6 h-6" />,
     condition: ({ secondsFree }) => secondsFree >= 30 * 24 * 60 * 60,
   },
+  {
+    id: 'taper',
+    title: 'Taper Master',
+    description: 'Stay under your daily limit today',
+    type: 'health',
+    icon: <Scale className="w-6 h-6" />,
+    condition: ({ dailyLimit, puffsToday }) => dailyLimit > 0 && puffsToday <= dailyLimit,
+  },
 ];
 export function AchievementsPage() {
   const user = useAppStore(s => s.user);
@@ -71,7 +79,12 @@ export function AchievementsPage() {
   const weeksElapsed = secondsElapsed / (60 * 60 * 24 * 7);
   const moneySaved = user?.profile ? weeksElapsed * user.profile.unitsPerWeek * user.profile.costPerUnit : 0;
   const podsAvoided = user?.profile ? Math.floor(weeksElapsed * user.profile.unitsPerWeek) : 0;
-  const stats = { secondsFree: secondsElapsed, moneySaved, podsAvoided };
+  // Calculate puffs today for taper achievement
+  const journal = user?.journal || [];
+  const todayEntries = journal.filter(entry => isSameDay(entry.timestamp, now));
+  const puffsToday = todayEntries.reduce((sum, entry) => sum + (entry.puffs || 0), 0);
+  const dailyLimit = user?.profile?.dailyLimit || 0;
+  const stats = { secondsFree: secondsElapsed, moneySaved, podsAvoided, dailyLimit, puffsToday };
   const unlockedCount = ACHIEVEMENTS.filter(a => a.condition(stats)).length;
   // Trigger confetti on mount if user has achievements
   useEffect(() => {
@@ -87,12 +100,12 @@ export function AchievementsPage() {
         }
         const particleCount = 50 * (timeLeft / duration);
         confetti({
-          ...defaults, 
+          ...defaults,
           particleCount,
           origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
         });
         confetti({
-          ...defaults, 
+          ...defaults,
           particleCount,
           origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
         });

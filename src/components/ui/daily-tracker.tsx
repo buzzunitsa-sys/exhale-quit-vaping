@@ -1,7 +1,7 @@
 import React from 'react';
 import { CircularProgress } from '@/components/ui/circular-progress';
 import { Button } from '@/components/ui/button';
-import { Plus, TrendingDown, TrendingUp, Zap, DollarSign } from 'lucide-react';
+import { Plus, TrendingDown, TrendingUp, Zap, DollarSign, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 interface DailyTrackerProps {
   puffsToday: number;
@@ -28,26 +28,52 @@ export function DailyTracker({
   const progressValue = Math.min(100, (puffsToday / visualLimit) * 100);
   // Determine color based on usage vs limit (if limit exists)
   const isOverLimit = dailyLimit > 0 && puffsToday > dailyLimit;
-  const progressColor = isOverLimit ? "text-red-500" : "text-sky-500";
+  const isNearLimit = dailyLimit > 0 && puffsToday >= dailyLimit * 0.8 && !isOverLimit;
+  const progressColor = isOverLimit ? "text-red-500" : isNearLimit ? "text-orange-500" : "text-sky-500";
   return (
     <div className="bg-card border border-border/50 rounded-3xl p-6 shadow-sm transition-colors duration-300">
       <div className="flex flex-col items-center justify-center mb-8">
         <h3 className="text-lg font-semibold text-foreground mb-6">Daily Puff Count</h3>
         <div className="relative">
-          <CircularProgress 
-            value={progressValue} 
-            size={220} 
-            strokeWidth={12} 
+          <CircularProgress
+            value={progressValue}
+            size={220}
+            strokeWidth={12}
             color={progressColor}
-            showGradient={!isOverLimit}
+            showGradient={!isOverLimit && !isNearLimit}
           >
             <div className="flex flex-col items-center">
-              <span className="text-6xl font-bold text-foreground tracking-tighter">
-                {puffsToday}
+              <span className={cn("text-5xl font-bold tracking-tighter", progressColor)}>
+                {dailyLimit > 0 ? (
+                  <>
+                    {puffsToday} <span className="text-2xl text-muted-foreground font-normal">/ {dailyLimit}</span>
+                  </>
+                ) : (
+                  puffsToday
+                )}
               </span>
               <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1">
                 PUFFS TODAY
               </span>
+              {dailyLimit > 0 && (
+                <div className={cn(
+                  "flex items-center gap-1.5 mt-2 text-xs font-bold px-2 py-1 rounded-full",
+                  isOverLimit ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400" : 
+                  "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
+                )}>
+                  {isOverLimit ? (
+                    <>
+                      <AlertCircle className="w-3 h-3" />
+                      OVER LIMIT
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-3 h-3" />
+                      ON TRACK
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </CircularProgress>
           {/* Quick Log Button positioned at the bottom of the circle */}

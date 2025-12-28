@@ -8,6 +8,7 @@ export interface QuitProfile {
   costPerUnit: number;
   unitsPerWeek: number;
   puffsPerUnit?: number; // New field for cost per puff calculation
+  dailyLimit?: number; // New field for tapering goal
   currency: string;
   motivation?: string;
 }

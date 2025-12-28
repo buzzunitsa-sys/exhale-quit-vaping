@@ -29,7 +29,13 @@ export interface Achievement {
   id: string;
   title: string;
   description: string;
-  condition: (stats: { secondsFree: number; moneySaved: number; podsAvoided: number }) => boolean;
+  condition: (stats: { 
+    secondsFree: number; 
+    moneySaved: number; 
+    podsAvoided: number;
+    dailyLimit?: number;
+    puffsToday?: number;
+  }) => boolean;
   icon: React.ReactNode;
   type: AchievementType;
 }

@@ -29,7 +29,7 @@ export function DashboardPage() {
     const puffsToday = todayEntries.reduce((sum, entry) => sum + (entry.puffs || 0), 0);
     // Cost calculations
     // Default to 200 puffs per unit if not set (standard pod estimate)
-    const puffsPerUnit = user.profile.puffsPerUnit || 200; 
+    const puffsPerUnit = user.profile.puffsPerUnit || 200;
     const costPerPuff = user.profile.costPerUnit / puffsPerUnit;
     const costWasted = puffsToday * costPerPuff;
     // Nicotine calculations (approx 50mg per pod/unit usually, or 5% strength)
@@ -117,12 +117,13 @@ export function DashboardPage() {
       </div>
       {/* Main Content - Overlapping Header */}
       <div className="px-4 -mt-12 space-y-4 relative z-10">
-        <DailyTracker 
+        <DailyTracker
           puffsToday={puffsToday}
           costWasted={costWasted}
           nicotineUsed={nicotineUsed}
           projectedSavings={projectedSavings}
           currency={user.profile.currency}
+          dailyLimit={user.profile.dailyLimit}
           onQuickLog={handleQuickLog}
         />
         <div className="w-full overflow-hidden rounded-3xl">

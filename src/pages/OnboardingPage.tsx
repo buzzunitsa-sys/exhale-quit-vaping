@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Calendar, DollarSign, Wind, Zap } from 'lucide-react';
+import { ArrowRight, Calendar, DollarSign, Wind, Zap, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +22,7 @@ const profileSchema = z.object({
   costPerUnit: z.coerce.number().min(0.01, "Cost must be greater than 0"),
   unitsPerWeek: z.coerce.number().min(0.1, "Usage must be greater than 0"),
   puffsPerUnit: z.coerce.number().min(1, "Puffs per unit must be at least 1").default(200),
+  dailyLimit: z.coerce.number().min(0, "Limit cannot be negative").optional(),
   currency: z.string().default("USD"),
 });
 type EmailForm = z.infer<typeof emailSchema>;
@@ -137,7 +138,8 @@ function ProfileWizard({ onSubmit }: { onSubmit: (data: ProfileForm) => void }) 
       currency: 'USD',
       costPerUnit: 0,
       unitsPerWeek: 0,
-      puffsPerUnit: 200 // Default for a pod
+      puffsPerUnit: 200, // Default for a pod
+      dailyLimit: 0
     }
   });
   return (
@@ -204,9 +206,26 @@ function ProfileWizard({ onSubmit }: { onSubmit: (data: ProfileForm) => void }) 
                 className="h-12 bg-background border-input text-foreground focus-visible:ring-sky-500"
               />
               <p className="text-xs text-muted-foreground">
-                Used to calculate cost per puff. (Pod ≈ 200, Disposable ≈ 5000)
+                Used to calculate cost per puff. (Pod ��� 200, Disposable ≈ 5000)
               </p>
               {errors.puffsPerUnit && <p className="text-sm text-red-500">{errors.puffsPerUnit.message}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-foreground">
+                <Target className="w-4 h-4 text-violet-500" />
+                Daily Puff Goal (Optional)
+              </Label>
+              <Input
+                type="number"
+                step="1"
+                placeholder="e.g. 20 (Leave 0 for no limit)"
+                {...register('dailyLimit')}
+                className="h-12 bg-background border-input text-foreground focus-visible:ring-sky-500"
+              />
+              <p className="text-xs text-muted-foreground">
+                Set a daily limit to help you taper off.
+              </p>
+              {errors.dailyLimit && <p className="text-sm text-red-500">{errors.dailyLimit.message}</p>}
             </div>
             <Button type="submit" className="w-full h-12 text-lg bg-gradient-to-r from-sky-500 to-violet-600 hover:opacity-90 transition-opacity text-white" disabled={isSubmitting}>
               {isSubmitting ? "Saving..." : "Start Tracking"} <ArrowRight className="ml-2 w-5 h-5" />
