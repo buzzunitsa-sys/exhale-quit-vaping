@@ -27,7 +27,7 @@ export function StatsChart({ data }: StatsChartProps) {
         {new Date().getFullYear()}
       </div>
       {/* ResponsiveContainer needs explicit parent height which is set by h-[300px] above */}
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
         <ComposedChart
           data={data}
           margin={{ top: 40, right: 20, bottom: 20, left: -20 }}
