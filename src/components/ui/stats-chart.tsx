@@ -28,28 +28,28 @@ export function StatsChart({ data }: StatsChartProps) {
         {new Date().getFullYear()}
       </div>
       {/* Explicit wrapper div for ResponsiveContainer to prevent width(-1) errors */}
-      <div style={{ width: '100%', height: 300, position: 'relative' }}>
+      <div style={{ width: '100%', height: 300, position: 'relative' }} className="min-w-0">
         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <ComposedChart
             data={data}
             margin={{ top: 40, right: 20, bottom: 20, left: -20 }}
           >
-            <CartesianGrid 
-              strokeDasharray="5 5" 
-              vertical={true} 
-              horizontal={true} 
-              stroke="rgba(255,255,255,0.2)" 
+            <CartesianGrid
+              strokeDasharray="5 5"
+              vertical={true}
+              horizontal={true}
+              stroke="rgba(255,255,255,0.2)"
             />
-            <XAxis 
-              dataKey="name" 
-              axisLine={false} 
-              tickLine={false} 
+            <XAxis
+              dataKey="name"
+              axisLine={false}
+              tickLine={false}
               tick={{ fill: 'rgba(255,255,255,0.8)', fontSize: 12 }}
               dy={10}
             />
-            <YAxis 
-              axisLine={false} 
-              tickLine={false} 
+            <YAxis
+              axisLine={false}
+              tickLine={false}
               tick={{ fill: 'rgba(255,255,255,0.8)', fontSize: 12 }}
               domain={[0, 'auto']}
               tickCount={5}
@@ -85,28 +85,28 @@ export function StatsChart({ data }: StatsChartProps) {
               cursor={{ stroke: 'rgba(255,255,255,0.5)', strokeWidth: 1 }}
             />
             {/* Actual Puffs Bar */}
-            <Bar 
-              dataKey="puffsTaken" 
-              name="Actual Puffs" 
-              fill="#ef4444" 
+            <Bar
+              dataKey="puffsTaken"
+              name="Actual Puffs"
+              fill="#ef4444"
               radius={[4, 4, 0, 0]}
               barSize={20}
               opacity={0.8}
             />
             {/* Average Line */}
-            <Line 
-              type="monotone" 
-              dataKey="average" 
-              stroke="#3b82f6" 
+            <Line
+              type="monotone"
+              dataKey="average"
+              stroke="#3b82f6"
               strokeWidth={3}
               dot={{ r: 0 }}
               activeDot={{ r: 6, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }}
             />
             {/* Cravings Line */}
-            <Line 
-              type="monotone" 
-              dataKey="puffs" 
-              stroke="#ffffff" 
+            <Line
+              type="monotone"
+              dataKey="puffs"
+              stroke="#ffffff"
               strokeWidth={3}
               dot={{ r: 4, fill: '#ffffff', strokeWidth: 0 }}
               activeDot={{ r: 8, fill: '#ffffff', strokeWidth: 0 }}
