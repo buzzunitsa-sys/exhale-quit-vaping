@@ -1,4 +1,2 @@
-// This file is deprecated and scheduled for deletion.
-export function AppSidebar() {
-  return null;
-}
+// File deleted as part of cleanup
+export function AppSidebar() { return null; }

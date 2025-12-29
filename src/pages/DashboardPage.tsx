@@ -28,6 +28,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Share, PlusSquare, MoreVertical } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { getGreeting } from '@/lib/utils';
 export function DashboardPage() {
   const user = useAppStore(s => s.user);
   const setUser = useAppStore(s => s.setUser);
@@ -178,7 +179,7 @@ export function DashboardPage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h1 className="text-4xl font-bold mb-1 tracking-tight">Hello</h1>
+              <h1 className="text-4xl font-bold mb-1 tracking-tight">{getGreeting()}</h1>
               <p className="text-sky-100 font-medium uppercase tracking-wide text-sm opacity-90">
                 {format(now, 'EEEE, MMMM d')}
               </p>
@@ -214,20 +215,20 @@ export function DashboardPage() {
                   <Download className="w-5 h-5" />
                 </Button>
               )}
-              <ShareButton
+              <ShareButton 
                 secondsFree={secondsFreeForRank}
                 moneySaved={totalMoneySaved}
                 currency={user.profile.currency}
               />
-              <Link
-                to="/achievements"
+              <Link 
+                to="/achievements" 
                 onClick={() => vibrate('light')}
                 className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
               >
                 <Crown className="w-6 h-6 text-yellow-300 fill-yellow-300" />
               </Link>
-              <Link
-                to="/profile"
+              <Link 
+                to="/profile" 
                 onClick={() => vibrate('light')}
                 className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
               >
@@ -247,7 +248,7 @@ export function DashboardPage() {
         <DailyPledge />
         {/* Daily Tracker (Puff Count) */}
         <div className="mb-8">
-          <DailyTracker
+          <DailyTracker 
             puffsToday={puffsToday}
             costWasted={costWastedToday}
             nicotineUsed={nicotineUsedToday}
@@ -262,7 +263,7 @@ export function DashboardPage() {
         {/* Motivation Card */}
         <MotivationCard motivation={user.profile.motivation} />
         {/* Time Since Last Puff */}
-        <TimeSinceLastPuff
+        <TimeSinceLastPuff 
           lastPuffTime={lastPuffTime}
           now={now}
         />
@@ -276,7 +277,7 @@ export function DashboardPage() {
         </div>
         {/* Savings Goal Card (if configured) */}
         {user.profile.savingsGoal && user.profile.savingsGoal.cost > 0 && (
-          <SavingsGoalCard
+          <SavingsGoalCard 
             savedAmount={totalMoneySaved}
             goal={user.profile.savingsGoal}
             currency={user.profile.currency}
@@ -284,7 +285,7 @@ export function DashboardPage() {
         )}
         {/* Savings Chart */}
         <div className="w-full h-[250px] rounded-3xl min-w-0 overflow-hidden">
-          <SavingsChart
+          <SavingsChart 
             currentSavings={totalMoneySaved}
             dailySavings={dailyBaselineCost}
             currency={user.profile.currency}

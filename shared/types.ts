@@ -39,15 +39,3 @@ export interface User {
   lastPledgeDate?: string; // YYYY-MM-DD
   pledgeStreak?: number;
 }
-// Keeping Chat types for compatibility with existing template structure if needed
-export interface Chat {
-  id: string;
-  title: string;
-}
-export interface ChatMessage {
-  id: string;
-  chatId: string;
-  userId: string;
-  text: string;
-  ts: number; // epoch millis
-}
