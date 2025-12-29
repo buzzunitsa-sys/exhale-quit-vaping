@@ -18,11 +18,17 @@ import { AchievementsPage } from '@/pages/AchievementsPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { BreathingPage } from '@/pages/BreathingPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
+import { PrivacyPolicyPage } from '@/pages/PrivacyPolicyPage'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 const router = createBrowserRouter([
   {
     path: "/",
     element: <HomePage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/privacy",
+    element: <PrivacyPolicyPage />,
     errorElement: <RouteErrorBoundary />,
   },
   {
