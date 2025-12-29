@@ -90,7 +90,7 @@ export function OnboardingPage() {
       // If we just logged in and everything is set, go to intro
       setStep('intro');
     }
-  }, [user, navigate]); // Removed 'step' from deps to avoid loops, handled logic inside
+  }, [user, navigate, step]);
   const handleLoginSuccess = (user: User) => {
     setUser(user);
     // The useEffect will handle the transition
@@ -198,7 +198,7 @@ export function OnboardingPage() {
           {step === 'country' && <CountryStep key="country" onSubmit={handleCountrySubmit} onBack={goBack} />}
           {step === 'nicotine' && <NicotineStep key="nicotine" onSubmit={handleNicotineSubmit} onBack={goBack} />}
           {step === 'usage' && <UsageStep key="usage" onSubmit={handleUsageSubmit} onBack={goBack} currency={wizardData.currency || 'USD'} />}
-          {step === 'liquid' && <LiquidStep key="liquid" onSubmit={handleLiquidSubmit} onBack={goBack} />}
+          {step === 'liquid' && <LiquidStep key=\"liquid\" onSubmit={handleLiquidSubmit} onBack={goBack} />}
           {step === 'goals' && <GoalsStep key="goals" onSubmit={handleGoalsSubmit} onBack={goBack} />}
           {step === 'daily-puffs' && <DailyPuffsStep key="daily-puffs" onSubmit={handleDailyPuffsSubmit} onBack={goBack} />}
         </AnimatePresence>
@@ -272,9 +272,9 @@ function LoginForm({ onSuccess }: { onSuccess: (user: User) => void }) {
             </Button>
           </form>
           <div className="pt-2">
-            <Button
-              type="button"
-              variant="ghost"
+            <Button 
+              type="button" 
+              variant="ghost" 
               onClick={handleGuestLogin}
               className="w-full h-10 text-sm gap-2 text-muted-foreground hover:text-foreground"
             >
@@ -284,9 +284,9 @@ function LoginForm({ onSuccess }: { onSuccess: (user: User) => void }) {
           </div>
           {isInstallable && (
             <div className="pt-2 border-t border-border/50">
-              <Button
-                type="button"
-                variant="ghost"
+              <Button 
+                type="button" 
+                variant="ghost" 
                 onClick={promptInstall}
                 className="w-full gap-2 text-muted-foreground hover:text-foreground"
               >

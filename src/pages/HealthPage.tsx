@@ -7,7 +7,9 @@ import { TriggerChart } from '@/components/TriggerChart';
 import { RecentHistory } from '@/components/RecentHistory';
 import { HistoryCalendar } from '@/components/HistoryCalendar';
 import { JournalForm } from '@/components/JournalForm';
+import { FullHistoryModal } from '@/components/FullHistoryModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,13 +32,14 @@ import {
   getTriggerDistribution,
   type TimeRange
 } from '@/lib/stats-utils';
-import { BarChart3, Activity, CalendarDays } from 'lucide-react';
+import { BarChart3, Activity, CalendarDays, List } from 'lucide-react';
 type ViewMode = 'stats' | 'recovery' | 'history';
 export function HealthPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('stats');
   const [activeTab, setActiveTab] = useState<TimeRange>('WEEKLY');
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const user = useAppStore(s => s.user);
   const setUser = useAppStore(s => s.setUser);
   const isGuest = useAppStore(s => s.isGuest);
@@ -87,7 +90,7 @@ export function HealthPage() {
     if (!user || !editingEntry) return;
     if (isGuest) {
       // Local update for guest
-      const updatedJournal = (user.journal || []).map(e =>
+      const updatedJournal = (user.journal || []).map(e => 
         e.id === editingEntry.id ? { ...e, ...data } : e
       );
       setUser({ ...user, journal: updatedJournal });
@@ -119,8 +122,8 @@ export function HealthPage() {
               onClick={() => setViewMode('stats')}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap",
-                viewMode === 'stats'
-                  ? "bg-white text-blue-600 shadow-sm"
+                viewMode === 'stats' 
+                  ? "bg-white text-blue-600 shadow-sm" 
                   : "text-white/80 hover:bg-white/10"
               )}
             >
@@ -131,8 +134,8 @@ export function HealthPage() {
               onClick={() => setViewMode('history')}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap",
-                viewMode === 'history'
-                  ? "bg-white text-blue-600 shadow-sm"
+                viewMode === 'history' 
+                  ? "bg-white text-blue-600 shadow-sm" 
                   : "text-white/80 hover:bg-white/10"
               )}
             >
@@ -143,8 +146,8 @@ export function HealthPage() {
               onClick={() => setViewMode('recovery')}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap",
-                viewMode === 'recovery'
-                  ? "bg-white text-blue-600 shadow-sm"
+                viewMode === 'recovery' 
+                  ? "bg-white text-blue-600 shadow-sm" 
                   : "text-white/80 hover:bg-white/10"
               )}
             >
@@ -169,8 +172,8 @@ export function HealthPage() {
                       onClick={() => setActiveTab(tab)}
                       className={cn(
                         "px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-200",
-                        activeTab === tab
-                          ? "bg-white text-indigo-600 shadow-sm"
+                        activeTab === tab 
+                          ? "bg-white text-indigo-600 shadow-sm" 
                           : "text-white hover:bg-white/10"
                       )}
                     >
@@ -205,8 +208,8 @@ export function HealthPage() {
               <StatsSummary stats={summaryStats} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <TriggerChart data={triggerData} />
-                <RecentHistory
-                  entries={journal}
+                <RecentHistory 
+                  entries={journal} 
                   onDelete={handleDeleteEntry}
                   onEdit={handleEditEntry}
                 />
@@ -221,16 +224,24 @@ export function HealthPage() {
               transition={{ duration: 0.2 }}
               className="space-y-6"
             >
-              <HistoryCalendar
-                entries={journal}
+              <HistoryCalendar 
+                entries={journal} 
                 dailyLimit={user?.profile?.dailyLimit}
                 createdAt={user?.createdAt || Date.now()}
               />
-              <RecentHistory
-                entries={journal}
+              <RecentHistory 
+                entries={journal} 
                 onDelete={handleDeleteEntry}
                 onEdit={handleEditEntry}
               />
+              <Button 
+                variant="outline" 
+                className="w-full h-12 gap-2 border-sky-200 text-sky-600 hover:bg-sky-50 dark:border-sky-900 dark:text-sky-400 dark:hover:bg-sky-900/20"
+                onClick={() => setIsHistoryOpen(true)}
+              >
+                <List className="w-4 h-4" />
+                View Full History
+              </Button>
             </motion.div>
           ) : (
             <motion.div
@@ -255,8 +266,8 @@ export function HealthPage() {
             </DialogDescription>
           </DialogHeader>
           {editingEntry && (
-            <JournalForm
-              initialData={editingEntry}
+            <JournalForm 
+              initialData={editingEntry} 
               onSubmit={handleUpdateEntry}
               onCancel={() => setEditingEntry(null)}
             />
@@ -280,6 +291,14 @@ export function HealthPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* Full History Modal */}
+      <FullHistoryModal 
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        entries={journal}
+        onDelete={handleDeleteEntry}
+        onEdit={handleEditEntry}
+      />
     </div>
   );
 }

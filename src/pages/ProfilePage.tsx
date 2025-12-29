@@ -30,6 +30,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { COUNTRIES } from '@/lib/constants';
 import { InstallPWA } from '@/components/InstallPWA';
 const profileSchema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters").max(20, "Username too long").optional(),
   quitDate: z.string().min(1, "Quit date is required"),
   costPerUnit: z.coerce.number().min(0.01, "Cost must be greater than 0"),
   unitsPerWeek: z.coerce.number().min(0.1, "Usage must be greater than 0"),
@@ -58,6 +59,7 @@ export function ProfilePage() {
   const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema) as any,
     defaultValues: {
+      username: user?.username || "",
       quitDate: user?.profile?.quitDate || new Date().toISOString().slice(0, 16),
       costPerUnit: user?.profile?.costPerUnit || 0,
       unitsPerWeek: user?.profile?.unitsPerWeek || 0,
@@ -90,12 +92,22 @@ export function ProfilePage() {
       toast.info("Sign in to save changes");
       return;
     }
-    // Clean up savings goal if empty
-    let profileData = { ...data };
-    if (!profileData.savingsGoal?.name || !profileData.savingsGoal?.cost) {
-        delete profileData.savingsGoal;
-    }
     try {
+      // 1. Update Username if changed
+      if (data.username && data.username !== user.username) {
+        await api<User>(`/api/user/${user.id}/username`, {
+          method: 'POST',
+          body: JSON.stringify({ username: data.username }),
+        });
+      }
+      // 2. Update Profile
+      // Clean up savings goal if empty
+      let profileData = { ...data };
+      // Remove username from profile data payload as it's handled separately
+      delete (profileData as any).username;
+      if (!profileData.savingsGoal?.name || !profileData.savingsGoal?.cost) {
+          delete profileData.savingsGoal;
+      }
       const updatedUser = await api<User>(`/api/user/${user.id}/profile`, {
         method: 'POST',
         body: JSON.stringify({ profile: profileData }),
@@ -180,8 +192,8 @@ export function ProfilePage() {
   if (!user) return null;
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background pb-24 transition-colors duration-300">
-      <PageHeader
-        title="Profile & Settings"
+      <PageHeader 
+        title="Profile & Settings" 
         subtitle={isGuest ? "Preview Mode - Sign in to customize" : "Manage your usage plan and account preferences."}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 relative z-10">
@@ -242,14 +254,25 @@ export function ProfilePage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {/* Username Field */}
+              <div className="space-y-2">
+                <Label htmlFor="username" className="text-foreground">Username</Label>
+                <Input 
+                  id="username" 
+                  {...register('username')} 
+                  disabled={isGuest}
+                  className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
+                />
+                {errors.username && <p className="text-sm text-red-500">{errors.username.message}</p>}
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="quitDate" className="text-foreground">Start Date</Label>
-                <Input
-                  id="quitDate"
-                  type="datetime-local"
-                  {...register('quitDate')}
+                <Input 
+                  id="quitDate" 
+                  type="datetime-local" 
+                  {...register('quitDate')} 
                   disabled={isGuest}
-                  className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
+                  className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
                 />
                 {errors.quitDate && <p className="text-sm text-red-500">{errors.quitDate.message}</p>}
               </div>
@@ -275,11 +298,11 @@ export function ProfilePage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="currency" className="text-foreground">Currency Code</Label>
-                  <Input
-                    id="currency"
-                    {...register('currency')}
+                  <Input 
+                    id="currency" 
+                    {...register('currency')} 
                     disabled={isGuest}
-                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
+                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
                   />
                   <p className="text-xs text-muted-foreground">Automatically set by country, but editable.</p>
                 </div>
@@ -287,25 +310,25 @@ export function ProfilePage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="cost" className="text-foreground">Cost per Unit ({currencySymbol})</Label>
-                  <Input
-                    id="cost"
-                    type="number"
-                    step="0.01"
-                    {...register('costPerUnit')}
+                  <Input 
+                    id="cost" 
+                    type="number" 
+                    step="0.01" 
+                    {...register('costPerUnit')} 
                     disabled={isGuest}
-                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
+                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
                   />
                   {errors.costPerUnit && <p className="text-sm text-red-500">{errors.costPerUnit.message}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="usage" className="text-foreground">Units per Week</Label>
-                  <Input
-                    id="usage"
-                    type="number"
-                    step="0.1"
-                    {...register('unitsPerWeek')}
+                  <Input 
+                    id="usage" 
+                    type="number" 
+                    step="0.1" 
+                    {...register('unitsPerWeek')} 
                     disabled={isGuest}
-                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
+                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
                   />
                   {errors.unitsPerWeek && <p className="text-sm text-red-500">{errors.unitsPerWeek.message}</p>}
                 </div>
@@ -316,13 +339,13 @@ export function ProfilePage() {
                     <Zap className="w-3 h-3 text-violet-500" />
                     Nicotine (mg/ml)
                   </Label>
-                  <Input
-                    id="strength"
-                    type="number"
-                    step="0.1"
-                    {...register('nicotineStrength')}
+                  <Input 
+                    id="strength" 
+                    type="number" 
+                    step="0.1" 
+                    {...register('nicotineStrength')} 
                     disabled={isGuest}
-                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
+                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
                   />
                   {errors.nicotineStrength && <p className="text-sm text-red-500">{errors.nicotineStrength.message}</p>}
                 </div>
@@ -331,13 +354,13 @@ export function ProfilePage() {
                     <Beaker className="w-3 h-3 text-violet-500" />
                     Volume (ml)
                   </Label>
-                  <Input
-                    id="volume"
-                    type="number"
-                    step="0.1"
-                    {...register('volumePerUnit')}
+                  <Input 
+                    id="volume" 
+                    type="number" 
+                    step="0.1" 
+                    {...register('volumePerUnit')} 
                     disabled={isGuest}
-                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
+                    className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
                   />
                   {errors.volumePerUnit && <p className="text-sm text-red-500">{errors.volumePerUnit.message}</p>}
                 </div>
@@ -347,13 +370,13 @@ export function ProfilePage() {
                   <Droplets className="w-3 h-3 text-violet-500" />
                   Liquid per Puff (ml)
                 </Label>
-                <Input
-                  id="mlPerPuff"
-                  type="number"
-                  step="0.01"
-                  {...register('mlPerPuff')}
+                <Input 
+                  id="mlPerPuff" 
+                  type="number" 
+                  step="0.01" 
+                  {...register('mlPerPuff')} 
                   disabled={isGuest}
-                  className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
+                  className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
                 />
                 <p className="text-xs text-muted-foreground">
                   Used for precise cost and nicotine tracking. Default is 0.05ml.
@@ -362,14 +385,14 @@ export function ProfilePage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="limit" className="text-foreground">Daily Puff Goal (Optional)</Label>
-                <Input
-                  id="limit"
-                  type="number"
-                  step="1"
-                  placeholder="e.g. 20 (Leave 0 for no limit)"
-                  {...register('dailyLimit')}
+                <Input 
+                  id="limit" 
+                  type="number" 
+                  step="1" 
+                  placeholder="e.g. 20 (Leave 0 for no limit)" 
+                  {...register('dailyLimit')} 
                   disabled={isGuest}
-                  className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70"
+                  className="bg-background border-input text-foreground focus-visible:ring-violet-500 disabled:opacity-70" 
                 />
                 <p className="text-xs text-muted-foreground">
                   Set a daily limit to help you taper off.
@@ -384,12 +407,12 @@ export function ProfilePage() {
                 </h3>
                 <div className="space-y-2">
                   <Label htmlFor="motivation" className="text-foreground">Why are you quitting?</Label>
-                  <Textarea
-                    id="motivation"
-                    placeholder="e.g. For my health, to save money for travel, for my family..."
-                    {...register('motivation')}
+                  <Textarea 
+                    id="motivation" 
+                    placeholder="e.g. For my health, to save money for travel, for my family..." 
+                    {...register('motivation')} 
                     disabled={isGuest}
-                    className="bg-background border-input text-foreground focus-visible:ring-pink-500 disabled:opacity-70 resize-none h-24"
+                    className="bg-background border-input text-foreground focus-visible:ring-pink-500 disabled:opacity-70 resize-none h-24" 
                   />
                   <p className="text-xs text-muted-foreground">
                     This will be pinned to your dashboard to keep you inspired.
@@ -405,24 +428,24 @@ export function ProfilePage() {
                 <div className="grid gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="goalName" className="text-foreground">Goal Name</Label>
-                    <Input
-                      id="goalName"
-                      placeholder="e.g. New Bike, Vacation"
-                      {...register('savingsGoal.name')}
+                    <Input 
+                      id="goalName" 
+                      placeholder="e.g. New Bike, Vacation" 
+                      {...register('savingsGoal.name')} 
                       disabled={isGuest}
-                      className="bg-background border-input text-foreground focus-visible:ring-indigo-500 disabled:opacity-70"
+                      className="bg-background border-input text-foreground focus-visible:ring-indigo-500 disabled:opacity-70" 
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="goalCost" className="text-foreground">Goal Cost ({currencySymbol})</Label>
-                    <Input
-                      id="goalCost"
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      {...register('savingsGoal.cost')}
+                    <Input 
+                      id="goalCost" 
+                      type="number" 
+                      step="0.01" 
+                      placeholder="0.00" 
+                      {...register('savingsGoal.cost')} 
                       disabled={isGuest}
-                      className="bg-background border-input text-foreground focus-visible:ring-indigo-500 disabled:opacity-70"
+                      className="bg-background border-input text-foreground focus-visible:ring-indigo-500 disabled:opacity-70" 
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -458,12 +481,12 @@ export function ProfilePage() {
                   <Upload className="w-4 h-4" />
                   Import Data
                 </Button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  accept=".json"
-                  onChange={handleFileChange}
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  className="hidden" 
+                  accept=".json" 
+                  onChange={handleFileChange} 
                 />
               </div>
               <div className="pt-4 border-t border-border/50">
