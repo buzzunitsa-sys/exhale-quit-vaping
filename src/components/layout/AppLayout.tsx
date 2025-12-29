@@ -1,1 +1,1 @@
-export function AppLayout() { return null; }
+export {}; // Deleted

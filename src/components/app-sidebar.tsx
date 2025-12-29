@@ -1,1 +1,1 @@
-export function AppSidebar() { return null; }
+export {}; // Deleted

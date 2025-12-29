@@ -16,6 +16,7 @@ import { BreathingCard } from '@/components/BreathingCard';
 import { QuoteCarousel } from '@/components/QuoteCarousel';
 import { TimeSinceLastPuff } from '@/components/TimeSinceLastPuff';
 import { MotivationCard } from '@/components/MotivationCard';
+import { NextMilestoneCard } from '@/components/NextMilestoneCard';
 import { useHaptic } from '@/hooks/use-haptic';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
@@ -217,20 +218,20 @@ export function DashboardPage() {
                   <Download className="w-5 h-5" />
                 </Button>
               )}
-              <ShareButton 
+              <ShareButton
                 secondsFree={secondsFreeForRank}
                 moneySaved={totalMoneySaved}
                 currency={user.profile.currency}
               />
-              <Link 
-                to="/achievements" 
+              <Link
+                to="/achievements"
                 onClick={() => vibrate('light')}
                 className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
               >
                 <Crown className="w-6 h-6 text-yellow-300 fill-yellow-300" />
               </Link>
-              <Link 
-                to="/profile" 
+              <Link
+                to="/profile"
                 onClick={() => vibrate('light')}
                 className="p-2 bg-white/20 rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm flex items-center justify-center"
               >
@@ -250,7 +251,7 @@ export function DashboardPage() {
         <DailyPledge />
         {/* Daily Tracker (Puff Count) */}
         <div className="mb-8">
-          <DailyTracker 
+          <DailyTracker
             puffsToday={puffsToday}
             costWasted={costWastedToday}
             nicotineUsed={nicotineUsedToday}
@@ -260,12 +261,14 @@ export function DashboardPage() {
             onQuickLog={handleQuickLog}
           />
         </div>
+        {/* Next Milestone Widget */}
+        <NextMilestoneCard secondsElapsed={secondsElapsed} />
         {/* Quote Carousel */}
         <QuoteCarousel />
         {/* Motivation Card */}
         <MotivationCard motivation={user.profile.motivation} />
         {/* Time Since Last Puff */}
-        <TimeSinceLastPuff 
+        <TimeSinceLastPuff
           lastPuffTime={lastPuffTime}
           now={now}
         />
@@ -279,7 +282,7 @@ export function DashboardPage() {
         </div>
         {/* Savings Goal Card (if configured) */}
         {user.profile.savingsGoal && user.profile.savingsGoal.cost > 0 && (
-          <SavingsGoalCard 
+          <SavingsGoalCard
             savedAmount={totalMoneySaved}
             goal={user.profile.savingsGoal}
             currency={user.profile.currency}
@@ -287,7 +290,7 @@ export function DashboardPage() {
         )}
         {/* Savings Chart */}
         <div className="w-full h-[250px] rounded-3xl min-w-0 overflow-hidden">
-          <SavingsChart 
+          <SavingsChart
             currentSavings={totalMoneySaved}
             dailySavings={dailyBaselineCost}
             currency={user.profile.currency}

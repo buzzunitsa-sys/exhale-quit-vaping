@@ -1,1 +1,1 @@
-export function DemoPage() { return null; }
+export {}; // Deleted
