@@ -179,7 +179,9 @@ export function DashboardPage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h1 className="text-4xl font-bold mb-1 tracking-tight">{getGreeting()}</h1>
+              <h1 className="text-4xl font-bold mb-1 tracking-tight">
+                {user.username ? `Hello, ${user.username}` : getGreeting()}
+              </h1>
               <p className="text-sky-100 font-medium uppercase tracking-wide text-sm opacity-90">
                 {format(now, 'EEEE, MMMM d')}
               </p>

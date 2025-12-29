@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Wind, Calendar, DollarSign, Beaker, Globe, Download, Share, PlusSquare, MoreVertical, Eye } from 'lucide-react';
+import { ArrowLeft, Wind, Calendar, DollarSign, Beaker, Globe, Download, Share, PlusSquare, MoreVertical, Eye, Mail, CheckCircle2, User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,9 +19,17 @@ import { COUNTRIES, type Country } from '@/lib/constants';
 import { useInstallPrompt } from '@/hooks/use-install-prompt';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { GoogleButton } from '@/components/ui/google-button';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 // --- Schemas ---
 const emailSchema = z.object({
   email: z.string().email("Please enter a valid email"),
+});
+const verificationSchema = z.object({
+  code: z.string().length(6, "Code must be 6 digits"),
+});
+const usernameSchema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters").max(20, "Username too long"),
 });
 const countryStepSchema = z.object({
   country: z.string().min(1, "Please select a country"),
@@ -46,13 +54,15 @@ const dailyPuffsSchema = z.object({
   dailyLimit: z.coerce.number().min(1, "Must be at least 1").default(200),
 });
 type EmailForm = z.infer<typeof emailSchema>;
+type VerificationForm = z.infer<typeof verificationSchema>;
+type UsernameForm = z.infer<typeof usernameSchema>;
 type CountryForm = z.infer<typeof countryStepSchema>;
 type NicotineForm = z.infer<typeof nicotineStepSchema>;
 type UsageForm = z.infer<typeof usageStepSchema>;
 type LiquidForm = z.infer<typeof liquidStepSchema>;
 type GoalsForm = z.infer<typeof goalsStepSchema>;
 type DailyPuffsForm = z.infer<typeof dailyPuffsSchema>;
-type Step = 'login' | 'intro' | 'country' | 'nicotine' | 'usage' | 'liquid' | 'goals' | 'daily-puffs';
+type Step = 'login' | 'verification' | 'username' | 'intro' | 'country' | 'nicotine' | 'usage' | 'liquid' | 'goals' | 'daily-puffs';
 export function OnboardingPage() {
   const [step, setStep] = useState<Step>('login');
   const [wizardData, setWizardData] = useState<Partial<QuitProfile>>({});
@@ -60,30 +70,38 @@ export function OnboardingPage() {
   const updateProfile = useAppStore(s => s.updateProfile);
   const user = useAppStore(s => s.user);
   const navigate = useNavigate();
-  React.useEffect(() => {
-    if (user?.profile) {
+  // Effect to handle navigation based on user state
+  useEffect(() => {
+    if (!user) {
+      if (step !== 'login') setStep('login');
+      return;
+    }
+    // If user is logged in, determine the correct step
+    if (user.profile) {
       navigate('/dashboard');
-    } else if (user && step === 'login') {
+      return;
+    }
+    // Flow: Login -> Verification -> Username -> Intro -> ...
+    if (!user.isVerified && step !== 'verification') {
+      setStep('verification');
+    } else if (user.isVerified && !user.username && step !== 'username') {
+      setStep('username');
+    } else if (user.isVerified && user.username && step === 'login') {
+      // If we just logged in and everything is set, go to intro
       setStep('intro');
     }
-  }, [user, navigate, step]);
-  const handleLogin = async (data: EmailForm) => {
-    try {
-      const user = await api<User>('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
-      setUser(user);
-      if (user.profile) {
-        toast.success("Welcome back!");
-        navigate('/dashboard');
-      } else {
-        setStep('intro');
-        toast.success("Account created!");
-      }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Login failed");
-    }
+  }, [user, navigate]); // Removed 'step' from deps to avoid loops, handled logic inside
+  const handleLoginSuccess = (user: User) => {
+    setUser(user);
+    // The useEffect will handle the transition
+  };
+  const handleVerificationSuccess = (user: User) => {
+    setUser(user);
+    toast.success("Email verified successfully!");
+  };
+  const handleUsernameSuccess = (user: User) => {
+    setUser(user);
+    setStep('intro');
   };
   const handleSkipDefaults = async () => {
     if (!user) return;
@@ -173,11 +191,13 @@ export function OnboardingPage() {
           </div>
         )}
         <AnimatePresence mode="wait">
-          {step === 'login' && <LoginForm key="login" onSubmit={handleLogin} />}
+          {step === 'login' && <LoginForm key="login" onSuccess={handleLoginSuccess} />}
+          {step === 'verification' && <VerificationStep key="verification" onSuccess={handleVerificationSuccess} />}
+          {step === 'username' && <UsernameStep key="username" onSuccess={handleUsernameSuccess} />}
           {step === 'intro' && <IntroStep key="intro" onNext={() => setStep('country')} onSkip={handleSkipDefaults} />}
           {step === 'country' && <CountryStep key="country" onSubmit={handleCountrySubmit} onBack={goBack} />}
           {step === 'nicotine' && <NicotineStep key="nicotine" onSubmit={handleNicotineSubmit} onBack={goBack} />}
-          {step === 'usage' && <UsageStep key="usage" onSubmit={handleUsageSubmit} onBack={goBack} currency={wizardData.currency || '$'} />}
+          {step === 'usage' && <UsageStep key="usage" onSubmit={handleUsageSubmit} onBack={goBack} currency={wizardData.currency || 'USD'} />}
           {step === 'liquid' && <LiquidStep key="liquid" onSubmit={handleLiquidSubmit} onBack={goBack} />}
           {step === 'goals' && <GoalsStep key="goals" onSubmit={handleGoalsSubmit} onBack={goBack} />}
           {step === 'daily-puffs' && <DailyPuffsStep key="daily-puffs" onSubmit={handleDailyPuffsSubmit} onBack={goBack} />}
@@ -186,13 +206,40 @@ export function OnboardingPage() {
     </div>
   );
 }
-function LoginForm({ onSubmit }: { onSubmit: (data: EmailForm) => void }) {
+function LoginForm({ onSuccess }: { onSuccess: (user: User) => void }) {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<EmailForm>({
     resolver: zodResolver(emailSchema) as any
   });
   const { isInstallable, promptInstall, showInstructions, setShowInstructions, isIOS } = useInstallPrompt();
   const loginAsGuest = useAppStore(s => s.loginAsGuest);
   const navigate = useNavigate();
+  const handleEmailLogin = async (data: EmailForm) => {
+    try {
+      const user = await api<User>('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ ...data, provider: 'email' }),
+      });
+      onSuccess(user);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Login failed");
+    }
+  };
+  const handleGoogleLogin = async () => {
+    // Simulate Google Login
+    // In a real app, this would redirect to Google OAuth
+    // Here we simulate a successful Google auth which returns a verified user
+    const mockGoogleEmail = `user-${Math.floor(Math.random() * 1000)}@gmail.com`;
+    try {
+      const user = await api<User>('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email: mockGoogleEmail, provider: 'google' }),
+      });
+      toast.success("Signed in with Google");
+      onSuccess(user);
+    } catch (err) {
+      toast.error("Google sign-in failed");
+    }
+  };
   const handleGuestLogin = () => {
     loginAsGuest();
     navigate('/dashboard');
@@ -201,47 +248,53 @@ function LoginForm({ onSubmit }: { onSubmit: (data: EmailForm) => void }) {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
       <Card className="border border-border/50 shadow-xl bg-card transition-colors duration-300">
-        <CardContent className="pt-6">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <CardContent className="pt-6 space-y-6">
+          <GoogleButton onClick={handleGoogleLogin} />
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border/50" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
+            </div>
+          </div>
+          <form onSubmit={handleSubmit(handleEmailLogin)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-foreground">Email Address</Label>
-              <Input id="email" type="email" placeholder="you@example.com" {...register('email')} className="h-12 bg-background border-input text-foreground focus-visible:ring-sky-500" />
+              <div className="relative">
+                <Mail className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
+                <Input id="email" type="email" placeholder="you@example.com" {...register('email')} className="pl-10 h-12 bg-background border-input text-foreground focus-visible:ring-sky-500" />
+              </div>
               {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
             </div>
             <Button type="submit" className="w-full h-12 text-lg bg-gradient-to-r from-sky-500 to-violet-600 hover:opacity-90 transition-opacity text-white" disabled={isSubmitting}>
-              {isSubmitting ? "Signing in..." : "Get Started"}
+              {isSubmitting ? "Signing in..." : "Continue with Email"}
             </Button>
-            <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border/50" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Or</span>
-              </div>
-            </div>
-            <Button 
-              type="button" 
-              variant="outline" 
+          </form>
+          <div className="pt-2">
+            <Button
+              type="button"
+              variant="ghost"
               onClick={handleGuestLogin}
-              className="w-full h-12 text-base gap-2 border-sky-200 hover:bg-sky-50 dark:border-sky-900/30 dark:hover:bg-sky-900/20 text-sky-600 dark:text-sky-400"
+              className="w-full h-10 text-sm gap-2 text-muted-foreground hover:text-foreground"
             >
               <Eye className="w-4 h-4" />
-              Continue as Guest
+              Preview as Guest
             </Button>
-            {isInstallable && (
-              <div className="pt-2 border-t border-border/50 mt-4">
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  onClick={promptInstall}
-                  className="w-full gap-2 text-muted-foreground hover:text-foreground"
-                >
-                  <Download className="w-4 h-4" />
-                  Install App
-                </Button>
-              </div>
-            )}
-          </form>
+          </div>
+          {isInstallable && (
+            <div className="pt-2 border-t border-border/50">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={promptInstall}
+                className="w-full gap-2 text-muted-foreground hover:text-foreground"
+              >
+                <Download className="w-4 h-4" />
+                Install App
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
       <Dialog open={showInstructions} onOpenChange={setShowInstructions}>
@@ -288,6 +341,110 @@ function LoginForm({ onSubmit }: { onSubmit: (data: EmailForm) => void }) {
           </Tabs>
         </DialogContent>
       </Dialog>
+    </motion.div>
+  );
+}
+function VerificationStep({ onSuccess }: { onSuccess: (user: User) => void }) {
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<VerificationForm>({
+    resolver: zodResolver(verificationSchema) as any
+  });
+  const user = useAppStore(s => s.user);
+  const onSubmit = async (data: VerificationForm) => {
+    if (!user) return;
+    try {
+      const verifiedUser = await api<User>('/api/auth/verify', {
+        method: 'POST',
+        body: JSON.stringify({ email: user.email, code: data.code }),
+      });
+      onSuccess(verifiedUser);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Verification failed");
+    }
+  };
+  return (
+    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+      <Card className="border border-border/50 shadow-xl bg-card">
+        <CardContent className="pt-6 space-y-6">
+          <div className="text-center">
+            <div className="w-12 h-12 bg-sky-100 dark:bg-sky-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Mail className="w-6 h-6 text-sky-600 dark:text-sky-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground">Check your email</h2>
+            <p className="text-muted-foreground mt-2">
+              We sent a verification code to <span className="font-medium text-foreground">{user?.email}</span>
+            </p>
+            <p className="text-xs text-muted-foreground mt-4 bg-secondary/50 p-2 rounded">
+              (Demo: Use code <strong>123456</strong>)
+            </p>
+          </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-2 flex flex-col items-center">
+              <Label htmlFor="code" className="sr-only">Verification Code</Label>
+              <Input 
+                id="code" 
+                placeholder="123456" 
+                {...register('code')} 
+                className="text-center text-2xl tracking-widest h-14 w-48 font-mono" 
+                maxLength={6}
+              />
+              {errors.code && <p className="text-sm text-red-500">{errors.code.message}</p>}
+            </div>
+            <Button type="submit" className="w-full h-12 text-lg bg-sky-500 hover:bg-sky-600 text-white" disabled={isSubmitting}>
+              {isSubmitting ? "Verifying..." : "Verify Email"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
+function UsernameStep({ onSuccess }: { onSuccess: (user: User) => void }) {
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<UsernameForm>({
+    resolver: zodResolver(usernameSchema) as any
+  });
+  const user = useAppStore(s => s.user);
+  const onSubmit = async (data: UsernameForm) => {
+    if (!user) return;
+    try {
+      const updatedUser = await api<User>(`/api/user/${user.id}/username`, {
+        method: 'POST',
+        body: JSON.stringify({ username: data.username }),
+      });
+      onSuccess(updatedUser);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to set username");
+    }
+  };
+  return (
+    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+      <Card className="border border-border/50 shadow-xl bg-card">
+        <CardContent className="pt-6 space-y-6">
+          <div className="text-center">
+            <div className="w-12 h-12 bg-violet-100 dark:bg-violet-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <UserIcon className="w-6 h-6 text-violet-600 dark:text-violet-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground">What should we call you?</h2>
+            <p className="text-muted-foreground mt-2">
+              Choose a username for your journey.
+            </p>
+          </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="username" className="text-foreground">Username</Label>
+              <Input 
+                id="username" 
+                placeholder="e.g. SkyWalker" 
+                {...register('username')} 
+                className="h-12 bg-background border-input text-foreground focus-visible:ring-violet-500" 
+              />
+              {errors.username && <p className="text-sm text-red-500">{errors.username.message}</p>}
+            </div>
+            <Button type="submit" className="w-full h-12 text-lg bg-violet-500 hover:bg-violet-600 text-white" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : "Continue"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }

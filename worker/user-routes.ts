@@ -7,23 +7,42 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.get('/api/health', (c) => c.json({ success: true, status: 'ok' }));
   // AUTH / USER MANAGEMENT
   app.post('/api/auth/login', async (c) => {
-    const { email } = (await c.req.json()) as { email?: string };
+    const { email, provider } = (await c.req.json()) as { email?: string, provider?: 'email' | 'google' };
     if (!email?.trim()) return bad(c, 'Email required');
     const cleanEmail = email.trim().toLowerCase();
     const userEntity = new UserEntity(c.env, cleanEmail);
     let user = await userEntity.getState();
+    const isGoogle = provider === 'google';
     // Initialize if new
     if (!user.id) {
       user = {
         id: cleanEmail,
         email: cleanEmail,
-        createdAt: Date.now()
+        createdAt: Date.now(),
+        authProvider: isGoogle ? 'google' : 'email',
+        isVerified: isGoogle, // Google users are auto-verified
+        username: ''
       };
       await userEntity.save(user);
       // Add to index
       const idx = new Index<string>(c.env, UserEntity.indexName);
       await idx.add(cleanEmail);
+    } else {
+      // Existing user: if logging in with Google, auto-verify if not already
+      if (isGoogle && !user.isVerified) {
+        user = await userEntity.verifyUser();
+      }
     }
+    return ok(c, user);
+  });
+  app.post('/api/auth/verify', async (c) => {
+    const { email, code } = await c.req.json() as { email: string, code: string };
+    if (!email || !code) return bad(c, 'Missing fields');
+    // Mock verification logic - in production this would check a stored code
+    if (code !== '123456') return bad(c, 'Invalid verification code');
+    const userEntity = new UserEntity(c.env, email);
+    if (!await userEntity.exists()) return notFound(c, 'User not found');
+    const user = await userEntity.verifyUser();
     return ok(c, user);
   });
   app.get('/api/user/:id', async (c) => {
@@ -31,6 +50,15 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const userEntity = new UserEntity(c.env, id);
     if (!await userEntity.exists()) return notFound(c, 'User not found');
     return ok(c, await userEntity.getState());
+  });
+  app.post('/api/user/:id/username', async (c) => {
+    const id = c.req.param('id');
+    const { username } = await c.req.json() as { username: string };
+    if (!username?.trim()) return bad(c, 'Username required');
+    const userEntity = new UserEntity(c.env, id);
+    if (!await userEntity.exists()) return notFound(c, 'User not found');
+    const user = await userEntity.updateUsername(username.trim());
+    return ok(c, user);
   });
   app.post('/api/user/:id/profile', async (c) => {
     const id = c.req.param('id');

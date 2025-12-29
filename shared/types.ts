@@ -33,6 +33,9 @@ export interface User {
   id: string; // email
   email: string;
   name?: string;
+  username?: string; // New field
+  isVerified?: boolean; // New field
+  authProvider?: 'email' | 'google'; // New field
   profile?: QuitProfile;
   journal?: JournalEntry[];
   createdAt: number;

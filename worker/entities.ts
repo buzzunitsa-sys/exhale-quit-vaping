@@ -7,7 +7,9 @@ export class UserEntity extends IndexedEntity<User> {
   static readonly initialState: User = {
     id: "",
     email: "",
-    createdAt: 0
+    createdAt: 0,
+    isVerified: false,
+    authProvider: 'email'
   };
   async addJournalEntry(entry: JournalEntry): Promise<User> {
     return this.mutate(s => ({
@@ -94,5 +96,17 @@ export class UserEntity extends IndexedEntity<User> {
         ...safeData
       };
     });
+  }
+  async verifyUser(): Promise<User> {
+    return this.mutate(s => ({
+      ...s,
+      isVerified: true
+    }));
+  }
+  async updateUsername(username: string): Promise<User> {
+    return this.mutate(s => ({
+      ...s,
+      username
+    }));
   }
 }
