@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, Share, PlusSquare, Menu, MoreVertical } from 'lucide-react';
+import { Download, Share, PlusSquare, MoreVertical } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useInstallPrompt } from '@/hooks/use-install-prompt';
@@ -21,24 +21,24 @@ export function InstallPWA() {
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2 text-foreground">
             <Download className="w-5 h-5 text-sky-500" />
-            Install App
+            Get the Android App
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Install Exhale on your home screen for quick access, full screen experience, and offline support.
+            Install Exhale for the full native app experience. Works offline and looks great on your home screen.
           </p>
-          <Button onClick={promptInstall} className="w-full bg-sky-500 hover:bg-sky-600 text-white">
-            Add to Home Screen
+          <Button onClick={promptInstall} className="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold">
+            Install App
           </Button>
         </CardContent>
       </Card>
       <Dialog open={showInstructions} onOpenChange={setShowInstructions}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>How to Install Exhale</DialogTitle>
+            <DialogTitle>Install Exhale App</DialogTitle>
             <DialogDescription>
-              Follow these steps to add the app to your home screen.
+              Follow these steps to install the app on your device.
             </DialogDescription>
           </DialogHeader>
           <Tabs defaultValue={isIOS ? "ios" : "android"} className="w-full">
