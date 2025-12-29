@@ -20,7 +20,6 @@ export function ShareButton({
   customText
 }: ShareButtonProps) {
   const [copied, setCopied] = React.useState(false);
-  // Construct share text
   let shareText = '';
   if (customText) {
     shareText = customText;
@@ -33,7 +32,6 @@ export function ShareButton({
   const shareUrl = window.location.origin;
   const fullShareText = `${shareText} ${shareUrl}`;
   const handleShare = async () => {
-    // Try native share first
     if (navigator.share) {
       try {
         await navigator.share({
@@ -44,15 +42,13 @@ export function ShareButton({
         toast.success("Shared successfully!");
         return;
       } catch (error) {
-        // User cancelled or share failed, fallback to copy
         if ((error as Error).name !== 'AbortError') {
           console.warn('Share failed, falling back to clipboard', error);
         } else {
-          return; // User cancelled
+          return;
         }
       }
     }
-    // Fallback to clipboard
     try {
       await navigator.clipboard.writeText(fullShareText);
       setCopied(true);
@@ -68,10 +64,7 @@ export function ShareButton({
       onClick={handleShare}
       variant="ghost"
       size="icon"
-      className={cn(
-        "bg-white/20 hover:bg-white/30 text-white rounded-xl backdrop-blur-sm transition-all duration-200",
-        className
-      )}
+      className={cn("bg-white/20 hover:bg-white/30 text-white rounded-xl backdrop-blur-sm transition-all duration-200", className)}
       title="Share"
     >
       {copied ? <Check className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}

@@ -1,13 +1,5 @@
 import React, { useMemo } from 'react';
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid
-} from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { addDays, format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp } from 'lucide-react';
@@ -20,7 +12,6 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
   const data = useMemo(() => {
     const points = [];
     const today = new Date();
-    // Generate 30 days of projection
     for (let i = 0; i <= 30; i++) {
       const date = addDays(today, i);
       points.push({
@@ -37,24 +28,19 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg flex items-center gap-2 text-foreground">
-            <TrendingUp className="w-5 h-5 text-emerald-500" />
-            Savings Projection
+            <TrendingUp className="w-5 h-5 text-emerald-500" /> Savings Projection
           </CardTitle>
-          <span className="text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-full">
-            +30 Days
-          </span>
+          <span className="text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-full">+30 Days</span>
         </div>
       </CardHeader>
       <CardContent>
         <div className="mb-4">
           <p className="text-sm text-muted-foreground">Projected Total</p>
           <p className="text-2xl font-bold text-foreground">
-            {currency === 'USD' ? '$' : currency + ' '}
-            {projectedTotal.toFixed(2)}
+            {currency === 'USD' ? '$' : currency + ' '}{projectedTotal.toFixed(2)}
           </p>
         </div>
         <div className="h-[200px] w-full min-w-0 overflow-hidden">
-          {/* Explicit wrapper div for ResponsiveContainer to prevent width(-1) errors */}
           <div style={{ width: '100%', height: 200, position: 'relative' }}>
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <AreaChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
@@ -65,17 +51,8 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
-                <XAxis 
-                  dataKey="date" 
-                  tick={{ fontSize: 10, fill: '#94a3b8' }}
-                  axisLine={false}
-                  tickLine={false}
-                  interval={6}
-                />
-                <YAxis 
-                  hide 
-                  domain={['auto', 'auto']}
-                />
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} interval={6} />
+                <YAxis hide domain={['auto', 'auto']} />
                 <Tooltip
                   cursor={{ stroke: '#10b981', strokeWidth: 1, strokeDasharray: '3 3' }}
                   content={({ active, payload }) => {
@@ -84,24 +61,14 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
                       return (
                         <div className="bg-popover text-popover-foreground text-xs p-2 rounded-lg shadow-xl border border-border">
                           <p className="font-bold mb-1">{d.fullDate}</p>
-                          <p>Savings: <span className="font-bold text-emerald-400">
-                            {currency === 'USD' ? '$' : currency + ' '}
-                            {d.savings.toFixed(2)}
-                          </span></p>
+                          <p>Savings: <span className="font-bold text-emerald-400">{currency === 'USD' ? '$' : currency + ' '}{d.savings.toFixed(2)}</span></p>
                         </div>
                       );
                     }
                     return null;
                   }}
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="savings" 
-                  stroke="#10b981" 
-                  strokeWidth={2} 
-                  fillOpacity={1} 
-                  fill="url(#colorSavings)" 
-                />
+                <Area type="monotone" dataKey="savings" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorSavings)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
