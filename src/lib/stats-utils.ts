@@ -11,7 +11,8 @@ import {
   eachWeekOfInterval,
   eachMonthOfInterval,
   startOfDay,
-  isAfter
+  isAfter,
+  isBefore
 } from 'date-fns';
 import type { JournalEntry } from '@shared/types';
 export type TimeRange = 'DAILY' | 'WEEKLY' | 'MONTHLY';
@@ -172,13 +173,16 @@ export function getSummaryStats(entries: JournalEntry[]): SummaryStats {
   };
 }
 export function getWeeklyConsistency(entries: JournalEntry[], dailyLimit: number = 0, userCreatedAt?: number): DailyConsistency[] {
-  const end = new Date();
+  const end = startOfDay(new Date()); // Normalize end to today 00:00
   const start = subDays(end, 6); // Last 7 days including today
   const days = eachDayOfInterval({ start, end });
+  // Normalize user start date to start of day for accurate comparison
   const userStartDate = userCreatedAt ? startOfDay(userCreatedAt) : null;
   return days.map(day => {
-    // If the day is before the user started, mark as unknown
-    if (userStartDate && day < userStartDate) {
+    const normalizedDay = startOfDay(day);
+    // If the day is strictly before the user started, mark as unknown
+    // Using isBefore ensures we handle the boundary correctly (same day is NOT before)
+    if (userStartDate && isBefore(normalizedDay, userStartDate)) {
       return {
         date: day,
         status: 'unknown',
