@@ -36,7 +36,8 @@ export function DailyPledge() {
         colors: ['#0ea5e9', '#8b5cf6', '#10b981']
       });
       setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3000);
+      // Auto-dismiss after 2 seconds (shortened from 3s per user feedback)
+      setTimeout(() => setShowSuccess(false), 2000);
     };
     if (isGuest) {
       // Fake pledge logic for guest
@@ -86,8 +87,8 @@ export function DailyPledge() {
                 <p className="text-violet-100 mb-6 text-sm max-w-xs">
                   Pledge to stay smoke-free today and keep your streak alive.
                 </p>
-                <Button
-                  onClick={handlePledge}
+                <Button 
+                  onClick={handlePledge} 
                   disabled={isLoading}
                   className="w-full bg-white text-violet-600 hover:bg-white/90 font-bold shadow-lg transition-all active:scale-95"
                 >
