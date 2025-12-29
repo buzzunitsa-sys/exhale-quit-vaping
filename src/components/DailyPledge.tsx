@@ -4,13 +4,14 @@ import { useAppStore } from '@/lib/store';
 import { api } from '@/lib/api-client';
 import { format } from 'date-fns';
 import confetti from 'canvas-confetti';
-import { CheckCircle2, Flame } from 'lucide-react';
+import { CheckCircle2, Flame, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import type { User } from '@shared/types';
 import { useHaptic } from '@/hooks/use-haptic';
+import { useOnlineStatus } from '@/hooks/use-online-status';
 export function DailyPledge() {
   const user = useAppStore(s => s.user);
   const setUser = useAppStore(s => s.setUser);
@@ -18,12 +19,17 @@ export function DailyPledge() {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const { vibrate } = useHaptic();
+  const isOnline = useOnlineStatus();
   const today = new Date();
   const todayStr = format(today, 'yyyy-MM-dd');
   const isPledged = user?.lastPledgeDate === todayStr;
   const streak = user?.pledgeStreak || 0;
   const handlePledge = async () => {
     if (!user) return;
+    if (!isOnline && !isGuest) {
+      toast.error("You are offline. Please connect to the internet to pledge.");
+      return;
+    }
     setIsLoading(true);
     vibrate('medium');
     const onSuccess = (updatedUser: User) => {
@@ -36,7 +42,7 @@ export function DailyPledge() {
         colors: ['#0ea5e9', '#8b5cf6', '#10b981']
       });
       setShowSuccess(true);
-      // Auto-dismiss after 2 seconds (shortened from 3s per user feedback)
+      // Auto-dismiss after 2 seconds
       setTimeout(() => setShowSuccess(false), 2000);
     };
     if (isGuest) {
@@ -91,10 +97,12 @@ export function DailyPledge() {
                 </p>
                 <Button
                   onClick={handlePledge}
-                  disabled={isLoading}
-                  className="w-full bg-white text-violet-600 hover:bg-white/90 font-bold shadow-lg transition-all active:scale-95"
+                  disabled={isLoading || (!isOnline && !isGuest)}
+                  className="w-full bg-white text-violet-600 hover:bg-white/90 font-bold shadow-lg transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? "Committing..." : "I Pledge For Today"}
+                  {isLoading ? "Committing..." : !isOnline && !isGuest ? (
+                    <span className="flex items-center gap-2"><WifiOff className="w-4 h-4" /> Offline</span>
+                  ) : "I Pledge For Today"}
                 </Button>
               </CardContent>
             </Card>

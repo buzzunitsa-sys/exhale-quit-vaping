@@ -7,6 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import type { JournalEntry } from '@shared/types';
+import { useOnlineStatus } from '@/hooks/use-online-status';
+import { WifiOff } from 'lucide-react';
+import { useAppStore } from '@/lib/store';
 const DEFAULT_TRIGGERS = [
   "Stress", "Boredom", "Social Pressure", "Habit/Routine", "Alcohol", "Coffee", "After Meal"
 ];
@@ -22,6 +25,8 @@ export function JournalForm({ onSubmit, onCancel, initialData }: JournalFormProp
   const [note, setNote] = useState("");
   const [puffs, setPuffs] = useState([0]);
   const [availableTriggers, setAvailableTriggers] = useState(DEFAULT_TRIGGERS);
+  const isOnline = useOnlineStatus();
+  const isGuest = useAppStore(s => s.isGuest);
   // Load custom triggers from local storage on mount
   useEffect(() => {
     try {
@@ -60,6 +65,10 @@ export function JournalForm({ onSubmit, onCancel, initialData }: JournalFormProp
   }, [initialData, availableTriggers]);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isOnline && !isGuest) {
+      toast.error("You are offline. Cannot submit entry.");
+      return;
+    }
     let finalTrigger = trigger;
     if (trigger === "Other") {
       if (!customTrigger.trim()) {
@@ -171,11 +180,16 @@ export function JournalForm({ onSubmit, onCancel, initialData }: JournalFormProp
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
         )}
-        <Button 
-          type="submit" 
-          className="bg-violet-500 hover:bg-violet-600 text-white w-full"
+        <Button
+          type="submit"
+          disabled={!isOnline && !isGuest}
+          className="bg-violet-500 hover:bg-violet-600 text-white w-full disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          {initialData ? "Update Entry" : "Log Entry"}
+          {!isOnline && !isGuest ? (
+            <span className="flex items-center gap-2"><WifiOff className="w-4 h-4" /> Offline</span>
+          ) : (
+            initialData ? "Update Entry" : "Log Entry"
+          )}
         </Button>
       </div>
     </form>
