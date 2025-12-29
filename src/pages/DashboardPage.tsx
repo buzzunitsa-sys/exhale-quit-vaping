@@ -178,11 +178,11 @@ export function DashboardPage() {
       <div className="bg-gradient-to-br from-sky-500 via-blue-600 to-violet-600 rounded-b-[40px] pt-8 pb-20 px-6 text-white shadow-lg shadow-violet-200/50 dark:shadow-none relative z-0">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-start mb-6">
-            <div>
-              <h1 className="text-4xl font-bold mb-1 tracking-tight">
+            <div className="flex-1 min-w-0 pr-4">
+              <h1 className="text-4xl font-bold mb-1 tracking-tight truncate max-w-[70vw] md:max-w-md">
                 {user.username ? `Hello, ${user.username}` : getGreeting()}
               </h1>
-              <p className="text-sky-100 font-medium uppercase tracking-wide text-sm opacity-90">
+              <p className="text-sky-100 font-medium uppercase tracking-wide text-sm opacity-90 truncate">
                 {format(now, 'EEEE, MMMM d')}
               </p>
               {/* Badges Row */}
@@ -205,7 +205,7 @@ export function DashboardPage() {
                 )}
               </div>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-shrink-0">
               {!isStandalone && (
                 <Button
                   variant="ghost"
@@ -241,7 +241,7 @@ export function DashboardPage() {
         </div>
       </div>
       {/* Main Content - Overlapping Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 space-y-4 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 space-y-4 relative z-20">
         {/* Daily Tracker (Puff Count) - Moved to top for quick access */}
         <DailyTracker
           puffsToday={puffsToday}

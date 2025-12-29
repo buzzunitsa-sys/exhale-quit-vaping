@@ -62,8 +62,13 @@ export function DailyTracker({
               )}
             </div>
           </CircularProgress>
-          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2">
-            <Button onClick={onQuickLog} size="lg" className="rounded-full w-14 h-14 bg-gradient-to-r from-sky-500 to-violet-600 hover:opacity-90 shadow-lg shadow-sky-500/30 p-0 flex items-center justify-center">
+          {/* Quick Log Button - Elevated z-index to ensure clickability */}
+          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 relative z-30">
+            <Button 
+              onClick={onQuickLog} 
+              size="lg" 
+              className="rounded-full w-14 h-14 bg-gradient-to-r from-sky-500 to-violet-600 hover:opacity-90 shadow-lg shadow-sky-500/30 p-0 flex items-center justify-center transition-transform active:scale-95"
+            >
               <Plus className="w-8 h-8 text-white" />
             </Button>
           </div>
