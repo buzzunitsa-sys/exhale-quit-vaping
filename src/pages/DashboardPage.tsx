@@ -3,7 +3,6 @@ import { useAppStore } from '@/lib/store';
 import { format, isSameDay, differenceInSeconds } from 'date-fns';
 import { Crown, Settings2, Download, Flame } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { DateStrip } from '@/components/ui/date-strip';
 import { DailyTracker } from '@/components/ui/daily-tracker';
 import { HourlyChart } from '@/components/ui/hourly-chart';
 import { SavingsChart } from '@/components/SavingsChart';
@@ -239,28 +238,22 @@ export function DashboardPage() {
               </Link>
             </div>
           </div>
-          {/* Date Strip */}
-          <div className="mb-4">
-            <DateStrip />
-          </div>
         </div>
       </div>
       {/* Main Content - Overlapping Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 space-y-4 relative z-10">
+        {/* Daily Tracker (Puff Count) - Moved to top for quick access */}
+        <DailyTracker
+          puffsToday={puffsToday}
+          costWasted={costWastedToday}
+          nicotineUsed={nicotineUsedToday}
+          projectedSavings={projectedDailySavings}
+          currency={user.profile.currency}
+          dailyLimit={user.profile.dailyLimit}
+          onQuickLog={handleQuickLog}
+        />
         {/* Daily Pledge Button */}
         <DailyPledge />
-        {/* Daily Tracker (Puff Count) */}
-        <div className="mb-8">
-          <DailyTracker
-            puffsToday={puffsToday}
-            costWasted={costWastedToday}
-            nicotineUsed={nicotineUsedToday}
-            projectedSavings={projectedDailySavings}
-            currency={user.profile.currency}
-            dailyLimit={user.profile.dailyLimit}
-            onQuickLog={handleQuickLog}
-          />
-        </div>
         {/* Next Milestone Widget */}
         <NextMilestoneCard secondsElapsed={secondsElapsed} />
         {/* Quote Carousel */}
@@ -277,9 +270,7 @@ export function DashboardPage() {
         {/* Weekly Progress */}
         <WeeklyProgress data={weeklyConsistency} />
         {/* Hourly Chart */}
-        <div className="w-full h-[250px] rounded-3xl min-w-0 overflow-hidden">
-          <HourlyChart entries={user.journal} />
-        </div>
+        <HourlyChart entries={user.journal} />
         {/* Savings Goal Card (if configured) */}
         {user.profile.savingsGoal && user.profile.savingsGoal.cost > 0 && (
           <SavingsGoalCard
@@ -289,13 +280,11 @@ export function DashboardPage() {
           />
         )}
         {/* Savings Chart */}
-        <div className="w-full h-[250px] rounded-3xl min-w-0 overflow-hidden">
-          <SavingsChart
-            currentSavings={totalMoneySaved}
-            dailySavings={dailyBaselineCost}
-            currency={user.profile.currency}
-          />
-        </div>
+        <SavingsChart
+          currentSavings={totalMoneySaved}
+          dailySavings={dailyBaselineCost}
+          currency={user.profile.currency}
+        />
       </div>
       {/* Install Instructions Dialog */}
       <Dialog open={showInstructions} onOpenChange={setShowInstructions}>
