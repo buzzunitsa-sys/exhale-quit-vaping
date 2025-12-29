@@ -55,7 +55,7 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
         </div>
         <div className="h-[200px] w-full min-w-0 overflow-hidden">
           {/* Explicit wrapper div for ResponsiveContainer to prevent width(-1) errors */}
-          <div style={{ width: '100%', height: 200 }}>
+          <div style={{ width: '100%', height: 200, position: 'relative' }}>
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <AreaChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
                 <defs>
@@ -67,7 +67,7 @@ export function SavingsChart({ currentSavings, dailySavings, currency }: Savings
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
                 <XAxis 
                   dataKey="date" 
-                  tick={{ fontSize: 10, fill: '#94a3b8' }} 
+                  tick={{ fontSize: 10, fill: '#94a3b8' }}
                   axisLine={false}
                   tickLine={false}
                   interval={6}

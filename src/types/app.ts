@@ -36,6 +36,7 @@ export interface Achievement {
     dailyLimit?: number;
     puffsToday?: number;
     journal?: JournalEntry[];
+    userCreatedAt?: number;
   }) => boolean;
   icon: React.ReactNode;
   type: AchievementType;

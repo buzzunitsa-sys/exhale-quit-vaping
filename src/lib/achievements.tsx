@@ -1,6 +1,7 @@
 import React from 'react';
 import { Star, Zap, Shield, Target, Award, Crown, Scale, Clock, Heart, CheckCircle2, Wind, Medal, Flag } from 'lucide-react';
 import type { Achievement, JournalEntry } from '@/types/app';
+import { startOfDay, subDays, isBefore, eachDayOfInterval, isSameDay } from 'date-fns';
 export const ACHIEVEMENTS: Achievement[] = [
   // Initial Milestone
   {
@@ -148,7 +149,33 @@ export const ACHIEVEMENTS: Achievement[] = [
     description: 'Stay under your daily limit for a full day.',
     type: 'health',
     icon: <Scale className="w-6 h-6" />,
-    condition: ({ dailyLimit, puffsToday }) => (dailyLimit ?? 0) > 0 && (puffsToday ?? 0) <= (dailyLimit ?? 0),
+    condition: ({ dailyLimit, journal, userCreatedAt }) => {
+      // 1. Basic checks
+      if (!dailyLimit || dailyLimit <= 0) return false;
+      if (!userCreatedAt) return false;
+      // 2. Ensure account is at least 24 hours old to prevent instant unlock
+      if (Date.now() - userCreatedAt < 24 * 60 * 60 * 1000) return false;
+      const now = new Date();
+      // Start checking from the day the user joined
+      const startDate = startOfDay(userCreatedAt);
+      // Check up to yesterday (completed day)
+      const yesterday = subDays(startOfDay(now), 1);
+      // If yesterday is before start date (e.g. signed up today), no full days passed
+      if (isBefore(yesterday, startDate)) return false;
+      // 3. Iterate through completed days
+      try {
+        const daysToCheck = eachDayOfInterval({ start: startDate, end: yesterday });
+        // Return true if ANY completed day met the criteria
+        return daysToCheck.some(day => {
+          const dayPuffs = journal?.filter(e => isSameDay(e.timestamp, day))
+            .reduce((sum, e) => sum + (e.puffs || 0), 0) ?? 0;
+          return dayPuffs <= dailyLimit;
+        });
+      } catch (e) {
+        // Handle potential date errors gracefully
+        return false;
+      }
+    },
   },
   {
     id: 'pods1',
@@ -192,6 +219,7 @@ export function getUnlockedAchievements(stats: {
   dailyLimit?: number;
   puffsToday?: number;
   journal?: JournalEntry[];
+  userCreatedAt?: number;
 }): string[] {
   return ACHIEVEMENTS.filter(a => a.condition(stats)).map(a => a.id);
 }

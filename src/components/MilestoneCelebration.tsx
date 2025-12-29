@@ -36,7 +36,15 @@ export function MilestoneCelebration() {
     const todayEntries = journal.filter(entry => isSameDay(entry.timestamp, now));
     const puffsToday = todayEntries.reduce((sum, entry) => sum + (entry.puffs || 0), 0);
     const dailyLimit = user.profile.dailyLimit || 0;
-    return { secondsElapsed, moneySaved, podsAvoided, dailyLimit, puffsToday, journal };
+    return { 
+      secondsElapsed, 
+      moneySaved, 
+      podsAvoided, 
+      dailyLimit, 
+      puffsToday, 
+      journal,
+      userCreatedAt: user.createdAt 
+    };
   }, [user]);
   // Check for new milestones
   useEffect(() => {
@@ -50,11 +58,10 @@ export function MilestoneCelebration() {
       podsAvoided: stats.podsAvoided,
       dailyLimit: stats.dailyLimit,
       puffsToday: stats.puffsToday,
-      journal: stats.journal
+      journal: stats.journal,
+      userCreatedAt: stats.userCreatedAt
     }));
     // Detect First Run: No achievements seen yet.
-    // This handles the case where a user logs in with historical data (many achievements unlocked)
-    // but hasn't seen any on this device yet. We want to suppress the spam.
     const isFirstRun = seenAchievements.length === 0;
     if (isFirstRun) {
         // Mark ALL unlocked achievements as seen immediately
@@ -152,8 +159,8 @@ export function MilestoneCelebration() {
           angle: 60,
           spread: 55,
           origin: { x: 0 },
-          colors: next.type === 'rank' ? ['#fbbf24', '#f59e0b'] :
-                 next.type === 'health' ? ['#ef4444', '#f87171'] :
+          colors: next.type === 'rank' ? ['#fbbf24', '#f59e0b'] : 
+                 next.type === 'health' ? ['#ef4444', '#f87171'] : 
                  ['#8b5cf6', '#a78bfa']
         });
         confetti({
@@ -161,8 +168,8 @@ export function MilestoneCelebration() {
           angle: 120,
           spread: 55,
           origin: { x: 1 },
-          colors: next.type === 'rank' ? ['#fbbf24', '#f59e0b'] :
-                 next.type === 'health' ? ['#ef4444', '#f87171'] :
+          colors: next.type === 'rank' ? ['#fbbf24', '#f59e0b'] : 
+                 next.type === 'health' ? ['#ef4444', '#f87171'] : 
                  ['#8b5cf6', '#a78bfa']
         });
         if (Date.now() < end) {
@@ -199,7 +206,7 @@ export function MilestoneCelebration() {
     shareText = `I just reached the ${current.title.replace('New Rank: ', '')} rank on Exhale! 🏆 #QuitVaping #ExhaleApp`;
   } else if (current.type === 'health') {
     shareTitle = "Health Milestone";
-    shareText = `My body is healing! ${current.description} ❤��� #QuitVaping #ExhaleApp`;
+    shareText = `My body is healing! ${current.description} ❤️ #QuitVaping #ExhaleApp`;
   } else if (current.type === 'achievement') {
     shareTitle = "Achievement Unlocked";
     shareText = `I just unlocked the "${current.description}" achievement on Exhale! 🌟 #QuitVaping #ExhaleApp`;
@@ -210,7 +217,7 @@ export function MilestoneCelebration() {
         <DialogContent className="sm:max-w-md border-none bg-transparent shadow-none p-0 flex items-center justify-center" aria-describedby="celebration-desc">
           <DialogTitle className="sr-only">{current.title}</DialogTitle>
           <DialogDescription className="sr-only">{current.description}</DialogDescription>
-          <motion.div
+          <motion.div 
             initial={{ opacity: 0, scale: 0.5, y: 50 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.5, y: 50 }}
@@ -229,13 +236,13 @@ export function MilestoneCelebration() {
                 {current.description}
               </p>
               <div className="flex gap-3 w-full">
-                <Button
+                <Button 
                   onClick={handleDismiss}
                   className={`flex-1 h-12 text-lg font-bold text-white shadow-lg transition-transform active:scale-95 ${current.color?.replace('bg-', 'bg-gradient-to-r from-').replace('500', '500 to-white/20') || 'bg-primary'}`}
                 >
                   Awesome!
                 </Button>
-                <ShareButton
+                <ShareButton 
                   customTitle={shareTitle}
                   customText={shareText}
                   className="h-12 w-12 rounded-xl bg-secondary hover:bg-secondary/80 text-foreground"

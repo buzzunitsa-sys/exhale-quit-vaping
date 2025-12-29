@@ -42,14 +42,15 @@ export function AchievementsPage() {
     podsAvoided,
     dailyLimit,
     puffsToday,
-    journal
+    journal,
+    userCreatedAt: user?.createdAt
   };
   const unlockedCount = ACHIEVEMENTS.filter(a => a.condition(stats)).length;
   if (!user?.profile) return null;
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background pb-24 transition-colors duration-300">
-      <PageHeader
-        title="Achievements"
+      <PageHeader 
+        title="Achievements" 
         subtitle="Your trophy case of freedom."
         rightElement={
           <div className="flex items-center gap-2">
@@ -61,7 +62,7 @@ export function AchievementsPage() {
                   UNLOCKED
               </span>
             </div>
-            <ShareButton
+            <ShareButton 
               customTitle="My Exhale Achievements"
               customText={`I've unlocked ${unlockedCount} achievements on Exhale! 🏆 #QuitVaping #ExhaleApp`}
               className="h-12 w-12 rounded-2xl"
@@ -83,8 +84,8 @@ export function AchievementsPage() {
             >
               <Card className={cn(
                 "h-full border-none shadow-sm transition-all duration-300 relative overflow-hidden flex flex-col",
-                isUnlocked
-                  ? "bg-card dark:bg-card border border-sky-100 dark:border-sky-900 shadow-md"
+                isUnlocked 
+                  ? "bg-card dark:bg-card border border-sky-100 dark:border-sky-900 shadow-md" 
                   : "bg-slate-100 dark:bg-muted/50 opacity-70 grayscale"
               )}>
                 {/* Shimmer effect for unlocked cards */}
@@ -94,8 +95,8 @@ export function AchievementsPage() {
                 <CardContent className="p-5 flex flex-col items-center text-center gap-3 flex-1 relative z-20">
                   <div className={cn(
                     "p-3 rounded-full transition-all duration-500",
-                    isUnlocked
-                      ? "bg-gradient-to-br from-sky-400 to-violet-500 text-white shadow-lg shadow-violet-500/30 scale-110"
+                    isUnlocked 
+                      ? "bg-gradient-to-br from-sky-400 to-violet-500 text-white shadow-lg shadow-violet-500/30 scale-110" 
                       : "bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-600"
                   )}>
                     {isUnlocked ? achievement.icon : <Trophy className="w-6 h-6" />}
@@ -113,8 +114,8 @@ export function AchievementsPage() {
                   </div>
                   {/* Certificate Button */}
                   {isUnlocked && hasCertificate && (
-                    <Button
-                      variant="ghost"
+                    <Button 
+                      variant="ghost" 
                       size="sm"
                       onClick={() => setSelectedCertificate(achievement)}
                       className="mt-2 h-8 text-xs gap-1.5 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 w-full"

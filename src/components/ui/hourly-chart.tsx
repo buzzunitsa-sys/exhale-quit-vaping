@@ -38,7 +38,7 @@ export function HourlyChart({ entries = [] }: HourlyChartProps) {
         )}
       </div>
       <div className="h-[200px] w-full relative min-w-0 overflow-hidden">
-        <div style={{ width: '100%', height: 200 }}>
+        <div style={{ width: '100%', height: 200, position: 'relative' }}>
           <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <AreaChart data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
               <defs>
@@ -57,7 +57,7 @@ export function HourlyChart({ entries = [] }: HourlyChartProps) {
                   tickFormatter={(hour) => hour === 0 ? '12am' : hour === 12 ? '12pm' : hour > 12 ? `${hour - 12}pm` : `${hour}am`}
                   dy={10}
               />
-              <Tooltip
+              <Tooltip 
                 cursor={{ stroke: 'var(--border)', strokeWidth: 1 }}
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
