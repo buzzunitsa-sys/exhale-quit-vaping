@@ -25,7 +25,7 @@ export function ShareButton({
     shareText = customText;
   } else if (secondsFree !== undefined && moneySaved !== undefined) {
     const days = Math.floor(secondsFree / (3600 * 24));
-    shareText = `I've been smoke-free for ${days} days and saved ${currency === 'USD' ? '$' : currency + ' '}${moneySaved.toFixed(2)} with Exhale! 🌬️💪 #QuitVaping #ExhaleApp`;
+    shareText = `I've been smoke-free for ${days} days and saved ${currency === 'USD' ? '$' : currency + ' '}${moneySaved.toFixed(2)} with Exhale! ����️💪 #QuitVaping #ExhaleApp`;
   } else {
     shareText = "Check out Exhale - the best app to quit vaping! 🌬️ #QuitVaping #ExhaleApp";
   }

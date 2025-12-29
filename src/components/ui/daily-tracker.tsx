@@ -64,9 +64,9 @@ export function DailyTracker({
           </CircularProgress>
           {/* Quick Log Button - Elevated z-index to ensure clickability */}
           <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 relative z-30">
-            <Button 
-              onClick={onQuickLog} 
-              size="lg" 
+            <Button
+              onClick={onQuickLog}
+              size="lg"
               className="rounded-full w-14 h-14 bg-gradient-to-r from-sky-500 to-violet-600 hover:opacity-90 shadow-lg shadow-sky-500/30 p-0 flex items-center justify-center transition-transform active:scale-95"
             >
               <Plus className="w-8 h-8 text-white" />
@@ -77,7 +77,7 @@ export function DailyTracker({
       <div className="grid grid-cols-3 gap-4 mt-10 pt-6 border-t border-border/50">
         <div className="flex flex-col items-center text-center">
           <div className="bg-red-50 dark:bg-red-900/20 p-2 rounded-full mb-2"><TrendingDown className="w-4 h-4 text-red-500" /></div>
-          <span className="text-lg font-bold text-foreground">{currency === 'USD' ? '$' : currency}{costWasted.toFixed(2)}</span>
+          <span className="text-lg font-bold text-foreground">{currency === 'USD' ? '$' : currency + ' '}{costWasted.toFixed(2)}</span>
           <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">WASTED</span>
         </div>
         <div className="flex flex-col items-center text-center border-x border-border/50">
@@ -87,7 +87,7 @@ export function DailyTracker({
         </div>
         <div className="flex flex-col items-center text-center">
           <div className="bg-emerald-50 dark:bg-emerald-900/20 p-2 rounded-full mb-2"><TrendingUp className="w-4 h-4 text-emerald-500" /></div>
-          <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{currency === 'USD' ? '$' : currency}{projectedSavings.toFixed(2)}</span>
+          <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{currency === 'USD' ? '$' : currency + ' '}{projectedSavings.toFixed(2)}</span>
           <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">SAVED</span>
         </div>
       </div>
