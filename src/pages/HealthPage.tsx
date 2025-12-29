@@ -8,6 +8,16 @@ import { RecentHistory } from '@/components/RecentHistory';
 import { HistoryCalendar } from '@/components/HistoryCalendar';
 import { JournalForm } from '@/components/JournalForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/lib/store';
 import { api } from '@/lib/api-client';
@@ -26,6 +36,7 @@ export function HealthPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('stats');
   const [activeTab, setActiveTab] = useState<TimeRange>('WEEKLY');
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const user = useAppStore(s => s.user);
   const setUser = useAppStore(s => s.setUser);
   const isGuest = useAppStore(s => s.isGuest);
@@ -44,25 +55,28 @@ export function HealthPage() {
   const triggerData = useMemo(() => {
     return getTriggerDistribution(filteredEntries);
   }, [filteredEntries]);
-  const handleDeleteEntry = async (entryId: string) => {
-    if (!user) return;
-    if (window.confirm("Are you sure you want to delete this entry?")) {
-      if (isGuest) {
-        // Local update for guest
-        const updatedJournal = (user.journal || []).filter(e => e.id !== entryId);
-        setUser({ ...user, journal: updatedJournal });
-        toast.success("Entry deleted (Demo Mode)");
-      } else {
-        // API call for real user
-        try {
-          const updatedUser = await api<User>(`/api/user/${user.id}/journal/${entryId}`, {
-            method: 'DELETE',
-          });
-          setUser(updatedUser);
-          toast.success("Entry deleted");
-        } catch (err) {
-          toast.error("Failed to delete entry");
-        }
+  const handleDeleteEntry = (entryId: string) => {
+    setDeleteId(entryId);
+  };
+  const confirmDelete = async () => {
+    if (!user || !deleteId) return;
+    if (isGuest) {
+      // Local update for guest
+      const updatedJournal = (user.journal || []).filter(e => e.id !== deleteId);
+      setUser({ ...user, journal: updatedJournal });
+      toast.success("Entry deleted (Demo Mode)");
+      setDeleteId(null);
+    } else {
+      // API call for real user
+      try {
+        const updatedUser = await api<User>(`/api/user/${user.id}/journal/${deleteId}`, {
+          method: 'DELETE',
+        });
+        setUser(updatedUser);
+        toast.success("Entry deleted");
+        setDeleteId(null);
+      } catch (err) {
+        toast.error("Failed to delete entry");
       }
     }
   };
@@ -73,7 +87,7 @@ export function HealthPage() {
     if (!user || !editingEntry) return;
     if (isGuest) {
       // Local update for guest
-      const updatedJournal = (user.journal || []).map(e => 
+      const updatedJournal = (user.journal || []).map(e =>
         e.id === editingEntry.id ? { ...e, ...data } : e
       );
       setUser({ ...user, journal: updatedJournal });
@@ -191,8 +205,8 @@ export function HealthPage() {
               <StatsSummary stats={summaryStats} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <TriggerChart data={triggerData} />
-                <RecentHistory 
-                  entries={journal} 
+                <RecentHistory
+                  entries={journal}
                   onDelete={handleDeleteEntry}
                   onEdit={handleEditEntry}
                 />
@@ -207,13 +221,13 @@ export function HealthPage() {
               transition={{ duration: 0.2 }}
               className="space-y-6"
             >
-              <HistoryCalendar 
-                entries={journal} 
+              <HistoryCalendar
+                entries={journal}
                 dailyLimit={user?.profile?.dailyLimit}
                 createdAt={user?.createdAt || Date.now()}
               />
-              <RecentHistory 
-                entries={journal} 
+              <RecentHistory
+                entries={journal}
                 onDelete={handleDeleteEntry}
                 onEdit={handleEditEntry}
               />
@@ -241,14 +255,31 @@ export function HealthPage() {
             </DialogDescription>
           </DialogHeader>
           {editingEntry && (
-            <JournalForm 
+            <JournalForm
               initialData={editingEntry}
-              onSubmit={handleUpdateEntry} 
-              onCancel={() => setEditingEntry(null)} 
+              onSubmit={handleUpdateEntry}
+              onCancel={() => setEditingEntry(null)}
             />
           )}
         </DialogContent>
       </Dialog>
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Journal Entry?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This entry will be permanently removed from your history.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700 text-white">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

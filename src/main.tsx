@@ -9,6 +9,7 @@ import {
 } from "react-router-dom";
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
+import { Toaster } from '@/components/ui/sonner';
 import '@/index.css'
 import { HomePage } from '@/pages/HomePage'
 import { DashboardPage } from '@/pages/DashboardPage'
@@ -59,6 +60,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
       <RouterProvider router={router} />
+      <Toaster richColors closeButton position="top-center" />
     </ErrorBoundary>
   </StrictMode>,
 )
