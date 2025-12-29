@@ -188,7 +188,7 @@ export function getWeeklyConsistency(entries: JournalEntry[], dailyLimit: number
         status: 'unknown',
         puffs: 0,
         limit: dailyLimit,
-        label: format(day, 'EEEEE'),
+        label: format(day, 'EEEEE', { weekStartsOn: 1 }),
         fullDate: format(day, 'MMM d')
       };
     }
@@ -211,7 +211,7 @@ export function getWeeklyConsistency(entries: JournalEntry[], dailyLimit: number
       status,
       puffs,
       limit: dailyLimit,
-      label: format(day, 'EEEEE'), // M, T, W...
+      label: format(day, 'EEEEE', { weekStartsOn: 1 }), // M, T, W...
       fullDate: format(day, 'MMM d')
     };
   });

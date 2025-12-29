@@ -14,9 +14,6 @@ export function WeeklyProgress({ data }: WeeklyProgressProps) {
   for (const day of reversedData) {
     if (day.status === 'clean' || day.status === 'under-limit') {
       currentStreak++;
-    } else if (day.status === 'unknown') {
-      // Don't break streak for future days or days before start, but don't count them either
-      continue;
     } else {
       break;
     }
@@ -32,12 +29,12 @@ export function WeeklyProgress({ data }: WeeklyProgressProps) {
           </span>
         </div>
       </div>
-      <div className="flex justify-between items-center gap-2">
+      <div className="flex justify-between items-center gap-2 overflow-x-auto whitespace-nowrap pb-2 sm:pb-0">
         <TooltipProvider delayDuration={100}>
           {data.map((day, index) => (
             <Tooltip key={index}>
               <TooltipTrigger asChild>
-                <div className="flex flex-col items-center gap-2 cursor-default group">
+                <div className="flex flex-col items-center gap-2 cursor-default group shrink-0">
                   <div className={cn(
                     "w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all duration-300 border-2",
                     day.status === 'clean'
