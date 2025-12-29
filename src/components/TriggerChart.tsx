@@ -55,7 +55,7 @@ export function TriggerChart({ data }: TriggerChartProps) {
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Pie>
-                <Tooltip 
+                <Tooltip
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       const d = payload[0].payload as TriggerDataPoint;
@@ -77,8 +77,8 @@ export function TriggerChart({ data }: TriggerChartProps) {
         <div className="mt-4 grid grid-cols-2 gap-2">
           {data.slice(0, 6).map((item) => (
             <div key={item.name} className="flex items-center gap-2 text-xs">
-              <div 
-                className="w-3 h-3 rounded-full flex-shrink-0" 
+              <div
+                className="w-3 h-3 rounded-full flex-shrink-0"
                 style={{ backgroundColor: item.fill }}
               />
               <span className="truncate text-muted-foreground flex-1">{item.name}</span>

@@ -42,40 +42,7 @@ export function MilestoneCelebration() {
   useEffect(() => {
     if (!stats || !user) return;
     const newItems: CelebrationItem[] = [];
-    // 1. Check Ranks
-    const hoursFree = stats.secondsElapsed / 3600;
-    const { current: currentRank } = getUserRank(hoursFree);
-    const lastSeenRankId = localStorage.getItem(`exhale_seen_rank_${user.id}`);
-    // Find index of current rank and last seen rank
-    const currentRankIndex = RANKS.findIndex(r => r.id === currentRank.id);
-    const lastSeenRankIndex = lastSeenRankId ? RANKS.findIndex(r => r.id === lastSeenRankId) : -1;
-    if (currentRankIndex > lastSeenRankIndex) {
-      // User has leveled up!
-      newItems.push({
-        id: currentRank.id,
-        type: 'rank',
-        title: `New Rank: ${currentRank.title}`,
-        description: currentRank.description,
-        icon: <currentRank.icon className="w-12 h-12 text-yellow-400" />,
-        color: 'bg-yellow-500'
-      });
-    }
-    // 2. Check Health Milestones
-    const seenMilestones = JSON.parse(localStorage.getItem(`exhale_seen_milestones_${user.id}`) || '[]');
-    const unlockedMilestones = RECOVERY_MILESTONES.filter(m => stats.secondsElapsed >= m.durationSeconds);
-    unlockedMilestones.forEach(m => {
-      if (!seenMilestones.includes(m.id)) {
-        newItems.push({
-          id: m.id,
-          type: 'health',
-          title: 'Health Milestone Reached!',
-          description: m.title, // Use title as description for the card
-          icon: <Heart className="w-12 h-12 text-red-500" />,
-          color: 'bg-red-500'
-        });
-      }
-    });
-    // 3. Check Achievements
+    // --- 1. Check Achievements (First Run Logic) ---
     const seenAchievements = JSON.parse(localStorage.getItem(`exhale_seen_achievements_${user.id}`) || '[]');
     const unlockedAchievements = ACHIEVEMENTS.filter(a => a.condition({
       secondsFree: stats.secondsElapsed,
@@ -85,13 +52,24 @@ export function MilestoneCelebration() {
       puffsToday: stats.puffsToday,
       journal: stats.journal
     }));
-    // Logic to prevent spam on first load
+    // Detect First Run: No achievements seen yet.
+    // This handles the case where a user logs in with historical data (many achievements unlocked)
+    // but hasn't seen any on this device yet. We want to suppress the spam.
     const isFirstRun = seenAchievements.length === 0;
-    if (isFirstRun && unlockedAchievements.length > 1) {
-        // Mark all as seen immediately to prevent future spam
+    if (isFirstRun) {
+        // Mark ALL unlocked achievements as seen immediately
         const allIds = unlockedAchievements.map(a => a.id);
         localStorage.setItem(`exhale_seen_achievements_${user.id}`, JSON.stringify(allIds));
-        // Only show 'commitment' if it exists in the unlocked list
+        // Also mark Ranks and Health as seen to prevent spam from them too
+        // Ranks
+        const hoursFree = stats.secondsElapsed / 3600;
+        const { current: currentRank } = getUserRank(hoursFree);
+        localStorage.setItem(`exhale_seen_rank_${user.id}`, currentRank.id);
+        // Health
+        const unlockedMilestones = RECOVERY_MILESTONES.filter(m => stats.secondsElapsed >= m.durationSeconds);
+        const milestoneIds = unlockedMilestones.map(m => m.id);
+        localStorage.setItem(`exhale_seen_milestones_${user.id}`, JSON.stringify(milestoneIds));
+        // ONLY queue 'commitment' if it is unlocked (it usually is for any user)
         const commitment = unlockedAchievements.find(a => a.id === 'commitment');
         if (commitment) {
              newItems.push({
@@ -104,21 +82,53 @@ export function MilestoneCelebration() {
             });
         }
     } else {
-        // Normal behavior
-        unlockedAchievements.forEach(a => {
-          if (!seenAchievements.includes(a.id)) {
+        // --- Normal Behavior (Not First Run) ---
+        // 1. Ranks
+        const hoursFree = stats.secondsElapsed / 3600;
+        const { current: currentRank } = getUserRank(hoursFree);
+        const lastSeenRankId = localStorage.getItem(`exhale_seen_rank_${user.id}`);
+        const currentRankIndex = RANKS.findIndex(r => r.id === currentRank.id);
+        const lastSeenRankIndex = lastSeenRankId ? RANKS.findIndex(r => r.id === lastSeenRankId) : -1;
+        if (currentRankIndex > lastSeenRankIndex) {
             newItems.push({
-              id: a.id,
-              type: 'achievement',
-              title: 'Achievement Unlocked!',
-              description: a.title,
-              icon: <Trophy className="w-12 h-12 text-violet-500" />,
-              color: 'bg-violet-500'
+                id: currentRank.id,
+                type: 'rank',
+                title: `New Rank: ${currentRank.title}`,
+                description: currentRank.description,
+                icon: <currentRank.icon className="w-12 h-12 text-yellow-400" />,
+                color: 'bg-yellow-500'
             });
-          }
+        }
+        // 2. Health Milestones
+        const seenMilestones = JSON.parse(localStorage.getItem(`exhale_seen_milestones_${user.id}`) || '[]');
+        const unlockedMilestones = RECOVERY_MILESTONES.filter(m => stats.secondsElapsed >= m.durationSeconds);
+        unlockedMilestones.forEach(m => {
+            if (!seenMilestones.includes(m.id)) {
+                newItems.push({
+                    id: m.id,
+                    type: 'health',
+                    title: 'Health Milestone Reached!',
+                    description: m.title,
+                    icon: <Heart className="w-12 h-12 text-red-500" />,
+                    color: 'bg-red-500'
+                });
+            }
+        });
+        // 3. Achievements
+        unlockedAchievements.forEach(a => {
+            if (!seenAchievements.includes(a.id)) {
+                newItems.push({
+                    id: a.id,
+                    type: 'achievement',
+                    title: 'Achievement Unlocked!',
+                    description: a.title,
+                    icon: <Trophy className="w-12 h-12 text-violet-500" />,
+                    color: 'bg-violet-500'
+                });
+            }
         });
     }
-    // Only update queue if we found new items that aren't already in the queue or current
+    // Update queue
     if (newItems.length > 0) {
       setQueue(prev => {
         const existingIds = new Set([...prev.map(i => i.id), current?.id]);
@@ -126,7 +136,7 @@ export function MilestoneCelebration() {
         return [...prev, ...uniqueNewItems];
       });
     }
-  }, [stats, user, current?.id]);
+  }, [stats, user, current?.id]); // Dependencies
   // Process Queue
   useEffect(() => {
     if (!current && queue.length > 0) {
@@ -142,8 +152,8 @@ export function MilestoneCelebration() {
           angle: 60,
           spread: 55,
           origin: { x: 0 },
-          colors: next.type === 'rank' ? ['#fbbf24', '#f59e0b'] : 
-                 next.type === 'health' ? ['#ef4444', '#f87171'] : 
+          colors: next.type === 'rank' ? ['#fbbf24', '#f59e0b'] :
+                 next.type === 'health' ? ['#ef4444', '#f87171'] :
                  ['#8b5cf6', '#a78bfa']
         });
         confetti({
@@ -151,8 +161,8 @@ export function MilestoneCelebration() {
           angle: 120,
           spread: 55,
           origin: { x: 1 },
-          colors: next.type === 'rank' ? ['#fbbf24', '#f59e0b'] : 
-                 next.type === 'health' ? ['#ef4444', '#f87171'] : 
+          colors: next.type === 'rank' ? ['#fbbf24', '#f59e0b'] :
+                 next.type === 'health' ? ['#ef4444', '#f87171'] :
                  ['#8b5cf6', '#a78bfa']
         });
         if (Date.now() < end) {
@@ -169,10 +179,14 @@ export function MilestoneCelebration() {
       localStorage.setItem(`exhale_seen_rank_${user.id}`, current.id);
     } else if (current.type === 'health') {
       const seen = JSON.parse(localStorage.getItem(`exhale_seen_milestones_${user.id}`) || '[]');
-      localStorage.setItem(`exhale_seen_milestones_${user.id}`, JSON.stringify([...seen, current.id]));
+      if (!seen.includes(current.id)) {
+          localStorage.setItem(`exhale_seen_milestones_${user.id}`, JSON.stringify([...seen, current.id]));
+      }
     } else if (current.type === 'achievement') {
       const seen = JSON.parse(localStorage.getItem(`exhale_seen_achievements_${user.id}`) || '[]');
-      localStorage.setItem(`exhale_seen_achievements_${user.id}`, JSON.stringify([...seen, current.id]));
+      if (!seen.includes(current.id)) {
+          localStorage.setItem(`exhale_seen_achievements_${user.id}`, JSON.stringify([...seen, current.id]));
+      }
     }
     setCurrent(null);
   };
@@ -185,7 +199,7 @@ export function MilestoneCelebration() {
     shareText = `I just reached the ${current.title.replace('New Rank: ', '')} rank on Exhale! 🏆 #QuitVaping #ExhaleApp`;
   } else if (current.type === 'health') {
     shareTitle = "Health Milestone";
-    shareText = `My body is healing! ${current.description} ❤️ #QuitVaping #ExhaleApp`;
+    shareText = `My body is healing! ${current.description} ❤��� #QuitVaping #ExhaleApp`;
   } else if (current.type === 'achievement') {
     shareTitle = "Achievement Unlocked";
     shareText = `I just unlocked the "${current.description}" achievement on Exhale! 🌟 #QuitVaping #ExhaleApp`;
@@ -215,13 +229,13 @@ export function MilestoneCelebration() {
                 {current.description}
               </p>
               <div className="flex gap-3 w-full">
-                <Button 
+                <Button
                   onClick={handleDismiss}
                   className={`flex-1 h-12 text-lg font-bold text-white shadow-lg transition-transform active:scale-95 ${current.color?.replace('bg-', 'bg-gradient-to-r from-').replace('500', '500 to-white/20') || 'bg-primary'}`}
                 >
                   Awesome!
                 </Button>
-                <ShareButton 
+                <ShareButton
                   customTitle={shareTitle}
                   customText={shareText}
                   className="h-12 w-12 rounded-xl bg-secondary hover:bg-secondary/80 text-foreground"
