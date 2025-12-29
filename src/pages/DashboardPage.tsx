@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useAppStore } from '@/lib/store';
 import { format, isSameDay, differenceInSeconds } from 'date-fns';
-import { Crown, Settings2, Download, Share, PlusSquare, MoreVertical } from 'lucide-react';
+import { Crown, Settings2, Download, Flame } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { DateStrip } from '@/components/ui/date-strip';
 import { DailyTracker } from '@/components/ui/daily-tracker';
@@ -26,6 +26,7 @@ import { useInstallPrompt } from '@/hooks/use-install-prompt';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Share, PlusSquare, MoreVertical } from 'lucide-react';
 export function DashboardPage() {
   const user = useAppStore(s => s.user);
   const setUser = useAppStore(s => s.setUser);
@@ -159,6 +160,7 @@ export function DashboardPage() {
   const hoursFree = secondsFreeForRank / 3600;
   const { current: currentRank } = getUserRank(hoursFree);
   const RankIcon = currentRank.icon;
+  const streak = user.pledgeStreak || 0;
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background pb-32 transition-colors duration-300">
       <MilestoneCelebration />
@@ -171,19 +173,31 @@ export function DashboardPage() {
               <p className="text-sky-100 font-medium uppercase tracking-wide text-sm opacity-90">
                 {format(now, 'EEEE, MMMM d')}
               </p>
-              {/* Rank Badge */}
-              <div className="mt-4 inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
-                <RankIcon className="w-4 h-4 text-yellow-300 fill-yellow-300" />
-                <span className="text-xs font-bold text-white tracking-wide uppercase">
-                  {currentRank.title}
-                </span>
+              {/* Badges Row */}
+              <div className="mt-4 flex flex-wrap gap-2">
+                {/* Rank Badge */}
+                <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
+                  <RankIcon className="w-4 h-4 text-yellow-300 fill-yellow-300" />
+                  <span className="text-xs font-bold text-white tracking-wide uppercase">
+                    {currentRank.title}
+                  </span>
+                </div>
+                {/* Streak Badge */}
+                {streak > 0 && (
+                  <div className="inline-flex items-center gap-2 bg-orange-500/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-orange-400/30">
+                    <Flame className="w-4 h-4 text-orange-300 fill-orange-400" />
+                    <span className="text-xs font-bold text-white tracking-wide uppercase">
+                      {streak} Day Streak
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex gap-3">
               {!isStandalone && (
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={promptInstall}
                   className="bg-white/20 hover:bg-white/30 text-white rounded-xl backdrop-blur-sm transition-all duration-200"
                   title="Install App"
@@ -191,9 +205,9 @@ export function DashboardPage() {
                   <Download className="w-5 h-5" />
                 </Button>
               )}
-              <ShareButton 
-                secondsFree={secondsFreeForRank} 
-                moneySaved={totalMoneySaved} 
+              <ShareButton
+                secondsFree={secondsFreeForRank}
+                moneySaved={totalMoneySaved}
                 currency={user.profile.currency}
               />
               <Link 
@@ -241,7 +255,7 @@ export function DashboardPage() {
         {/* Time Since Last Puff */}
         <TimeSinceLastPuff 
           lastPuffTime={lastPuffTime} 
-          now={now}
+          now={now} 
         />
         {/* Breathing Card */}
         <BreathingCard />
@@ -255,15 +269,15 @@ export function DashboardPage() {
         {user.profile.savingsGoal && user.profile.savingsGoal.cost > 0 && (
           <SavingsGoalCard 
             savedAmount={totalMoneySaved} 
-            goal={user.profile.savingsGoal} 
+            goal={user.profile.savingsGoal}
             currency={user.profile.currency}
           />
         )}
         {/* Savings Chart */}
         <div className="w-full h-[250px] rounded-3xl min-w-0 overflow-hidden">
           <SavingsChart 
-            currentSavings={totalMoneySaved} 
-            dailySavings={dailyBaselineCost} 
+            currentSavings={totalMoneySaved}
+            dailySavings={dailyBaselineCost}
             currency={user.profile.currency}
           />
         </div>

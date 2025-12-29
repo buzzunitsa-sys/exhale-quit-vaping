@@ -7,8 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import type { JournalEntry } from '@shared/types';
-const TRIGGERS = [
-  "Stress", "Boredom", "Social Pressure", "Habit/Routine", "Alcohol", "Coffee", "After Meal", "Other"
+const DEFAULT_TRIGGERS = [
+  "Stress", "Boredom", "Social Pressure", "Habit/Routine", "Alcohol", "Coffee", "After Meal"
 ];
 interface JournalFormProps {
   onSubmit: (data: { intensity: number; trigger: string; note: string; puffs?: number }) => void;
@@ -21,21 +21,43 @@ export function JournalForm({ onSubmit, onCancel, initialData }: JournalFormProp
   const [customTrigger, setCustomTrigger] = useState("");
   const [note, setNote] = useState("");
   const [puffs, setPuffs] = useState([0]);
+  const [availableTriggers, setAvailableTriggers] = useState(DEFAULT_TRIGGERS);
+  // Load custom triggers from local storage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('exhale_custom_triggers');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          // Merge saved triggers with defaults, removing duplicates
+          const merged = Array.from(new Set([...DEFAULT_TRIGGERS, ...parsed]));
+          setAvailableTriggers(merged);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load custom triggers', e);
+    }
+  }, []);
   useEffect(() => {
     if (initialData) {
       if (initialData.intensity !== undefined) setIntensity([initialData.intensity]);
       if (initialData.note !== undefined) setNote(initialData.note);
       if (initialData.puffs !== undefined) setPuffs([initialData.puffs]);
       if (initialData.trigger) {
-        if (TRIGGERS.includes(initialData.trigger)) {
+        if (availableTriggers.includes(initialData.trigger)) {
           setTrigger(initialData.trigger);
+        } else if (DEFAULT_TRIGGERS.includes(initialData.trigger)) {
+           // Should be covered by availableTriggers, but just in case
+           setTrigger(initialData.trigger);
         } else {
+          // It's a custom trigger that might not be in our list yet (e.g. from another device)
+          // or it's "Other"
           setTrigger("Other");
           setCustomTrigger(initialData.trigger);
         }
       }
     }
-  }, [initialData]);
+  }, [initialData, availableTriggers]);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     let finalTrigger = trigger;
@@ -45,6 +67,14 @@ export function JournalForm({ onSubmit, onCancel, initialData }: JournalFormProp
         return;
       }
       finalTrigger = customTrigger.trim();
+      // Save custom trigger if it's new
+      if (!availableTriggers.includes(finalTrigger)) {
+        const newTriggers = [...availableTriggers, finalTrigger];
+        setAvailableTriggers(newTriggers);
+        // Persist only the custom ones to avoid bloating storage with defaults
+        const customOnly = newTriggers.filter(t => !DEFAULT_TRIGGERS.includes(t));
+        localStorage.setItem('exhale_custom_triggers', JSON.stringify(customOnly));
+      }
     }
     onSubmit({
       intensity: intensity[0],
@@ -52,7 +82,7 @@ export function JournalForm({ onSubmit, onCancel, initialData }: JournalFormProp
       note,
       puffs: puffs[0]
     });
-    // Reset form if not editing (though usually parent closes modal)
+    // Reset form if not editing
     if (!initialData) {
       setIntensity([5]);
       setTrigger("Habit/Routine");
@@ -111,9 +141,10 @@ export function JournalForm({ onSubmit, onCancel, initialData }: JournalFormProp
               <SelectValue placeholder="What triggered this?" />
             </SelectTrigger>
             <SelectContent>
-              {TRIGGERS.map(t => (
+              {availableTriggers.map(t => (
                 <SelectItem key={t} value={t}>{t}</SelectItem>
               ))}
+              <SelectItem value="Other">Other (Custom)</SelectItem>
             </SelectContent>
           </Select>
           {trigger === "Other" && (
@@ -140,8 +171,8 @@ export function JournalForm({ onSubmit, onCancel, initialData }: JournalFormProp
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
         )}
-        <Button
-          type="submit"
+        <Button 
+          type="submit" 
           className="bg-violet-500 hover:bg-violet-600 text-white w-full"
         >
           {initialData ? "Update Entry" : "Log Entry"}

@@ -2,15 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { useAppStore } from '@/lib/store';
 import { differenceInSeconds, isSameDay } from 'date-fns';
 import { motion } from 'framer-motion';
-import { Trophy } from 'lucide-react';
+import { Trophy, FileText } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
 import { ACHIEVEMENTS } from '@/lib/achievements';
 import { ShareButton } from '@/components/ui/share-button';
+import { Button } from '@/components/ui/button';
+import { CertificateModal } from '@/components/CertificateModal';
 import { cn } from '@/lib/utils';
+import type { Achievement } from '@/types/app';
+// Define which achievements get a certificate
+const MAJOR_MILESTONES = [
+  '1week', '2weeks', '1month', '3months', '6months', '1year', // Time
+  'save100', 'save500', 'save1000', // Money
+  'commitment' // First step
+];
 export function AchievementsPage() {
   const user = useAppStore(s => s.user);
   const [now, setNow] = useState(new Date());
+  const [selectedCertificate, setSelectedCertificate] = useState<Achievement | null>(null);
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
@@ -32,7 +42,7 @@ export function AchievementsPage() {
     podsAvoided,
     dailyLimit,
     puffsToday,
-    journal // Pass journal for "Just Breathe" achievement
+    journal
   };
   const unlockedCount = ACHIEVEMENTS.filter(a => a.condition(stats)).length;
   if (!user?.profile) return null;
@@ -53,7 +63,7 @@ export function AchievementsPage() {
             </div>
             <ShareButton
               customTitle="My Exhale Achievements"
-              customText={`I've unlocked ${unlockedCount} achievements on Exhale! �� #QuitVaping #ExhaleApp`}
+              customText={`I've unlocked ${unlockedCount} achievements on Exhale! 🏆 #QuitVaping #ExhaleApp`}
               className="h-12 w-12 rounded-2xl"
             />
           </div>
@@ -62,6 +72,7 @@ export function AchievementsPage() {
       <div className="px-4 grid grid-cols-2 gap-4 relative z-10">
         {ACHIEVEMENTS.map((achievement, index) => {
           const isUnlocked = achievement.condition(stats);
+          const hasCertificate = MAJOR_MILESTONES.includes(achievement.id);
           return (
             <motion.div
               key={achievement.id}
@@ -71,7 +82,7 @@ export function AchievementsPage() {
               whileHover={isUnlocked ? { scale: 1.03 } : {}}
             >
               <Card className={cn(
-                "h-full border-none shadow-sm transition-all duration-300 relative overflow-hidden",
+                "h-full border-none shadow-sm transition-all duration-300 relative overflow-hidden flex flex-col",
                 isUnlocked
                   ? "bg-card dark:bg-card border border-sky-100 dark:border-sky-900 shadow-md"
                   : "bg-slate-100 dark:bg-muted/50 opacity-70 grayscale"
@@ -80,7 +91,7 @@ export function AchievementsPage() {
                 {isUnlocked && (
                   <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent z-10 pointer-events-none" />
                 )}
-                <CardContent className="p-5 flex flex-col items-center text-center gap-3 h-full justify-center relative z-20">
+                <CardContent className="p-5 flex flex-col items-center text-center gap-3 flex-1 relative z-20">
                   <div className={cn(
                     "p-3 rounded-full transition-all duration-500",
                     isUnlocked
@@ -89,7 +100,7 @@ export function AchievementsPage() {
                   )}>
                     {isUnlocked ? achievement.icon : <Trophy className="w-6 h-6" />}
                   </div>
-                  <div>
+                  <div className="flex-1 flex flex-col justify-center">
                     <h3 className={cn(
                       "font-semibold mb-1 text-sm sm:text-base",
                       isUnlocked ? "text-foreground" : "text-muted-foreground"
@@ -100,12 +111,35 @@ export function AchievementsPage() {
                       {achievement.description}
                     </p>
                   </div>
+                  {/* Certificate Button */}
+                  {isUnlocked && hasCertificate && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedCertificate(achievement)}
+                      className="mt-2 h-8 text-xs gap-1.5 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 w-full"
+                    >
+                      <FileText className="w-3 h-3" />
+                      Certificate
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
           );
         })}
       </div>
+      {/* Certificate Modal */}
+      {selectedCertificate && (
+        <CertificateModal
+          isOpen={!!selectedCertificate}
+          onClose={() => setSelectedCertificate(null)}
+          title={selectedCertificate.title}
+          description={selectedCertificate.description}
+          date={now} // Ideally this would be the actual unlock date, but 'now' works for MVP
+          userName={user?.email?.split('@')[0]} // Simple username fallback
+        />
+      )}
     </div>
   );
 }
