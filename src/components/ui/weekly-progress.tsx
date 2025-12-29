@@ -29,14 +29,16 @@ export function WeeklyProgress({ data }: WeeklyProgressProps) {
           </span>
         </div>
       </div>
-      <div className="flex justify-between items-center gap-2 overflow-x-auto whitespace-nowrap pb-2 sm:pb-0">
+      {/* Changed from flex/overflow to grid for better mobile fit */}
+      <div className="grid grid-cols-7 gap-1 sm:gap-2">
         <TooltipProvider delayDuration={100}>
           {data.map((day, index) => (
             <Tooltip key={index}>
               <TooltipTrigger asChild>
-                <div className="flex flex-col items-center gap-2 cursor-default group shrink-0">
+                <div className="flex flex-col items-center gap-2 cursor-default group w-full">
                   <div className={cn(
-                    "w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all duration-300 border-2",
+                    // Adjusted sizes: w-8 h-8 for mobile, w-10 h-10 for larger screens
+                    "w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-300 border-2",
                     day.status === 'clean'
                       ? "bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20"
                       : day.status === 'under-limit'
@@ -46,17 +48,17 @@ export function WeeklyProgress({ data }: WeeklyProgressProps) {
                       : "bg-secondary border-transparent text-muted-foreground/50"
                   )}>
                     {day.status === 'clean' ? (
-                      <Check className="w-6 h-6 stroke-[3]" />
+                      <Check className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3]" />
                     ) : day.status === 'under-limit' ? (
-                      <Check className="w-5 h-5" />
+                      <Check className="w-4 h-4 sm:w-5 sm:h-5" />
                     ) : day.status === 'over-limit' ? (
-                      <X className="w-5 h-5" />
+                      <X className="w-4 h-4 sm:w-5 sm:h-5" />
                     ) : (
-                      <Circle className="w-3 h-3 fill-current" />
+                      <Circle className="w-2 h-2 sm:w-3 sm:h-3 fill-current" />
                     )}
                   </div>
                   <span className={cn(
-                    "text-xs font-medium transition-colors",
+                    "text-[10px] sm:text-xs font-medium transition-colors text-center w-full",
                     day.status === 'clean' || day.status === 'under-limit'
                       ? "text-emerald-600 dark:text-emerald-400 font-bold"
                       : "text-muted-foreground"

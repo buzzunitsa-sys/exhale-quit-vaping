@@ -177,12 +177,14 @@ export function getWeeklyConsistency(entries: JournalEntry[], dailyLimit: number
   const start = subDays(end, 6); // Last 7 days including today
   const days = eachDayOfInterval({ start, end });
   // Normalize user start date to start of day for accurate comparison
-  const userStartDate = userCreatedAt ? startOfDay(userCreatedAt) : null;
+  // Fix: Default to now if userCreatedAt is missing or 0 to prevent false streaks for new users
+  const effectiveCreatedAt = userCreatedAt && userCreatedAt > 0 ? userCreatedAt : Date.now();
+  const userStartDate = startOfDay(effectiveCreatedAt);
   return days.map(day => {
     const normalizedDay = startOfDay(day);
     // If the day is strictly before the user started, mark as unknown
     // Using isBefore ensures we handle the boundary correctly (same day is NOT before)
-    if (userStartDate && isBefore(normalizedDay, userStartDate)) {
+    if (isBefore(normalizedDay, userStartDate)) {
       return {
         date: day,
         status: 'unknown',
