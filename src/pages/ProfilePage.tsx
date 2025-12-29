@@ -10,6 +10,17 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from 'sonner';
 import { LogOut, Save, User as UserIcon, Palette, RefreshCw, Beaker, Zap, Droplets, Target, Globe, LogIn, Download, Upload, FileJson, Heart } from 'lucide-react';
 import type { User } from '@shared/types';
@@ -101,20 +112,15 @@ export function ProfilePage() {
   const handleReset = async () => {
     if (!user) return;
     if (isGuest) return;
-    const confirmed = window.confirm(
-      "Are you sure you want to reset your progress? This will clear your journal and reset your quit date to NOW. This action cannot be undone."
-    );
-    if (confirmed) {
-      try {
-        const updatedUser = await api<User>(`/api/user/${user.id}/reset`, {
-          method: 'POST',
-        });
-        setUser(updatedUser);
-        toast.success("Progress reset successfully. A fresh start!");
-        navigate('/dashboard');
-      } catch (err) {
-        toast.error("Failed to reset progress");
-      }
+    try {
+      const updatedUser = await api<User>(`/api/user/${user.id}/reset`, {
+        method: 'POST',
+      });
+      setUser(updatedUser);
+      toast.success("Progress reset successfully. A fresh start!");
+      navigate('/dashboard');
+    } catch (err) {
+      toast.error("Failed to reset progress");
     }
   };
   const handleExport = () => {
@@ -461,10 +467,28 @@ export function ProfilePage() {
                 />
               </div>
               <div className="pt-4 border-t border-border/50">
-                <Button variant="ghost" onClick={handleReset} className="w-full text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Reset Progress
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" className="w-full text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Reset Progress
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your journal entries and reset your quit date to right now.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleReset} className="bg-red-600 hover:bg-red-700 text-white">
+                        Yes, Reset Everything
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
                 <p className="text-xs text-muted-foreground text-center mt-2">
                   Resetting clears your journal and restarts your timer.
                 </p>

@@ -16,6 +16,7 @@ import { HealthPage } from '@/pages/HealthPage'
 import { AchievementsPage } from '@/pages/AchievementsPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { BreathingPage } from '@/pages/BreathingPage'
+import { NotFoundPage } from '@/pages/NotFoundPage'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 const router = createBrowserRouter([
   {
@@ -48,6 +49,10 @@ const router = createBrowserRouter([
         element: <BreathingPage />,
       },
     ]
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />,
   }
 ]);
 createRoot(document.getElementById('root')!).render(
