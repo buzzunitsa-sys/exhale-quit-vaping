@@ -4,7 +4,7 @@ import { useAppStore } from '@/lib/store';
 import { api } from '@/lib/api-client';
 import { format } from 'date-fns';
 import confetti from 'canvas-confetti';
-import { CheckCircle2, Flame, Trophy } from 'lucide-react';
+import { CheckCircle2, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -67,14 +67,16 @@ export function DailyPledge() {
   };
   if (!user) return null;
   return (
-    <div className="w-full mb-6">
-      <AnimatePresence mode="wait">
-        {!isPledged ? (
+    <>
+      <AnimatePresence>
+        {!isPledged && (
           <motion.div
             key="pledge-card"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, y: 20, height: 'auto', marginBottom: 24 }}
+            animate={{ opacity: 1, y: 0, height: 'auto', marginBottom: 24 }}
+            exit={{ opacity: 0, height: 0, marginBottom: 0, overflow: 'hidden' }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+            className="w-full"
           >
             <Card className="bg-gradient-to-br from-violet-500 to-fuchsia-600 border-none shadow-lg shadow-violet-500/20 overflow-hidden relative">
               {/* Background Pattern */}
@@ -87,42 +89,13 @@ export function DailyPledge() {
                 <p className="text-violet-100 mb-6 text-sm max-w-xs">
                   Pledge to stay smoke-free today and keep your streak alive.
                 </p>
-                <Button 
-                  onClick={handlePledge} 
+                <Button
+                  onClick={handlePledge}
                   disabled={isLoading}
                   className="w-full bg-white text-violet-600 hover:bg-white/90 font-bold shadow-lg transition-all active:scale-95"
                 >
                   {isLoading ? "Committing..." : "I Pledge For Today"}
                 </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="pledged-state"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          >
-            <Card className="bg-emerald-500/10 border-emerald-500/20 shadow-sm overflow-hidden relative">
-              <CardContent className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                    <CheckCircle2 className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-emerald-700 dark:text-emerald-400">Pledged for Today</p>
-                    <p className="text-xs text-emerald-600/80 dark:text-emerald-500">Keep going strong!</p>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end">
-                  <div className="flex items-center gap-1.5 bg-orange-100 dark:bg-orange-900/30 px-3 py-1 rounded-full">
-                    <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-500" />
-                    <span className="text-xs font-bold text-orange-600 dark:text-orange-400">
-                      {streak} Days
-                    </span>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </motion.div>
@@ -153,6 +126,6 @@ export function DailyPledge() {
           </motion.div>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }
