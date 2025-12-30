@@ -1,6 +1,6 @@
 # Exhale - Quit Vaping Tracker & Recovery Companion
 
-[aureliabutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/buzzunitsa-sys/exhale-quit-vaping)
 
 Exhale is a comprehensive, mobile-first web application designed to empower users to overcome vaping addiction through gamification, health tracking, and financial incentives. Built specifically with Android mobile usage patterns in mind, the UI features a bottom-navigation architecture for easy one-handed use.
 
@@ -80,7 +80,7 @@ This will start the Vite development server, typically at `http://localhost:5173
 
 This project is configured to deploy to Cloudflare Workers.
 
-[aureliabutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/buzzunitsa-sys/exhale-quit-vaping)
 
 To deploy manually from your terminal:
 
